@@ -52,7 +52,7 @@
 </section>
 
 <!-- How It Works Section -->
-<section class="bg-gray-50 py-20 animate-fadeIn">
+<section class="bg-gray-50 py-20 animate-fadeIn scroll-animate">
     <div class="max-w-6xl mx-auto px-6 text-center">
         <h2 class="text-3xl font-bold mb-12 animate-slideUp">How It Works</h2>
         <div class="grid md:grid-cols-4 gap-8">
@@ -85,7 +85,7 @@
 
 <!-- Testimonials Section -->
 
-<section class="py-20 bg-white">
+<section class="py-20 bg-white scroll-animate">
 
     <div class="max-w-6xl mx-auto px-6 text-center">
 
@@ -187,7 +187,7 @@
 
 <!-- Why Choose COR AMANS -->
 
-<section class="py-20 bg-gray-50">
+<section class="py-20 bg-gray-50 scroll-animate">
 
     <div class="max-w-6xl mx-auto px-6 text-center">
 
@@ -269,7 +269,7 @@
 
 <!-- Our Catholic Community -->
 
-<section class="py-20 bg-white">
+<section class="py-20 bg-white scroll-animate">
 
     <div class="max-w-6xl mx-auto px-6 text-center">
 
@@ -309,28 +309,31 @@
 
 </section>
 
-<!-- Hero Slideshow JS -->
-<script>
-    let slides = document.querySelectorAll('.slide');
-    let current = 0;
+<!-- Final Call To Action -->
 
-    function showSlide(index) {
-        slides.forEach((slide, i) => {
-            slide.classList.remove('active');
-            slide.style.opacity = '0';
-        });
-        slides[index].classList.add('active');
-        slides[index].style.opacity = '1';
-    }
+<section class="py-24 bg-red-600 text-white text-center">
 
-    function nextSlide() {
-        current = (current + 1) % slides.length;
-        showSlide(current);
-    }
+    <div class="max-w-4xl mx-auto px-6 scroll-animate">
 
-    // Initial display
-    showSlide(current);
-    setInterval(nextSlide, 5000); // change slide every 5s
-</script>
+        <h2 class="text-4xl font-bold mb-6">
+            Ready to Begin Your Sacred Journey?
+        </h2>
+
+        <p class="text-lg mb-10 opacity-90">
+            Start your Catholic marriage preparation today and grow together
+            in faith, love, and commitment.
+        </p>
+
+        <a href="/register"
+            class="bg-white text-red-600 font-semibold px-10 py-4 rounded-lg shadow-lg hover:scale-105 transition transform">
+
+            Register as a Couple
+
+        </a>
+
+    </div>
+
+</section>
+
 
 {% endblock %}
