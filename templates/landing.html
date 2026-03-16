@@ -1,0 +1,336 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<!-- Hero Section Slideshow -->
+<section class="relative h-screen overflow-hidden">
+
+    <!-- Slides -->
+    <div class="absolute inset-0 w-full h-full">
+        <img src="/static/images/couple_1.jpg" class="absolute inset-0 w-full h-full object-cover slide active"
+            alt="Couple 1">
+        <img src="/static/images/couple_2.jpg" class="absolute inset-0 w-full h-full object-cover slide" alt="Couple 2">
+        <img src="/static/images/couple_3.jpg" class="absolute inset-0 w-full h-full object-cover slide" alt="Couple 3">
+
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/50"></div>
+    </div>
+
+    <!-- Hero Text -->
+    <div
+        class="relative max-w-7xl mx-auto h-full flex flex-col justify-center px-6 text-center md:text-left md:flex-row md:items-center md:justify-between animate-fadeIn">
+        <div class="md:max-w-xl space-y-6 text-white">
+            <span class="bg-green-600/30 text-green-100 px-4 py-2 rounded-full font-semibold text-sm animate-slideDown">
+                Catholic Marriage Preparation
+            </span>
+
+            <h1 class="text-5xl md:text-6xl font-bold leading-tight animate-slideUp">
+                Begin Your <span class="text-red-500">Sacred Journey</span> Together
+            </h1>
+
+            <p class="text-lg md:text-xl text-gray-100 animate-slideUp delay-200">
+                A complete online platform for engaged Catholic couples to take courses,
+                attend counselling, and receive their official marriage preparation certificate.
+            </p>
+
+            <div class="flex flex-wrap gap-4 mt-6 justify-center md:justify-start animate-slideUp delay-400">
+                <a href="/register"
+                    class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 hover:scale-105 transition-transform duration-300">
+                    Start Today
+                </a>
+                <a href="#"
+                    class="border border-red-600 text-red-600 px-6 py-3 rounded-lg font-semibold hover:bg-red-50 hover:scale-105 transition-transform duration-300">
+                    View Courses
+                </a>
+                <a href="#"
+                    class="border border-green-600 text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 hover:scale-105 transition-transform duration-300">
+                    Terms of Service
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="bg-gray-50 py-20 animate-fadeIn">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold mb-12 animate-slideUp">How It Works</h2>
+        <div class="grid md:grid-cols-4 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-100">
+                <div class="text-4xl mb-4 text-red-600">1</div>
+                <h3 class="font-semibold mb-2">Register as Couple</h3>
+                <p class="text-gray-600 text-sm">Enter your details and create a secure account for both partners.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-200">
+                <div class="text-4xl mb-4 text-red-600">2</div>
+                <h3 class="font-semibold mb-2">Secure Payment</h3>
+                <p class="text-gray-600 text-sm">Complete your registration securely using Paystack or other supported
+                    payment methods.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-300">
+                <div class="text-4xl mb-4 text-red-600">3</div>
+                <h3 class="font-semibold mb-2">Learn Together</h3>
+                <p class="text-gray-600 text-sm">Access courses, counselling sessions, and live classes together online.
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
+                <div class="text-4xl mb-4 text-red-600">4</div>
+                <h3 class="font-semibold mb-2">Get Certified</h3>
+                <p class="text-gray-600 text-sm">Receive your official marriage preparation certificate upon completion.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+
+<section class="py-20 bg-white">
+
+    <div class="max-w-6xl mx-auto px-6 text-center">
+
+        <h2 class="text-3xl font-bold mb-4 animate-slideUp">
+            What Couples Are Saying
+        </h2>
+
+        <p class="text-gray-500 mb-12 animate-slideUp delay-100">
+            Hear from couples who completed the Cor Amans marriage preparation program
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <!-- Testimonial 1 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-200">
+
+                <div class="flex justify-center mb-3 text-yellow-400 text-lg">
+                    ★★★★★
+                </div>
+
+                <p class="text-gray-600 text-sm mb-6">
+                    "The Cor Amans course helped us understand the real meaning of
+                    Catholic marriage. The counseling sessions strengthened our
+                    communication and spiritual bond."
+                </p>
+
+                <div class="flex items-center justify-center space-x-3">
+
+                    <img src="/static/images/couple_1.jpg" class="w-12 h-12 rounded-full object-cover">
+
+                    <div class="text-left">
+                        <p class="font-semibold text-sm">Michael & Anna</p>
+                        <p class="text-xs text-gray-500">Abuja, Nigeria</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Testimonial 2 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-300">
+
+                <div class="flex justify-center mb-3 text-yellow-400 text-lg">
+                    ★★★★★
+                </div>
+
+                <p class="text-gray-600 text-sm mb-6">
+                    "We loved how easy it was to learn together online.
+                    The lessons were practical, faith-based, and helped
+                    prepare us spiritually for our wedding."
+                </p>
+
+                <div class="flex items-center justify-center space-x-3">
+
+                    <img src="/static/images/couple_2.jpg" class="w-12 h-12 rounded-full object-cover">
+
+                    <div class="text-left">
+                        <p class="font-semibold text-sm">James & Grace</p>
+                        <p class="text-xs text-gray-500">Lagos, Nigeria</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Testimonial 3 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
+
+                <div class="flex justify-center mb-3 text-yellow-400 text-lg">
+                    ★★★★★
+                </div>
+
+                <p class="text-gray-600 text-sm mb-6">
+                    "The flexibility of this platform allowed us to attend
+                    sessions even with our busy schedules. It truly helped
+                    us prepare for a Christ-centered marriage."
+                </p>
+
+                <div class="flex items-center justify-center space-x-3">
+
+                    <img src="/static/images/couple_3.jpg" class="w-12 h-12 rounded-full object-cover">
+
+                    <div class="text-left">
+                        <p class="font-semibold text-sm">Peter & Maria</p>
+                        <p class="text-xs text-gray-500">Enugu, Nigeria</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Why Choose COR AMANS -->
+
+<section class="py-20 bg-gray-50">
+
+    <div class="max-w-6xl mx-auto px-6 text-center">
+
+        <h2 class="text-3xl font-bold mb-4 animate-slideUp">
+            Why Choose COR AMANS
+        </h2>
+
+        <p class="text-gray-500 mb-12 animate-slideUp delay-100">
+            A modern Catholic marriage preparation experience designed for engaged couples.
+        </p>
+
+        <div class="grid md:grid-cols-4 gap-8">
+
+            <!-- Feature 1 -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-200">
+
+                <div class="text-4xl mb-4">⛪</div>
+
+                <h3 class="font-semibold mb-2">
+                    Faith-Centered Learning
+                </h3>
+
+                <p class="text-sm text-gray-600">
+                    Courses designed according to Catholic teachings to help couples build a Christ-centered marriage.
+                </p>
+
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-300">
+
+                <div class="text-4xl mb-4">💻</div>
+
+                <h3 class="font-semibold mb-2">
+                    Fully Online Platform
+                </h3>
+
+                <p class="text-sm text-gray-600">
+                    Attend courses, live classes and counseling sessions online from anywhere.
+                </p>
+
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
+
+                <div class="text-4xl mb-4">👨‍👩‍👧</div>
+
+                <h3 class="font-semibold mb-2">
+                    Learn Together
+                </h3>
+
+                <p class="text-sm text-gray-600">
+                    Couples learn side by side and grow spiritually as they prepare for marriage.
+                </p>
+
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
+
+                <div class="text-4xl mb-4">📜</div>
+
+                <h3 class="font-semibold mb-2">
+                    Official Certification
+                </h3>
+
+                <p class="text-sm text-gray-600">
+                    Receive your official Catholic marriage preparation certificate upon completion.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Our Catholic Community -->
+
+<section class="py-20 bg-white">
+
+    <div class="max-w-6xl mx-auto px-6 text-center">
+
+        <h2 class="text-3xl font-bold mb-4 animate-slideUp">
+            Trusted by Catholic Communities
+        </h2>
+
+        <p class="text-gray-500 mb-12 animate-slideUp delay-100">
+            COR AMANS supports couples preparing for marriage across parishes and dioceses.
+        </p>
+
+        <div class="grid md:grid-cols-4 gap-8 items-center">
+
+            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-200">
+                <p class="font-semibold text-gray-700">Catholic Diocese</p>
+                <p class="text-sm text-gray-500">Abuja</p>
+            </div>
+
+            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-300">
+                <p class="font-semibold text-gray-700">Catholic Diocese</p>
+                <p class="text-sm text-gray-500">Lagos</p>
+            </div>
+
+            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-400">
+                <p class="font-semibold text-gray-700">Catholic Diocese</p>
+                <p class="text-sm text-gray-500">Enugu</p>
+            </div>
+
+            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-400">
+                <p class="font-semibold text-gray-700">Catholic Diocese</p>
+                <p class="text-sm text-gray-500">Port Harcourt</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Hero Slideshow JS -->
+<script>
+    let slides = document.querySelectorAll('.slide');
+    let current = 0;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            slide.style.opacity = '0';
+        });
+        slides[index].classList.add('active');
+        slides[index].style.opacity = '1';
+    }
+
+    function nextSlide() {
+        current = (current + 1) % slides.length;
+        showSlide(current);
+    }
+
+    // Initial display
+    showSlide(current);
+    setInterval(nextSlide, 5000); // change slide every 5s
+</script>
+
+{% endblock %}
