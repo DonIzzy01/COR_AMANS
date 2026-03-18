@@ -113,6 +113,11 @@
     transform: translateY(0);
 }
 
+.card-hover:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
 .slide {
     position: absolute;
     width: 100%;

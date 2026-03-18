@@ -3,11 +3,7 @@
 
 <head>
     <title>COR AMANS</title>
-
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Animations -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
 </head>
 
@@ -15,33 +11,35 @@
 
     <!-- Navbar -->
     <nav id="navbar"
-        class="fixed top-0 w-full z-50 transition-all duration-300 flex justify-between items-center px-8 py-4">
-
+        class="fixed top-0 w-full z-50 transition-all duration-300 flex justify-between items-center px-8 py-4 bg-white/70 backdrop-blur-md">
+    
         <!-- Logo -->
         <div class="flex items-center space-x-2">
             <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS Logo" class="h-12">
             <span class="text-red-600 font-bold text-xl">COR AMANS</span>
         </div>
-
+    
         <!-- Navigation Links -->
         <div class="flex items-center space-x-8 font-semibold">
-            <a href="/" class="text-gray-700 hover:text-red-600">Home</a>
-            <a href="#" class="text-gray-700 hover:text-red-600">Courses</a>
-            <a href="#" class="text-gray-700 hover:text-red-600">My Dashboard</a>
-            <a href="#" class="text-gray-700 hover:text-red-600">About Us</a>
-            <a href="/login"
-                class="border px-4 py-1 rounded text-gray-700 hover:text-white hover:bg-red-600 transition">
-                Log in
-            </a>
+            <a href="{{ url_for('index') }}"
+                class="text-gray-700 hover:text-red-600 {% if current_page=='home' %}font-bold{% endif %}">Home</a>
+            <a href="{{ url_for('courses') }}"
+                class="text-gray-700 hover:text-red-600 {% if current_page=='courses' %}font-bold{% endif %}">Courses</a>
+            <a href="{{ url_for('dashboard') }}"
+                class="text-gray-700 hover:text-red-600 {% if current_page=='dashboard' %}font-bold{% endif %}">My
+                Dashboard</a>
+            <a href="{{ url_for('about') }}"
+                class="text-gray-700 hover:text-red-600 {% if current_page=='about' %}font-bold{% endif %}">About Us</a>
+            <a href="{{ url_for('login') }}"
+                class="border px-4 py-1 rounded text-gray-700 hover:bg-white hover:text-red-600 transition">Login</a>
         </div>
-
+    
     </nav>
 
     <!-- Page Content -->
     <main class="pt-24">
         {% block content %}{% endblock %}
     </main>
-
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white pt-16 mt-16">
@@ -52,10 +50,10 @@
             <div>
                 <h4 class="font-semibold mb-4">Platform</h4>
                 <ul class="space-y-2 text-gray-300 text-sm">
-                    <li><a href="/" class="hover:text-white">Home</a></li>
-                    <li><a href="#" class="hover:text-white">Courses</a></li>
-                    <li><a href="#" class="hover:text-white">Dashboard</a></li>
-                    <li><a href="#" class="hover:text-white">About Us</a></li>
+                    <li><a href="{{ url_for('index') }}" class="hover:text-white">Home</a></li>
+                    <li><a href="{{ url_for('courses') }}" class="hover:text-white">Courses</a></li>
+                    <li><a href="{{ url_for('dashboard') }}" class="hover:text-white">Dashboard</a></li>
+                    <li><a href="{{ url_for('about') }}" class="hover:text-white">About Us</a></li>
                 </ul>
             </div>
 
@@ -97,7 +95,6 @@
 
     </footer>
 
-    <!-- Main JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>

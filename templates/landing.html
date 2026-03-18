@@ -34,8 +34,8 @@
             </p>
 
             <div class="flex flex-wrap gap-4 mt-6 justify-center md:justify-start animate-slideUp delay-400">
-                <a href="/register"
-                    class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 hover:scale-105 transition-transform duration-300">
+                <a href="{{ url_for('register') }}"
+                    class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">
                     Start Today
                 </a>
                 <a href="#"
@@ -324,11 +324,9 @@
             in faith, love, and commitment.
         </p>
 
-        <a href="/register"
-            class="bg-white text-red-600 font-semibold px-10 py-4 rounded-lg shadow-lg hover:scale-105 transition transform">
-
-            Register as a Couple
-
+        <a href="{{ url_for('register') }}"
+            class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">
+            Start Today
         </a>
 
     </div>
