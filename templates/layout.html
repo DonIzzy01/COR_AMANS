@@ -5,35 +5,44 @@
     <title>COR AMANS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body class="bg-gray-100">
 
+    <!-- Floating Notifications Container -->
+    <div id="notification-container" class="fixed top-20 right-4 z-50 space-y-3 w-80 md:w-96"></div>
+
     <!-- Navbar -->
     <nav id="navbar"
-        class="fixed top-0 w-full z-50 transition-all duration-300 flex justify-between items-center px-8 py-4 bg-white/70 backdrop-blur-md">
-    
+        class="fixed top-0 w-full z-40 transition-all duration-300 flex justify-between items-center px-8 py-4 bg-white/70 backdrop-blur-md">
+
         <!-- Logo -->
         <div class="flex items-center space-x-2">
             <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS Logo" class="h-12">
             <span class="text-red-600 font-bold text-xl">COR AMANS</span>
         </div>
-    
+
         <!-- Navigation Links -->
         <div class="flex items-center space-x-8 font-semibold">
-            <a href="{{ url_for('index') }}"
-                class="text-gray-700 hover:text-red-600 {% if current_page=='home' %}font-bold{% endif %}">Home</a>
-            <a href="{{ url_for('courses') }}"
-                class="text-gray-700 hover:text-red-600 {% if current_page=='courses' %}font-bold{% endif %}">Courses</a>
-            <a href="{{ url_for('dashboard') }}"
-                class="text-gray-700 hover:text-red-600 {% if current_page=='dashboard' %}font-bold{% endif %}">My
-                Dashboard</a>
-            <a href="{{ url_for('about') }}"
-                class="text-gray-700 hover:text-red-600 {% if current_page=='about' %}font-bold{% endif %}">About Us</a>
+            <a href="{{ url_for('landing') }}" class="text-gray-700 hover:text-red-600 transition">Home</a>
+            <a href="{{ url_for('courses') }}" class="text-gray-700 hover:text-red-600 transition">Courses</a>
+
+            {% if current_user.is_authenticated %}
+            {% if current_user.is_paid %}
+            <a href="{{ url_for('dashboard') }}" class="text-gray-700 hover:text-red-600 transition">My Dashboard</a>
+            {% endif %}
+            <a href="{{ url_for('payment') }}" class="text-gray-700 hover:text-red-600 transition">Payment</a>
+            <a href="{{ url_for('logout') }}"
+                class="border px-4 py-1 rounded text-gray-700 hover:bg-red-600 hover:text-white transition">Logout</a>
+            {% else %}
+            <a href="{{ url_for('about') }}" class="text-gray-700 hover:text-red-600 transition">About Us</a>
             <a href="{{ url_for('login') }}"
-                class="border px-4 py-1 rounded text-gray-700 hover:bg-white hover:text-red-600 transition">Login</a>
+                class="border px-4 py-1 rounded text-gray-700 hover:bg-red-600 hover:text-white transition">Login</a>
+            {% endif %}
         </div>
-    
+
     </nav>
 
     <!-- Page Content -->
@@ -43,21 +52,18 @@
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white pt-16 mt-16">
-
         <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8">
-
-            <!-- Platform -->
             <div>
                 <h4 class="font-semibold mb-4">Platform</h4>
                 <ul class="space-y-2 text-gray-300 text-sm">
-                    <li><a href="{{ url_for('index') }}" class="hover:text-white">Home</a></li>
+                    <li><a href="{{ url_for('landing') }}" class="hover:text-white">Home</a></li>
                     <li><a href="{{ url_for('courses') }}" class="hover:text-white">Courses</a></li>
+                    {% if current_user.is_authenticated and current_user.is_paid %}
                     <li><a href="{{ url_for('dashboard') }}" class="hover:text-white">Dashboard</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('about') }}" class="hover:text-white">About Us</a></li>
                 </ul>
             </div>
-
-            <!-- Support -->
             <div>
                 <h4 class="font-semibold mb-4">Support</h4>
                 <ul class="space-y-2 text-gray-300 text-sm">
@@ -66,8 +72,6 @@
                     <li><a href="#" class="hover:text-white">Live Chat</a></li>
                 </ul>
             </div>
-
-            <!-- Legal -->
             <div>
                 <h4 class="font-semibold mb-4">Legal</h4>
                 <ul class="space-y-2 text-gray-300 text-sm">
@@ -76,8 +80,6 @@
                     <li><a href="#" class="hover:text-white">Refund Policy</a></li>
                 </ul>
             </div>
-
-            <!-- Description -->
             <div>
                 <h4 class="font-semibold mb-4">About COR AMANS</h4>
                 <p class="text-gray-300 text-sm">
@@ -86,17 +88,35 @@
                     and obtain official certificates in a secure online environment.
                 </p>
             </div>
-
         </div>
-
         <div class="border-t border-gray-700 mt-8 py-4 text-center text-gray-400 text-sm">
             © 2026 COR AMANS. All rights reserved.
         </div>
-
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+    <!-- Convert Flask flash messages to notifications -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check for flash messages from Flask
+            const flashContainer = document.querySelector('.flash-messages');
+            if (flashContainer) {
+                const messages = flashContainer.querySelectorAll('.flash-message');
+                messages.forEach(msg => {
+                    const message = msg.textContent;
+                    const category = msg.classList.contains('success') ? 'success' :
+                        msg.classList.contains('error') ? 'error' :
+                            msg.classList.contains('warning') ? 'warning' : 'info';
+                    if (window.showNotification) {
+                        window.showNotification(message, category, 5000);
+                    }
+                    msg.remove();
+                });
+                flashContainer.remove();
+            }
+        });
+    </script>
 </body>
 
 </html>

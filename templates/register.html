@@ -1,15 +1,15 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<section class="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-8 mt-12">
+<section class="card">
 
     <!-- Logo -->
     <div class="flex justify-center mb-6">
         <img src="/static/images/COR AMANS.jpg" alt="COR AMANS Logo" class="h-20 w-auto">
     </div>
 
-    <h2 class="text-center font-bold text-2xl mb-6">Couples Registration</h2>
-    <p class="text-center text-gray-600 mb-6 text-sm">
+    <h2 class="text-center text-2xl font-bold mb-6">Couples Registration</h2>
+    <p class="text-center text-gray-600 text-sm mb-6">
         Register as an engaged intending couple to begin your marriage preparation course.
     </p>
 
@@ -18,54 +18,52 @@
         <!-- Bride's Information -->
         <div>
             <h3 class="font-semibold mb-2 text-gray-700">Bride's Information</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" name="bride_first_name" placeholder="First Name" class="border p-2 rounded w-full">
-                <input type="text" name="bride_last_name" placeholder="Last Name" class="border p-2 rounded w-full">
-                <input type="date" name="bride_dob" placeholder="Date of Birth" class="border p-2 rounded w-full">
-                <input type="text" name="bride_blood_group" placeholder="Blood group" class="border p-2 rounded w-full">
-                <input type="email" name="bride_email" placeholder="Email Address" class="border p-2 rounded w-full">
-                <input type="text" name="bride_parish" placeholder="Name of Parish" class="border p-2 rounded w-full">
+            <div class="grid-2">
+                <input type="text" name="bride_first_name" placeholder="First Name" class="input">
+                <input type="text" name="bride_last_name" placeholder="Last Name" class="input">
+                <input type="date" name="bride_dob" placeholder="Date of Birth" class="input">
+                <input type="text" name="bride_blood_group" placeholder="Blood Group" class="input">
+                <input type="email" name="bride_email" placeholder="Email Address" class="input">
+                <input type="text" name="bride_parish" placeholder="Name of Parish" class="input">
             </div>
         </div>
 
         <!-- Groom's Information -->
         <div>
             <h3 class="font-semibold mb-2 text-gray-700">Groom's Information</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" name="groom_first_name" placeholder="First Name" class="border p-2 rounded w-full">
-                <input type="text" name="groom_last_name" placeholder="Last Name" class="border p-2 rounded w-full">
-                <input type="date" name="groom_dob" placeholder="Date of Birth" class="border p-2 rounded w-full">
-                <input type="text" name="groom_blood_group" placeholder="Blood group" class="border p-2 rounded w-full">
-                <input type="email" name="groom_email" placeholder="Email Address" class="border p-2 rounded w-full">
-                <input type="text" name="groom_parish" placeholder="Name of Parish" class="border p-2 rounded w-full">
+            <div class="grid-2">
+                <input type="text" name="groom_first_name" placeholder="First Name" class="input">
+                <input type="text" name="groom_last_name" placeholder="Last Name" class="input">
+                <input type="date" name="groom_dob" placeholder="Date of Birth" class="input">
+                <input type="text" name="groom_blood_group" placeholder="Blood Group" class="input">
+                <input type="email" name="groom_email" placeholder="Email Address" class="input">
+                <input type="text" name="groom_parish" placeholder="Name of Parish" class="input">
             </div>
         </div>
 
         <!-- Wedding Date -->
         <div>
             <label class="font-semibold mb-2 block text-gray-700">Proposed Wedding Date</label>
-            <input type="date" name="wedding_date" class="border p-2 rounded w-full">
+            <input type="date" name="wedding_date" class="input">
         </div>
 
         <!-- Account Information -->
-        <div class="grid grid-cols-2 gap-4">
-            <input type="password" name="password" placeholder="Create Password" class="border p-2 rounded w-full">
-            <input type="password" name="confirm_password" placeholder="Confirm Password"
-                class="border p-2 rounded w-full">
+        <div class="grid-2">
+            <input type="password" name="password" placeholder="Create Password" class="input">
+            <input type="password" name="confirm_password" placeholder="Confirm Password" class="input">
         </div>
 
         <!-- Terms -->
-        <div class="flex items-center space-x-2">
-            <input type="checkbox" name="terms" class="border">
-            <label class="text-gray-600 text-sm">I agree to the <a href="#" class="text-green-600 underline">terms of
-                    service</a></label>
+        <div class="flex items-center mb-4">
+            <input type="checkbox" name="terms" class="mr-2">
+            <label class="text-gray-600 text-sm">
+                I agree to the <a href="#" class="text-green-600">terms of service</a>
+            </label>
         </div>
 
         <!-- Submit -->
-        <button type="submit"
-            class="bg-red-600 text-white px-6 py-3 rounded w-full mt-4 font-semibold hover:bg-red-700">
-            Register Couple
-        </button>
+        <button type="submit" class="btn btn-red">Register Couple</button>
     </form>
+
 </section>
 {% endblock %}
