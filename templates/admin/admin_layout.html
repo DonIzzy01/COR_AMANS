@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block page_title %}Admin{% endblock %} — COR AMANS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+</head>
+<body style="background:var(--surface);">
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div aria-hidden="true" style="display:none">
+    {% for category, message in messages %}
+    <div class="flash-message" data-category="{{ category }}" data-message="{{ message | e }}"></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Notification container -->
+  <div id="notification-container" class="notification-container" role="status" aria-live="polite"></div>
+
+  <div class="admin-layout">
+
+    <!-- ── Admin Sidebar ────────────────────────────────── -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="admin-sidebar__logo">
+        <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS">
+        <div class="admin-sidebar__logo-text">
+          <strong>COR AMANS</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+
+      <nav class="admin-nav">
+        <div class="admin-nav__label">Overview</div>
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-nav__link {{ 'active' if active_page == 'dashboard' }}">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+
+        <div class="admin-nav__label">Management</div>
+        <a href="{{ url_for('admin_users') }}" class="admin-nav__link {{ 'active' if active_page == 'users' }}">
+          <i class="fas fa-people-group"></i> Couples
+        </a>
+        <a href="{{ url_for('admin_payments') }}" class="admin-nav__link {{ 'active' if active_page == 'payments' }}">
+          <i class="fas fa-naira-sign"></i> Payments
+        </a>
+        <a href="{{ url_for('admin_courses') }}" class="admin-nav__link {{ 'active' if active_page == 'courses' }}">
+          <i class="fas fa-book-open"></i> Courses
+        </a>
+        <a href="{{ url_for('admin_analytics') }}" class="admin-nav__link {{ 'active' if active_page == 'analytics' }}">
+          <i class="fas fa-chart-bar"></i> Analytics
+        </a>
+
+        <div class="admin-nav__label">System</div>
+        <a href="{{ url_for('admin_manage_admins') }}" class="admin-nav__link {{ 'active' if active_page == 'manage_admins' }}">
+          <i class="fas fa-shield-halved"></i> Admins
+        </a>
+        <a href="{{ url_for('landing') }}" class="admin-nav__link">
+          <i class="fas fa-globe"></i> View Site
+        </a>
+      </nav>
+
+      <div style="padding:1rem 0.75rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:auto;">
+        <div style="padding:0.75rem;background:rgba(255,255,255,0.04);border-radius:var(--r-md);margin-bottom:0.75rem;">
+          <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:0.25rem;">Signed in as</div>
+          <div style="font-size:0.825rem;color:rgba(255,255,255,0.75);font-weight:500;word-break:break-all;">{{ current_user.email }}</div>
+        </div>
+        <form method="POST" action="{{ url_for('user_logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="admin-nav__link" style="width:100%;border:none;cursor:pointer;color:rgba(255,100,100,0.75);">
+            <i class="fas fa-right-from-bracket"></i> Sign Out
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- ── Admin Main ──────────────────────────────────── -->
+    <div class="admin-main">
+      <!-- Topbar -->
+      <div class="admin-topbar">
+        <div style="display:flex;align-items:center;gap:0.875rem;">
+          <button class="navbar__hamburger" id="admin-sidebar-toggle" aria-label="Toggle sidebar" style="display:flex;">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-topbar__title">{% block page_title_display %}{% block page_title %}Admin{% endblock %}{% endblock %}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <a href="{{ url_for('landing') }}" class="btn btn-ghost btn-sm">
+            <i class="fas fa-globe"></i>
+            <span style="display:none;" class="sm:inline">View Site</span>
+          </a>
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--foam);border:2px solid var(--border-green);display:flex;align-items:center;justify-content:center;color:var(--forest);font-size:0.9rem;">
+            <i class="fas fa-shield-halved"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="admin-content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="admin-overlay"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    (function(){
+      var btn  = document.getElementById('admin-sidebar-toggle');
+      var side = document.getElementById('admin-sidebar');
+      var over = document.getElementById('admin-overlay');
+      if (!btn || !side) return;
+      function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+      function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+      btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+      over && over.addEventListener('click', close);
+    })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,211 +1,248 @@
 {% extends "layout.html" %}
+{% block title %}COR AMANS — Catholic Marriage Formation{% endblock %}
+
 {% block content %}
 
-<!-- Hero Section Slideshow -->
-<section class="relative h-screen overflow-hidden">
+<!-- ── Hero ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero__bg-pattern" aria-hidden="true"></div>
 
-    <!-- Slides -->
-    <div class="absolute inset-0 w-full h-full">
-        <img src="/static/images/couple_1.jpg" class="absolute inset-0 w-full h-full object-cover slide active"
-            alt="Couple 1">
-        <img src="/static/images/couple_2.jpg" class="absolute inset-0 w-full h-full object-cover slide" alt="Couple 2">
-        <img src="/static/images/couple_3.jpg" class="absolute inset-0 w-full h-full object-cover slide" alt="Couple 3">
+  <!-- Decorative floral SVG (right side watermark) -->
+  <svg class="hero__floral-bg" aria-hidden="true" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="position:absolute;right:0;top:0;height:100%;width:50%;opacity:0.05;pointer-events:none;">
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(0 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(45 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(90 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(135 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(180 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(225 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(270 200 200)"/>
+    <ellipse cx="200" cy="60" rx="35" ry="70" fill="#1B4332" transform="rotate(315 200 200)"/>
+    <circle cx="200" cy="200" r="30" fill="#C9A84C"/>
+  </svg>
 
-        <!-- Overlay -->
-        <div class="absolute inset-0 bg-black/50"></div>
-    </div>
-
-    <!-- Hero Text -->
-    <div
-        class="relative max-w-7xl mx-auto h-full flex flex-col justify-center px-6 text-center md:text-left md:flex-row md:items-center md:justify-between animate-fadeIn">
-        <div class="md:max-w-xl space-y-6 text-white">
-            <span class="bg-green-600/30 text-green-100 px-4 py-2 rounded-full font-semibold text-sm animate-slideDown">
-                Catholic Marriage Preparation
-            </span>
-
-            <h1 class="text-5xl md:text-6xl font-bold leading-tight animate-slideUp">
-                Begin Your <span class="text-red-500">Sacred Journey</span> Together
-            </h1>
-
-            <p class="text-lg md:text-xl text-gray-100 animate-slideUp delay-200">
-                A complete online platform for engaged Catholic couples to take courses,
-                attend counselling, and receive their official marriage preparation certificate.
-            </p>
-
-            <div class="flex flex-wrap gap-4 mt-6 justify-center md:justify-start animate-slideUp delay-400">
-                <a href="{{ url_for('register') }}"
-                    class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">
-                    Start Today
-                </a>
-                <a href="{{ url_for('courses') }}"
-                    class="border border-red-600 text-red-600 px-6 py-3 rounded-lg font-semibold hover:bg-red-50 hover:scale-105 transition-transform duration-300">
-                    View Courses
-                </a>
-                <a href="#"
-                    class="border border-green-600 text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 hover:scale-105 transition-transform duration-300">
-                    Terms of Service
-                </a>
-            </div>
+  <div class="hero__content container" style="max-width:1280px;margin:0 auto;">
+    <div>
+      <div class="hero__badge hero-animate-1">
+        <i class="fas fa-cross"></i> Catholic Marriage Formation
+      </div>
+      <h1 class="hero__title hero-animate-2">
+        Prepare for a<br>
+        <em>Holy Marriage</em>
+      </h1>
+      <p class="hero__subtitle hero-animate-3">
+        COR AMANS — Latin for <em>"Loving Heart"</em> — guides engaged Catholic couples through
+        doctrine, prayer, mentorship, and structured formation rooted in the Sacrament of Matrimony.
+      </p>
+      <div class="hero__cta hero-animate-4">
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-ring"></i> Register as a Couple
+        </a>
+        <a href="{{ url_for('courses') }}" class="btn btn-secondary btn-lg">
+          <i class="fas fa-book-open"></i> View Courses
+        </a>
+      </div>
+      <div class="hero__stats hero-animate-4">
+        <div>
+          <div class="hero__stat-value" data-count-to="6" data-suffix="">6</div>
+          <div class="hero__stat-label">Formation Modules</div>
         </div>
+        <div>
+          <div class="hero__stat-value">Live</div>
+          <div class="hero__stat-label">Weekly Sessions</div>
+        </div>
+        <div>
+          <div class="hero__stat-value">100%</div>
+          <div class="hero__stat-label">Catholic Doctrine</div>
+        </div>
+      </div>
     </div>
+
+    <!-- Visual -->
+    <div class="hero__visual float-1">
+      <div class="hero__img-wrapper">
+        <img src="{{ url_for('static', filename='images/couple_1.jpg') }}" alt="Catholic couple in preparation" loading="eager">
+      </div>
+      <div class="hero__img-badge">
+        <div class="hero__img-badge-icon"><i class="fas fa-certificate"></i></div>
+        <div class="hero__img-badge-text">
+          <strong>Certificate Pathway</strong>
+          <span>On completion of all modules</span>
+        </div>
+      </div>
+      <!-- Floating decoration -->
+      <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--foam);border:2px solid var(--mist);display:flex;align-items:center;justify-content:center;font-size:1.75rem;box-shadow:var(--shadow-md);animation:float 4s ease-in-out infinite;">
+        ✝
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- How It Works Section -->
-<section class="bg-gray-50 py-20 animate-fadeIn scroll-animate">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-        <h2 class="text-3xl font-bold mb-12 animate-slideUp">How It Works</h2>
-        <div class="grid md:grid-cols-4 gap-8">
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-100">
-                <div class="text-4xl mb-4 text-red-600">1</div>
-                <h3 class="font-semibold mb-2">Register as Couple</h3>
-                <p class="text-gray-600 text-sm">Enter your details and create a secure account for both partners.</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-200">
-                <div class="text-4xl mb-4 text-red-600">2</div>
-                <h3 class="font-semibold mb-2">Secure Payment</h3>
-                <p class="text-gray-600 text-sm">Complete your registration securely using Paystack or other supported
-                    payment methods.</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-300">
-                <div class="text-4xl mb-4 text-red-600">3</div>
-                <h3 class="font-semibold mb-2">Learn Together</h3>
-                <p class="text-gray-600 text-sm">Access courses, counselling sessions, and live classes together online.
-                </p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
-                <div class="text-4xl mb-4 text-red-600">4</div>
-                <h3 class="font-semibold mb-2">Get Certified</h3>
-                <p class="text-gray-600 text-sm">Receive your official marriage preparation certificate upon completion.
-                </p>
-            </div>
-        </div>
+<!-- ── How It Works ──────────────────────────────────────── -->
+<section style="background:var(--white);padding:5rem 0;">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;" class="reveal">
+      <div class="section-label">The Journey</div>
+      <h2 class="section-title">Four steps to sacramental readiness</h2>
+      <p class="section-subtitle" style="margin:0 auto;">From registration to certificate — every step is guided, supported, and rooted in the Church.</p>
     </div>
+    <div class="grid-4">
+      {% for step in [
+        {"n":"01","icon":"fa-user-plus","title":"Register Together","desc":"Create your couple account with both bride and groom details and receive your unique registration number."},
+        {"n":"02","icon":"fa-credit-card","title":"Complete Payment","desc":"Unlock your full dashboard, live classes, mentor support, and formation materials with a one-time fee."},
+        {"n":"03","icon":"fa-video","title":"Attend Live Classes","desc":"Join weekly live formation sessions, mentoring circles, and pastoral guidance meetings as a couple."},
+        {"n":"04","icon":"fa-certificate","title":"Receive Certificate","desc":"Complete all modules, assessments, and meetings to receive your marriage preparation certificate."},
+      ] %}
+      <div class="reveal delay-{{ loop.index }}" style="text-align:center;padding:2rem 1.5rem;background:var(--frost);border-radius:var(--r-xl);border:1.5px solid var(--border-green);transition:all 0.25s ease;">
+        <div style="width:64px;height:64px;background:var(--forest);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;box-shadow:var(--shadow-md);">
+          <i class="fas {{ step.icon }}" style="color:white;font-size:1.4rem;"></i>
+        </div>
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--sage);margin-bottom:0.5rem;">Step {{ step.n }}</div>
+        <h3 style="font-family:var(--font-serif);font-size:1.1rem;color:var(--forest);margin-bottom:0.625rem;">{{ step.title }}</h3>
+        <p style="font-size:0.875rem;color:var(--muted);line-height:1.6;">{{ step.desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </section>
 
-<!-- Testimonials Section -->
-<section class="py-20 bg-white scroll-animate">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-        <h2 class="text-3xl font-bold mb-4 animate-slideUp">What Couples Are Saying</h2>
-        <p class="text-gray-500 mb-12 animate-slideUp delay-100">Hear from couples who completed the Cor Amans marriage
-            preparation program</p>
-        <div class="grid md:grid-cols-3 gap-8">
-            <!-- Testimonial 1 -->
-            <div class="bg-gray-50 p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-200">
-                <div class="flex justify-center mb-3 text-yellow-400 text-lg">★★★★★</div>
-                <p class="text-gray-600 text-sm mb-6">"The Cor Amans course helped us understand the real meaning of
-                    Catholic marriage. The counseling sessions strengthened our communication and spiritual bond."</p>
-                <div class="flex items-center justify-center space-x-3">
-                    <img src="/static/images/couple_1.jpg" class="w-12 h-12 rounded-full object-cover">
-                    <div class="text-left">
-                        <p class="font-semibold text-sm">Michael & Anna</p>
-                        <p class="text-xs text-gray-500">Abuja, Nigeria</p>
-                    </div>
-                </div>
-            </div>
+<!-- ── Doctrine Principles ───────────────────────────────── -->
+<section style="background:linear-gradient(135deg,var(--forest) 0%,var(--forest-mid) 60%,var(--sage) 100%);padding:5rem 0;position:relative;overflow:hidden;">
+  <!-- Decorative flowers -->
+  <svg aria-hidden="true" style="position:absolute;top:0;left:0;opacity:0.07;pointer-events:none;" width="300" height="300" viewBox="0 0 220 220">
+    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(0 110 110)"/>
+    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(60 110 110)"/>
+    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(120 110 110)"/>
+    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(180 110 110)"/>
+    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(240 110 110)"/>
+    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(300 110 110)"/>
+    <circle cx="110" cy="110" r="16" fill="rgba(201,168,76,0.4)"/>
+  </svg>
 
-            <!-- Testimonial 2 -->
-            <div class="bg-gray-50 p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-300">
-                <div class="flex justify-center mb-3 text-yellow-400 text-lg">★★★★★</div>
-                <p class="text-gray-600 text-sm mb-6">"We loved how easy it was to learn together online. The lessons
-                    were practical, faith-based, and helped prepare us spiritually for our wedding."</p>
-                <div class="flex items-center justify-center space-x-3">
-                    <img src="/static/images/couple_2.jpg" class="w-12 h-12 rounded-full object-cover">
-                    <div class="text-left">
-                        <p class="font-semibold text-sm">James & Grace</p>
-                        <p class="text-xs text-gray-500">Lagos, Nigeria</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Testimonial 3 -->
-            <div class="bg-gray-50 p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
-                <div class="flex justify-center mb-3 text-yellow-400 text-lg">★★★★★</div>
-                <p class="text-gray-600 text-sm mb-6">"The flexibility of this platform allowed us to attend sessions
-                    even with our busy schedules. It truly helped us prepare for a Christ-centered marriage."</p>
-                <div class="flex items-center justify-center space-x-3">
-                    <img src="/static/images/couple_3.jpg" class="w-12 h-12 rounded-full object-cover">
-                    <div class="text-left">
-                        <p class="font-semibold text-sm">Peter & Maria</p>
-                        <p class="text-xs text-gray-500">Enugu, Nigeria</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;" class="reveal">
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--mint);margin-bottom:0.75rem;">The Teaching</div>
+      <h2 style="font-family:var(--font-serif);font-size:clamp(1.75rem,3.5vw,2.75rem);color:white;margin-bottom:1rem;">Rooted in Catholic doctrine</h2>
+      <p style="font-family:var(--font-accent);font-size:1.05rem;color:rgba(255,255,255,0.7);max-width:600px;margin:0 auto;line-height:1.7;">
+        Every module is anchored in the Catechism of the Catholic Church and the living tradition of the Church.
+      </p>
     </div>
+    <div class="grid-4">
+      {% for principle in [
+        {"title":"Marriage as Covenant","desc":"Catholic marriage is a covenant for the good of the spouses and the gift of family life.","ref":"CCC 1601","icon":"fa-handshake"},
+        {"title":"Grace of the Sacrament","desc":"Christ strengthens baptized spouses with sacramental grace for daily married life.","ref":"CCC 1638–1642","icon":"fa-dove"},
+        {"title":"Fidelity & Indissolubility","desc":"Christian marriage is faithful, exclusive, and lifelong in imitation of Christ's love.","ref":"CCC 1643–1651","icon":"fa-ring"},
+        {"title":"Domestic Church","desc":"The home becomes a place of prayer, virtue, hospitality, and witness.","ref":"CCC 1655–1666","icon":"fa-house-chimney"},
+      ] %}
+      <div class="reveal delay-{{ loop.index }}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r-xl);padding:2rem;backdrop-filter:blur(8px);">
+        <div style="width:48px;height:48px;background:rgba(255,255,255,0.12);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;">
+          <i class="fas {{ principle.icon }}" style="color:var(--gold-light);font-size:1.2rem;"></i>
+        </div>
+        <h3 style="font-family:var(--font-serif);font-size:1rem;color:white;margin-bottom:0.5rem;">{{ principle.title }}</h3>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:0.875rem;">{{ principle.desc }}</p>
+        <span style="font-size:0.75rem;color:var(--gold-light);font-style:italic;font-family:var(--font-accent);">{{ principle.ref }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </section>
 
-<!-- Why Choose COR AMANS -->
-<section class="py-20 bg-gray-50 scroll-animate">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-        <h2 class="text-3xl font-bold mb-4 animate-slideUp">Why Choose COR AMANS</h2>
-        <p class="text-gray-500 mb-12 animate-slideUp delay-100">A modern Catholic marriage preparation experience
-            designed for engaged couples.</p>
-        <div class="grid md:grid-cols-4 gap-8">
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-200">
-                <div class="text-4xl mb-4">⛪</div>
-                <h3 class="font-semibold mb-2">Faith-Centered Learning</h3>
-                <p class="text-sm text-gray-600">Courses designed according to Catholic teachings to help couples build
-                    a Christ-centered marriage.</p>
+<!-- ── Classroom Features ────────────────────────────────── -->
+<section style="background:var(--ivory);padding:5rem 0;">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr;gap:3rem;align-items:center;" class="lg:grid-cols-2">
+      <div class="reveal-left">
+        <div class="section-label">The Classroom</div>
+        <h2 class="section-title">Your formation experience</h2>
+        <p class="section-subtitle" style="margin-bottom:2rem;">
+          More than reading — your dashboard includes live video classes, shared assignments, mentor check-ins, and downloadable formation packs.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          {% for feature in [
+            {"icon":"fa-video","title":"Live formation classes","desc":"Weekly doctrine teaching and pastoral guidance with live Q&A."},
+            {"icon":"fa-book-open-reader","title":"Couple assignments","desc":"Shared reflections and practical exercises completed together."},
+            {"icon":"fa-people-group","title":"Mentor support","desc":"Structured check-ins with parish mentors and pastoral follow-up."},
+            {"icon":"fa-church","title":"Sacramental pathway","desc":"Every step prepares couples for the liturgy and Christian family life."},
+          ] %}
+          <div style="display:flex;align-items:flex-start;gap:1rem;">
+            <div style="width:44px;height:44px;background:var(--foam);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--forest);">
+              <i class="fas {{ feature.icon }}"></i>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-300">
-                <div class="text-4xl mb-4">💻</div>
-                <h3 class="font-semibold mb-2">Fully Online Platform</h3>
-                <p class="text-sm text-gray-600">Attend courses, live classes and counseling sessions online from
-                    anywhere.</p>
+            <div>
+              <div style="font-size:0.925rem;font-weight:700;color:var(--charcoal);margin-bottom:0.25rem;">{{ feature.title }}</div>
+              <div style="font-size:0.85rem;color:var(--muted);line-height:1.5;">{{ feature.desc }}</div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
-                <div class="text-4xl mb-4">👨‍👩‍👧</div>
-                <h3 class="font-semibold mb-2">Learn Together</h3>
-                <p class="text-sm text-gray-600">Couples learn side by side and grow spiritually as they prepare for
-                    marriage.</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition animate-slideUp delay-400">
-                <div class="text-4xl mb-4">📜</div>
-                <h3 class="font-semibold mb-2">Official Certification</h3>
-                <p class="text-sm text-gray-600">Receive your official Catholic marriage preparation certificate upon
-                    completion.</p>
-            </div>
+          </div>
+          {% endfor %}
         </div>
+        <a href="{{ url_for('register') }}" class="btn btn-primary" style="margin-top:2rem;">
+          <i class="fas fa-arrow-right"></i> Start Your Formation
+        </a>
+      </div>
+      <div class="reveal-right">
+        <div style="background:linear-gradient(135deg,var(--foam),var(--frost));border:1.5px solid var(--border-green);border-radius:var(--r-2xl);padding:2rem;box-shadow:var(--shadow-xl);">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--sage);margin-bottom:1.25rem;">Live Session Schedule</div>
+          {% set live_sessions_preview = [
+            {"title":"Live Doctrine Class","time":"Tuesday, 7:00 PM","icon":"fa-video","cls":"text-forest"},
+            {"title":"Couples Mentoring Circle","time":"Thursday, 6:30 PM","icon":"fa-people-group","cls":"text-gold"},
+            {"title":"Assessment Review Q&A","time":"Saturday, 10:00 AM","icon":"fa-clipboard-check","cls":"text-sage"},
+          ] %}
+          {% for s in live_sessions_preview %}
+          <div style="display:flex;align-items:center;gap:1rem;padding:0.875rem;background:white;border-radius:var(--r-lg);margin-bottom:0.75rem;border:1px solid var(--border-green);box-shadow:var(--shadow-xs);">
+            <div style="width:40px;height:40px;border-radius:var(--r-md);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="{{ s.cls }}">
+              <i class="fas {{ s.icon }}"></i>
+            </div>
+            <div>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--charcoal);">{{ s.title }}</div>
+              <div style="font-size:0.775rem;color:var(--muted);">{{ s.time }}</div>
+            </div>
+          </div>
+          {% endfor %}
+          <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-top:0.5rem;font-family:var(--font-accent);font-style:italic;">
+            All sessions unlock after payment
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </section>
 
-<!-- Our Catholic Community -->
-<section class="py-20 bg-white scroll-animate">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-        <h2 class="text-3xl font-bold mb-4 animate-slideUp">Trusted by Catholic Communities</h2>
-        <p class="text-gray-500 mb-12 animate-slideUp delay-100">COR AMANS supports couples preparing for marriage
-            across parishes and dioceses.</p>
-        <div class="grid md:grid-cols-4 gap-8 items-center">
-            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-200">
-                <p class="font-semibold text-gray-700">Catholic Diocese</p>
-                <p class="text-sm text-gray-500">Abuja</p>
-            </div>
-            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-300">
-                <p class="font-semibold text-gray-700">Catholic Diocese</p>
-                <p class="text-sm text-gray-500">Lagos</p>
-            </div>
-            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-400">
-                <p class="font-semibold text-gray-700">Catholic Diocese</p>
-                <p class="text-sm text-gray-500">Enugu</p>
-            </div>
-            <div class="p-6 bg-gray-50 rounded-lg animate-slideUp delay-400">
-                <p class="font-semibold text-gray-700">Catholic Diocese</p>
-                <p class="text-sm text-gray-500">Port Harcourt</p>
-            </div>
-        </div>
+<!-- ── CTA Banner ────────────────────────────────────────── -->
+<section style="padding:5rem 0;background:var(--frost);">
+  <div class="container" style="text-align:center;">
+    <div class="reveal" style="max-width:640px;margin:0 auto;">
+      <!-- Flower decoration -->
+      <svg aria-hidden="true" style="width:60px;height:60px;margin:0 auto 1.5rem;display:block;" viewBox="0 0 60 60">
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#1B4332" opacity="0.7" transform="rotate(0 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#2D6A4F" opacity="0.7" transform="rotate(45 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#40916C" opacity="0.7" transform="rotate(90 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#52B788" opacity="0.7" transform="rotate(135 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#1B4332" opacity="0.7" transform="rotate(180 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#2D6A4F" opacity="0.7" transform="rotate(225 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#40916C" opacity="0.7" transform="rotate(270 30 30)"/>
+        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#52B788" opacity="0.7" transform="rotate(315 30 30)"/>
+        <circle cx="30" cy="30" r="8" fill="#C9A84C"/>
+      </svg>
+      <h2 class="section-title" style="margin-bottom:1rem;">
+        Begin your preparation today
+      </h2>
+      <p style="font-family:var(--font-accent);font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:2rem;">
+        "Let marriage be held in honor among all." — Hebrews 13:4
+      </p>
+      <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard') if current_user.is_paid else url_for('payment') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-arrow-right"></i>
+          {{ 'Go to Dashboard' if current_user.is_paid else 'Complete Payment' }}
+        </a>
+        {% else %}
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-ring"></i> Register as a Couple
+        </a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Sign In</a>
+        {% endif %}
+      </div>
     </div>
-</section>
-
-<!-- Final Call To Action -->
-<section class="py-24 bg-red-600 text-white text-center">
-    <div class="max-w-4xl mx-auto px-6 scroll-animate">
-        <h2 class="text-4xl font-bold mb-6">Ready to Begin Your Sacred Journey?</h2>
-        <p class="text-lg mb-10 opacity-90">Start your Catholic marriage preparation today and grow together in faith,
-            love, and commitment.</p>
-        <a href="{{ url_for('register') }}"
-            class="bg-white text-red-600 font-semibold px-10 py-4 rounded-lg shadow-lg hover:scale-105 transition transform">Register
-            as a Couple</a>
-    </div>
+  </div>
 </section>
 
 {% endblock %}

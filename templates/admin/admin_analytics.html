@@ -1,0 +1,148 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+
+<div id="analytics-data"
+     data-daily='{{ daily_data | tojson }}'
+     aria-hidden="true" style="display:none;"></div>
+
+<div class="grid-3" style="margin-bottom:2rem;">
+  <div class="admin-stat-card reveal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Registrations (30 days)</div>
+      <div style="width:36px;height:36px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);"><i class="fas fa-calendar-days"></i></div>
+    </div>
+    <div class="admin-stat-card__value" data-count-to="{{ total_30 }}">{{ total_30 }}</div>
+    <div class="admin-stat-card__label">New couples this month</div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-1">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Daily Average</div>
+      <div style="width:36px;height:36px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);"><i class="fas fa-chart-line"></i></div>
+    </div>
+    <div class="admin-stat-card__value">{{ '%.1f' | format(total_30 / 30) }}</div>
+    <div class="admin-stat-card__label">Registrations per day</div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-2">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Peak Day</div>
+      <div style="width:36px;height:36px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);"><i class="fas fa-fire"></i></div>
+    </div>
+    <div class="admin-stat-card__value">{{ peak.count }}</div>
+    <div class="admin-stat-card__label">{{ peak.date }}</div>
+  </div>
+</div>
+
+<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);" class="reveal">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
+    <div>
+      <div style="font-size:0.95rem;font-weight:700;color:var(--charcoal);">Registrations &#8212; last 30 days</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:0.2rem;">Daily new couple sign-ups</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;color:var(--muted);">
+      <span style="width:10px;height:10px;background:var(--forest);border-radius:50%;display:inline-block;"></span>
+      New couples
+    </div>
+  </div>
+  <canvas id="dailyChart" height="120"></canvas>
+</div>
+
+<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs);margin-top:1.5rem;" class="reveal delay-1">
+  <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+    <div style="font-size:0.9rem;font-weight:700;color:var(--charcoal);">Daily Breakdown</div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>New Couples</th>
+          <th>Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in daily_data | reverse %}
+        {% if d.count > 0 %}
+        <tr>
+          <td style="font-size:0.85rem;">{{ d.date }}</td>
+          <td><span class="badge badge-success">{{ d.count }}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.625rem;">
+              <div style="flex:1;height:6px;background:var(--surface);border-radius:999px;max-width:120px;overflow:hidden;">
+                <div class="activity-fill"
+                     data-pct="{{ [(d.count * 100 // max_c), 100] | min }}"
+                     style="width:0;height:100%;background:var(--forest);border-radius:999px;transition:width 0.5s ease;"></div>
+              </div>
+              <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap;">{{ d.count }} sign-up{{ 's' if d.count != 1 }}</span>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+        {% else %}
+        <tr>
+          <td colspan="3" style="text-align:center;color:var(--muted);padding:2rem;">No registrations in this period.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var raw    = JSON.parse(document.getElementById('analytics-data').getAttribute('data-daily'));
+  var labels = raw.map(function (d) { return d.date; });
+  var counts = raw.map(function (d) { return d.count; });
+  var green  = '#1B4332';
+  var mint   = '#74C69D';
+
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'New Couples',
+        data: counts,
+        borderColor: green,
+        backgroundColor: mint + '22',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: green,
+        pointRadius: 3,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (ctx) {
+              return ctx.parsed.y + ' couple' + (ctx.parsed.y !== 1 ? 's' : '');
+            }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f0fdf4' } },
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
+      }
+    }
+  });
+
+  requestAnimationFrame(function () {
+    document.querySelectorAll('.activity-fill').forEach(function (el) {
+      el.style.width = el.getAttribute('data-pct') + '%';
+    });
+  });
+})();
+</script>
+{% endblock %}

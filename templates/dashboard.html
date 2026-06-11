@@ -1,39 +1,254 @@
 {% extends "layout.html" %}
+{% block title %}Dashboard — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+{% block main_class %}{% endblock %}
+
+{% block head_extra %}
+<style>
+  body { background: var(--frost); }
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="dashboard-layout">
 
-<section class="py-24 bg-gray-50 scroll-animate">
-    <div class="max-w-6xl mx-auto px-6">
-        <h1 class="text-4xl font-bold text-red-600 mb-6 text-center">My Dashboard</h1>
-        <p class="text-gray-700 mb-12 text-center">
-            Track your course progress, access certificates, and receive guidance for your Catholic marriage journey.
-        </p>
-
-        <div class="grid md:grid-cols-3 gap-8">
-
-            <div class="bg-white p-6 rounded-xl shadow-lg scroll-animate">
-                <h2 class="font-bold text-xl mb-3">Progress Tracker</h2>
-                <p class="text-gray-600 text-sm">
-                    See which courses you have completed and what remains in your preparation journey.
-                </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-lg scroll-animate">
-                <h2 class="font-bold text-xl mb-3">Certificates</h2>
-                <p class="text-gray-600 text-sm">
-                    Download or view your official Catholic marriage certificates for each completed module.
-                </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-lg scroll-animate">
-                <h2 class="font-bold text-xl mb-3">Resources & Guidance</h2>
-                <p class="text-gray-600 text-sm">
-                    Access tips, scripture readings, and videos recommended by the Church to strengthen your marriage.
-                </p>
-            </div>
-
-        </div>
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="sidebar" id="dashboard-sidebar">
+    <div class="sidebar__header">
+      <div class="couple-avatar">
+        {% if current_user.profile_photo_url %}
+        <img src="{{ current_user.profile_photo_url }}" alt="{{ current_user.get_couple_name() }}">
+        {% else %}
+        <i class="fas fa-heart"></i>
+        {% endif %}
+      </div>
+      <div class="couple-name">{{ current_user.get_couple_name() }}</div>
+      {% if current_user.registration_number %}
+      <div class="couple-regnum">{{ current_user.registration_number }}</div>
+      {% endif %}
+      {% if current_user.is_paid %}
+      <div class="paid-badge"><i class="fas fa-check-circle"></i> Active</div>
+      {% endif %}
     </div>
-</section>
 
+    <nav class="sidebar__nav">
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Formation</div>
+        <a href="{{ url_for('dashboard') }}" class="sidebar__nav-link active">
+          <i class="fas fa-house"></i> Dashboard
+        </a>
+        <a href="#courses" class="sidebar__nav-link">
+          <i class="fas fa-book-open"></i> Courses
+        </a>
+        <a href="#sessions" class="sidebar__nav-link">
+          <i class="fas fa-video"></i> Live Sessions
+        </a>
+        <a href="#stream" class="sidebar__nav-link">
+          <i class="fas fa-list-check"></i> Classroom Stream
+        </a>
+      </div>
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Account</div>
+        <a href="{{ url_for('profile') }}" class="sidebar__nav-link">
+          <i class="fas fa-user-circle"></i> Profile
+        </a>
+        <a href="{{ url_for('change_password') }}" class="sidebar__nav-link">
+          <i class="fas fa-key"></i> Change Password
+        </a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar__nav-link">
+          <i class="fas fa-shield-halved"></i> Admin Panel
+        </a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <form method="POST" action="{{ url_for('user_logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="sidebar__nav-link btn-ghost" style="width:100%;border:none;cursor:pointer;background:none;color:var(--error);display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.875rem;border-radius:var(--r-md);font-size:0.875rem;font-weight:500;">
+          <i class="fas fa-right-from-bracket" style="width:18px;text-align:center;"></i> Sign Out
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ── Main ──────────────────────────────────────────────── -->
+  <div class="dashboard-main">
+
+    <!-- Topbar (mobile) -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="navbar__hamburger" data-sidebar-toggle aria-label="Open sidebar" style="display:flex;">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a href="{{ url_for('landing') }}" style="display:flex;align-items:center;gap:0.5rem;">
+          <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" alt="">
+          <span style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:var(--forest);">COR AMANS</span>
+        </a>
+      </div>
+      {% if session_timeout_minutes %}
+      <div class="session-timer" id="session-timer" data-timeout="{{ session_timeout_minutes * 60 }}">
+        <i class="fas fa-clock"></i>
+        Session: {{ session_timeout_minutes }}:00
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Welcome banner -->
+    <div class="welcome-banner reveal">
+      <div class="welcome-banner__greeting">Welcome back</div>
+      <h1 class="welcome-banner__name">{{ current_user.get_couple_name() }}</h1>
+      <div class="welcome-banner__ref">
+        <i class="fas fa-id-badge" style="margin-right:4px;"></i>
+        {{ current_user.registration_number or 'Registration number pending' }}
+        &nbsp;·&nbsp;
+        <i class="fas fa-calendar" style="margin-right:4px;"></i>
+        {% if current_user.wedding_date %}
+          {{ current_user.wedding_date.strftime('%B %d, %Y') }}
+        {% else %}
+          Wedding date not set
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Progress + milestones row -->
+    <div class="grid-2" style="margin-top:1.5rem;">
+      <!-- Progress card -->
+      <div class="card reveal delay-1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <div style="font-size:0.825rem;font-weight:700;color:var(--charcoal);">Formation Progress</div>
+          <span style="font-family:var(--font-serif);font-size:1.25rem;font-weight:700;color:var(--forest);">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar__fill" style="width:0%"></div>
+        </div>
+        <div style="font-size:0.775rem;color:var(--muted);margin-top:0.5rem;">Start your first module to track progress</div>
+        <div style="margin-top:1.25rem;display:flex;gap:0.625rem;flex-wrap:wrap;">
+          {% for course in course_catalog[:3] %}
+          <span style="font-size:0.7rem;padding:0.25rem 0.625rem;background:var(--foam);color:var(--forest);border-radius:var(--r-full);font-weight:600;border:1px solid var(--border-green);">{{ course.level }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Milestones -->
+      <div class="card reveal delay-2">
+        <div style="font-size:0.825rem;font-weight:700;color:var(--charcoal);margin-bottom:1rem;">Your Milestones</div>
+        <div class="milestone-track">
+          {% for m in milestones %}
+          <div class="milestone-item {{ 'complete' if m.complete else 'pending' }}">
+            <div class="milestone-dot">
+              <i class="fas {{ 'fa-check' if m.complete else 'fa-circle-dot' }}"></i>
+            </div>
+            <div>
+              <div class="milestone-label">{{ m.label }}</div>
+              <div class="milestone-note">{{ m.note }}</div>
+              <div class="milestone-status {{ 'complete' if m.complete else 'pending' }}">{{ m.status }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Live sessions -->
+    <section id="sessions" style="margin-top:2rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Live Sessions</h2>
+        <span class="badge badge-neutral">Weekly schedule</span>
+      </div>
+      <div class="grid-3">
+        {% for session in live_sessions %}
+        <div class="card card-hover reveal delay-{{ loop.index }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.875rem;">
+            <span class="badge {{ 'badge-success' if session.status == 'Upcoming' else 'badge-info' if session.status == 'Open this week' else 'badge-neutral' }}">
+              {{ session.status }}
+            </span>
+            <span style="font-size:0.75rem;color:var(--muted);">{{ session.room }}</span>
+          </div>
+          <h3 style="font-family:var(--font-serif);font-size:0.95rem;color:var(--forest);margin-bottom:0.5rem;line-height:1.3;">{{ session.title }}</h3>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.375rem;"><i class="fas fa-clock" style="width:16px;"></i> {{ session.time }}</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.375rem;"><i class="fas fa-user-tie" style="width:16px;"></i> {{ session.host }}</div>
+          <div style="font-size:0.8rem;color:var(--sage);margin-bottom:1rem;font-family:var(--font-accent);font-style:italic;">{{ session.focus }}</div>
+          <button class="btn btn-ghost btn-sm btn-full">
+            <i class="fas fa-door-open"></i> {{ session.join_label }}
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Classroom stream -->
+    <section id="stream" style="margin-top:2rem;">
+      <div style="margin-bottom:1.25rem;">
+        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Classroom Stream</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        {% set stream_icon = {"assignment":"fa-pen-to-square","discussion":"fa-comments","resource":"fa-folder-open","meeting":"fa-handshake"} %}
+        {% set stream_color = {"assignment":"text-forest","discussion":"text-info","resource":"text-gold","meeting":"text-sage"} %}
+        {% for item in classroom_stream %}
+        <div class="card reveal delay-{{ loop.index }}" style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+          <div class="{{ stream_color.get(item.type, 'text-forest') }}" style="width:44px;height:44px;border-radius:var(--r-lg);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;">
+            <i class="fas {{ stream_icon.get(item.type, 'fa-circle') }}"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;margin-bottom:0.375rem;">
+              <span class="badge badge-neutral">{{ item.badge }}</span>
+            </div>
+            <div style="font-size:0.925rem;font-weight:700;color:var(--charcoal);margin-bottom:0.375rem;">{{ item.title }}</div>
+            <div style="font-size:0.85rem;color:var(--muted);line-height:1.5;margin-bottom:0.625rem;">{{ item.description }}</div>
+            <div style="font-size:0.775rem;color:var(--sage);font-style:italic;">{{ item.meta }}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0;">{{ item.action }}</button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Courses -->
+    <section id="courses" style="margin-top:2rem;padding-bottom:3rem;">
+      <div style="margin-bottom:1.25rem;">
+        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Formation Modules</h2>
+      </div>
+      <div class="grid-3">
+        {% for course in course_catalog %}
+        <div class="course-card reveal delay-{{ loop.index }}">
+          <div class="course-card__header">
+            <div class="course-card__level">{{ course.level }}</div>
+            <div class="course-card__title">{{ course.title }}</div>
+          </div>
+          <div class="course-card__body">
+            <div class="course-card__meta">
+              <span><i class="fas fa-clock"></i> {{ course.duration }}</span>
+              <span><i class="fas fa-chalkboard-user"></i> {{ course.format }}</span>
+            </div>
+            <p class="course-card__summary">{{ course.summary }}</p>
+            <div class="course-card__refs">{{ course.refs }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+  // Sidebar toggle wiring
+  (function(){
+    var btn  = document.querySelector('[data-sidebar-toggle]');
+    var side = document.getElementById('dashboard-sidebar');
+    var over = document.getElementById('sidebar-overlay');
+    if (!btn || !side) return;
+    function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+    function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+    btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+    over && over.addEventListener('click', close);
+  })();
+</script>
+{% endblock %}
 {% endblock %}

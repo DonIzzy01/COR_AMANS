@@ -1,0 +1,55 @@
+COR AMANS 
+
+P1: 25/03/2026
+Traceback (most recent call last):
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request       
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request       
+    rv = self.dispatch_request()
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view      
+    return current_app.ensure_sync(func)(*args, **kwargs)  
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^  
+  File "C:\Users\HP\Desktop\COR_AMANS\app.py", line 260, in admin_courses
+    return render_template("admin/admin_courses.html",     
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\templating.py", line 151, in render_template      
+    return _render(app, template, context)
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\templating.py", line 132, in _render
+    rv = template.render(context)
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception   
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\HP\Desktop\COR_AMANS\templates\admin\admin_courses.html", line 1, in top-level template code
+    {% extends "admin/admin_layout.html" %}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\templates\admin\admin_layout.html", line 199, in top-level template code        
+    {% block content %}{% endblock %}
+    ^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\templates\admin\admin_courses.html", line 48, in block 'content'
+    <form action="{{ url_for('admin_add_course') }}" method="POST">
+    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]    
+
+  File "C:\Users\HP\Desktop\COR_AMANS\.venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)       
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin_add_course'. Did you mean 'admin_courses' instead?
+127.0.0.1 - - [25/Mar/2026 12:45:49] "GET /admin/courses?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -    
+127.0.0.1 - - [25/Mar/2026 12:45:50] "GET /admin/courses?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -  
+127.0.0.1 - - [25/Mar/2026 12:45:50] "GET /admin/courses?__debugger__=yes&cmd=resource&f=console.png&s=8an20K4aCC5r0zWK8Ghk HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 12:45:50] "GET /admin/courses?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -  

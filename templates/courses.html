@@ -1,44 +1,183 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<section class="designer-content-page">
+    <div class="floral-corner floral-corner-left designer-page-floral" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+    </div>
 
-<section class="bg-white py-24 scroll-animate">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-        <h1 class="text-5xl font-bold text-red-600 mb-6">Our Courses</h1>
-        <p class="text-gray-700 mb-12 text-lg">
-            Learn Catholic marriage teachings, sacramental preparation, and practical tools for a successful married
-            life.
-        </p>
+    <div class="relative mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+        <section class="scroll-animate designer-course-hero">
+            <div class="grid gap-8 px-6 py-10 sm:px-8 lg:grid-cols-[1.25fr_0.95fr] lg:px-12 lg:py-14">
+                <div>
+                    <span class="inline-flex rounded-full bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-emerald-100">
+                        Catholic marriage curriculum
+                    </span>
+                    <h1 class="mt-6 max-w-4xl text-4xl font-bold leading-tight sm:text-5xl">
+                        Formation built around sacramental marriage, prayer, and parish life.
+                    </h1>
+                    <p class="mt-5 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">
+                        The course library follows the Catholic understanding of marriage as covenant, sacrament,
+                        faithful communion, domestic church, and a life open to grace and mission.
+                    </p>
 
-        <div class="grid md:grid-cols-3 gap-8">
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        {% for principle in doctrine_principles %}
+                        <span class="rounded-full bg-emerald-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100">
+                            {{ principle.refs }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
 
-            <!-- Course Card -->
-            <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:scale-105 transition transform scroll-animate">
-                <h2 class="font-bold text-xl mb-3">Understanding the Sacrament</h2>
-                <p class="text-gray-600 text-sm">
-                    Deep dive into the Catholic sacrament of marriage, its biblical foundation, and spiritual
-                    significance.
-                </p>
+                <aside class="rounded-[1.75rem] border border-white/10 bg-white/10 p-6 backdrop-blur">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-100">How formation works</p>
+                    <div class="mt-5 space-y-4 text-sm leading-6 text-slate-200">
+                        <div class="rounded-[1.15rem] bg-black/15 p-4">
+                            <p class="font-semibold text-white">Doctrine first</p>
+                            <p class="mt-1">Every module starts with what the Church teaches and why it matters pastorally.</p>
+                        </div>
+                        <div class="rounded-[1.15rem] bg-black/15 p-4">
+                            <p class="font-semibold text-white">Live instruction</p>
+                            <p class="mt-1">Couples join meetings, mentor circles, and review sessions throughout the program.</p>
+                        </div>
+                        <div class="rounded-[1.15rem] bg-black/15 p-4">
+                            <p class="font-semibold text-white">Shared practice</p>
+                            <p class="mt-1">Assignments and conversations are completed together to prepare for married life.</p>
+                        </div>
+                    </div>
+                </aside>
             </div>
+        </section>
 
-            <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:scale-105 transition transform scroll-animate">
-                <h2 class="font-bold text-xl mb-3">Communication & Conflict Resolution</h2>
-                <p class="text-gray-600 text-sm">
-                    Learn strategies for communication, understanding, and resolving conflicts within a faith-based
-                    framework.
-                </p>
+        <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <article class="scroll-animate rounded-[1.8rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:p-8">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Core curriculum</p>
+                        <h2 class="mt-2 text-3xl font-bold text-slate-950">Modules for engaged Catholic couples</h2>
+                    </div>
+                    <span class="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
+                        Responsive on phone, tablet, and desktop
+                    </span>
+                </div>
+
+                <div class="mt-8 grid gap-5 lg:grid-cols-2">
+                    {% for course in course_catalog %}
+                    <article class="rounded-[1.45rem] border border-slate-200 bg-slate-50 p-5 transition duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-md">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ course.level }}</p>
+                                <h3 class="mt-2 text-xl font-bold text-slate-900">{{ course.title }}</h3>
+                            </div>
+                            <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                                {{ course.duration }}
+                            </span>
+                        </div>
+
+                        <p class="mt-4 text-sm leading-7 text-slate-600">{{ course.summary }}</p>
+                        <p class="mt-4 text-sm font-medium text-slate-500">{{ course.format }}</p>
+
+                        <ul class="mt-5 space-y-2 text-sm leading-6 text-slate-700">
+                            {% for highlight in course.highlights %}
+                            <li class="flex gap-2">
+                                <span class="mt-2 h-2 w-2 rounded-full bg-red-500"></span>
+                                <span>{{ highlight }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                        <div class="mt-5 rounded-[1rem] border border-emerald-100 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-red-600">
+                            {{ course.refs }}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <div class="space-y-6">
+                <article class="scroll-animate rounded-[1.75rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Doctrine summary</p>
+                    <h2 class="mt-2 text-2xl font-bold text-slate-950">What the Church teaches about marriage</h2>
+                    <div class="mt-6 space-y-4">
+                        {% for principle in doctrine_principles %}
+                        <article class="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-900">{{ principle.title }}</h3>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ principle.description }}</p>
+                                </div>
+                                <span class="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-red-600 ring-1 ring-slate-200">
+                                    {{ principle.refs }}
+                                </span>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="scroll-animate rounded-[1.75rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Classroom features</p>
+                    <h2 class="mt-2 text-2xl font-bold text-slate-950">What couples receive inside the platform</h2>
+                    <div class="mt-6 space-y-4">
+                        {% for feature in classroom_features %}
+                        <article class="flex gap-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                                <i class="fas {{ feature.icon }}"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900">{{ feature.title }}</h3>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">{{ feature.description }}</p>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="scroll-animate rounded-[1.75rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Live meetings</p>
+                    <h2 class="mt-2 text-2xl font-bold text-slate-950">Weekly class rhythm</h2>
+                    <div class="mt-6 space-y-4">
+                        {% for session in live_sessions %}
+                        <article class="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ session.status }}</p>
+                                    <h3 class="mt-2 text-lg font-bold text-slate-900">{{ session.title }}</h3>
+                                </div>
+                                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                                    {{ session.room }}
+                                </span>
+                            </div>
+                            <p class="mt-3 text-sm text-slate-600">{{ session.time }} and {{ session.host }}</p>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ session.focus }}</p>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </article>
             </div>
+        </section>
 
-            <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:scale-105 transition transform scroll-animate">
-                <h2 class="font-bold text-xl mb-3">Finance & Family Planning</h2>
-                <p class="text-gray-600 text-sm">
-                    Guidance on Catholic teaching on family planning, stewardship of resources, and financial unity in
-                    marriage.
-                </p>
+        <section class="scroll-animate rounded-[2rem] bg-[#078529] px-6 py-10 text-white shadow-[0_30px_80px_rgba(15,23,42,0.14)] sm:px-8">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-100">Begin the path</p>
+                    <h2 class="mt-2 text-3xl font-bold sm:text-4xl">Ready to begin your sacred journey together?</h2>
+                    <p class="mt-4 text-sm leading-7 text-emerald-50 sm:text-base">
+                        Register as a couple, complete payment, and enter a guided Catholic classroom with live formation,
+                        practical assignments, parish support, and a clear sacramental pathway.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ url_for('register') }}" class="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-red-700 transition hover:scale-[1.02]">
+                        Register as a Couple
+                    </a>
+                    <a href="{{ url_for('login') }}" class="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                        Login to Continue
+                    </a>
+                </div>
             </div>
-
-        </div>
+        </section>
     </div>
 </section>
-
 {% endblock %}

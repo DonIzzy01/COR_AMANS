@@ -1,0 +1,132 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}Payments{% endblock %}
+
+{% block content %}
+
+<!-- Stats row -->
+<div class="grid-3" style="margin-bottom:2rem;">
+  <div class="admin-stat-card reveal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Total Revenue</div>
+      <div style="width:36px;height:36px;background:#FEF3C7;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--gold-dark);"><i class="fas fa-naira-sign"></i></div>
+    </div>
+    <div class="admin-stat-card__value" style="font-size:1.5rem;">&#8358;{{ total_revenue }}</div>
+    <div class="admin-stat-card__label">@ &#8358;50,000 per couple</div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-1">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Paid Couples</div>
+      <div style="width:36px;height:36px;background:#DCFCE7;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--success);"><i class="fas fa-circle-check"></i></div>
+    </div>
+    <div class="admin-stat-card__value" data-count-to="{{ total_paid }}">{{ total_paid }}</div>
+    <div class="admin-stat-card__label">Access granted</div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-2">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Awaiting Payment</div>
+      <div style="width:36px;height:36px;background:#FEE2E2;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--error);"><i class="fas fa-hourglass-half"></i></div>
+    </div>
+    <div class="admin-stat-card__value" data-count-to="{{ total_unpaid }}">{{ total_unpaid }}</div>
+    <div class="admin-stat-card__label">Registered but unpaid</div>
+  </div>
+</div>
+
+<!-- Payment ledger -->
+<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs);">
+  <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+    <div style="font-size:0.9rem;font-weight:700;color:var(--charcoal);">Payment Ledger</div>
+    <span class="badge badge-success">{{ total_paid }} paid</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Couple</th>
+          <th>Ref No.</th>
+          <th>Email</th>
+          <th>Amount</th>
+          <th>Payment Ref</th>
+          <th>Date Paid</th>
+          <th>Status</th>
+          <th>Toggle</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in payments %}
+        <tr>
+          <td>
+            <div style="font-weight:600;color:var(--charcoal);font-size:0.875rem;">{{ u.get_couple_name() }}</div>
+          </td>
+          <td style="font-size:0.78rem;color:var(--muted);font-family:monospace;">{{ u.registration_number or '&#8212;' }}</td>
+          <td style="font-size:0.82rem;color:var(--muted);">{{ u.email }}</td>
+          <td style="font-size:0.875rem;font-weight:600;color:var(--forest);">&#8358;50,000</td>
+          <td style="font-size:0.75rem;color:var(--muted);font-family:monospace;">
+            {% if u.payment_reference %}
+            {{ u.payment_reference | truncate(20, killwords=True) }}
+            {% else %}
+            <span style="color:var(--muted);">Manual</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap;">
+            {{ u.created_at.strftime('%b %d, %Y') if u.created_at else '&#8212;' }}
+          </td>
+          <td><span class="badge badge-success">Paid</span></td>
+          <td>
+            <label class="toggle" title="Revoke payment access">
+              <input type="checkbox" class="payment-toggle" data-user-id="{{ u.id }}" checked>
+              <span class="toggle__track"></span>
+            </label>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center;color:var(--muted);padding:3rem;">
+            <i class="fas fa-naira-sign" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>
+            No payments recorded yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.payment-toggle').forEach(function (cb) {
+  cb.addEventListener('change', function () {
+    var userId = this.dataset.userId;
+    var isPaid = this.checked;
+    var csrf   = document.querySelector('meta[name="csrf-token"]').content;
+    var self   = this;
+
+    fetch('/admin/toggle-payment/' + userId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({ is_paid: isPaid })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.success) {
+        showNotification(isPaid ? 'Access granted' : 'Access revoked', 'success');
+        if (!isPaid) {
+          var row = self.closest('tr');
+          if (row) { row.style.opacity = '0.4'; }
+        }
+      } else {
+        self.checked = !isPaid;
+        showNotification(d.error || 'Update failed', 'error');
+      }
+    })
+    .catch(function () {
+      self.checked = !isPaid;
+      showNotification('Network error — please try again', 'error');
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Page Not Found — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-page__bg"></div>
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;">
+    <span style="font-family:var(--font-serif);font-size:clamp(8rem,25vw,14rem);font-weight:700;color:var(--foam);line-height:1;user-select:none;letter-spacing:-0.05em;">404</span>
+  </div>
+  <div class="error-page__content">
+    <div class="error-page__icon float-1"><i class="fas fa-map-location-dot"></i></div>
+    <h1 class="error-page__title">Page not found</h1>
+    <p class="error-page__desc">
+      This path doesn't exist. Perhaps you were looking for a course, your dashboard, or another page on COR AMANS.
+    </p>
+    <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+      <a href="{{ url_for('landing') }}" class="btn btn-primary">
+        <i class="fas fa-house"></i> Go Home
+      </a>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') if current_user.is_paid else url_for('payment') }}" class="btn btn-ghost">
+        <i class="fas fa-arrow-right"></i> Dashboard
+      </a>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-ghost">
+        <i class="fas fa-right-to-bracket"></i> Sign In
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

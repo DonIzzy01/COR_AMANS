@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Not Found — Admin — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-page__bg"></div>
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;">
+    <span style="font-family:var(--font-serif);font-size:clamp(8rem,25vw,14rem);font-weight:700;color:var(--foam);line-height:1;user-select:none;letter-spacing:-0.05em;">404</span>
+  </div>
+  <div class="error-page__content">
+    <div class="error-page__icon float-1"><i class="fas fa-map-location-dot"></i></div>
+    <h1 class="error-page__title">Admin page not found</h1>
+    <p class="error-page__desc">This admin page doesn't exist or may have been moved.</p>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+  </div>
+</div>
+{% endblock %}

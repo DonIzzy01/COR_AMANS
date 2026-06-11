@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cor_amans_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cor_amans_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      # Override DATABASE_URL: inside Docker the DB host is "db", not "localhost"
+      DATABASE_URL: postgresql://postgres:postgres@db/cor_amans_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Persist user-uploaded profile photos across container restarts
+      - uploads:/app/static/uploads
+
+volumes:
+  postgres_data:
+  uploads:

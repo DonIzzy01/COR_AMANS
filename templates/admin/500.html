@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Server Error — Admin — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-page__bg"></div>
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;">
+    <span style="font-family:var(--font-serif);font-size:clamp(8rem,25vw,14rem);font-weight:700;color:var(--foam);line-height:1;user-select:none;letter-spacing:-0.05em;">500</span>
+  </div>
+  <div class="error-page__content">
+    <div class="error-page__icon float-1"><i class="fas fa-triangle-exclamation"></i></div>
+    <h1 class="error-page__title">Admin server error</h1>
+    <p class="error-page__desc">An unexpected error occurred. The database session has been rolled back. Please try again.</p>
+    <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+      <button onclick="window.location.reload()" class="btn btn-ghost"><i class="fas fa-rotate-right"></i> Retry</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

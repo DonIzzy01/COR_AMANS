@@ -1,192 +1,188 @@
-/* animations.css */
+/* ============================================================
+   COR AMANS — Animations & Micro-interactions v2.0
+   ============================================================ */
 
-/* Fade In */
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-    }
+/* ── Scroll-reveal base ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-    100% {
-        opacity: 1;
-    }
+.reveal-left  { opacity: 0; transform: translateX(-32px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.reveal-right { opacity: 0; transform: translateX(32px);  transition: opacity 0.65s ease, transform 0.65s ease; }
+.reveal-left.is-visible, .reveal-right.is-visible { opacity: 1; transform: translateX(0); }
+.reveal-scale { opacity: 0; transform: scale(0.94); transition: opacity 0.55s ease, transform 0.55s ease; }
+.reveal-scale.is-visible { opacity: 1; transform: scale(1); }
+
+.delay-1 { transition-delay: 0.10s !important; }
+.delay-2 { transition-delay: 0.20s !important; }
+.delay-3 { transition-delay: 0.30s !important; }
+.delay-4 { transition-delay: 0.40s !important; }
+.delay-5 { transition-delay: 0.50s !important; }
+.delay-6 { transition-delay: 0.60s !important; }
+
+/* ── Page load ── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter { animation: pageFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+/* ── Floral petal celebration ── */
+@keyframes petalFly {
+  0%   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx, 0), var(--ty, -120px)) rotate(var(--rot, 180deg)) scale(0.3); }
+}
+.petal {
+  position: fixed;
+  width: 10px; height: 14px;
+  border-radius: 50% 50% 50% 0;
+  pointer-events: none;
+  z-index: 9999;
+  animation: petalFly 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.animate-fadeIn {
-    animation: fadeIn 1s ease-out forwards;
+/* ── Button ripple ── */
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
+}
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transform: scale(0);
+  animation: ripple 0.5s linear;
+  pointer-events: none;
+  width: 100px; height: 100px;
+  margin-left: -50px; margin-top: -50px;
 }
 
-/* Slide Up */
-@keyframes slideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* ── Flower spinner ── */
+@keyframes flowerSpin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.flower-spinner {
+  display: inline-block;
+  width: 40px; height: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  animation: flowerSpin 1.5s ease-in-out infinite;
 }
 
-.animate-slideUp {
-    animation: slideUp 1s ease-out forwards;
+/* ── Badge pulse ── */
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(27, 67, 50, 0.25); }
+  50%       { box-shadow: 0 0 0 8px rgba(27, 67, 50, 0); }
+}
+.badge-pulse { animation: badgePulse 2.5s ease infinite; }
+
+/* ── Progress bar fill ── */
+@keyframes progressFill {
+  from { width: 0; }
+}
+.progress-bar__fill { animation: progressFill 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both; }
+
+/* ── Floral sway ── */
+@keyframes floralSway {
+  0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.12; }
+  33%       { transform: rotate(4deg) scale(1.04); opacity: 0.15; }
+  66%       { transform: rotate(-3deg) scale(0.97); opacity: 0.10; }
 }
 
-/* Slide Down */
-@keyframes slideDown {
-    0% {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
+/* ── Logo heartbeat ── */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%  { transform: scale(1.08); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.05); }
+  70%  { transform: scale(1); }
+}
+.logo-heartbeat:hover img { animation: heartbeat 1s ease-in-out; }
 
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* ── Skeleton loading ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0fdf4 25%, #dcfce7 50%, #f0fdf4 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
 }
 
-.animate-slideDown {
-    animation: slideDown 1s ease-out forwards;
+/* ── Hero elements ── */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-animate-1 { animation: heroFadeUp 0.7s ease 0.1s both; }
+.hero-animate-2 { animation: heroFadeUp 0.7s ease 0.25s both; }
+.hero-animate-3 { animation: heroFadeUp 0.7s ease 0.4s both; }
+.hero-animate-4 { animation: heroFadeUp 0.7s ease 0.55s both; }
+
+/* ── Floating decoration ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+.float-1 { animation: float 5s ease-in-out infinite; }
+.float-2 { animation: float 6s ease-in-out 1s infinite; }
+.float-3 { animation: float 4.5s ease-in-out 2s infinite; }
+
+/* ── Gold shimmer CTA ── */
+@keyframes goldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.btn-gold-shimmer {
+  background: linear-gradient(90deg, #C9A84C 0%, #F0D080 50%, #C9A84C 100%);
+  background-size: 200% auto;
+  animation: goldShimmer 3s linear infinite;
 }
 
-/* Delays */
-.delay-200 {
-    animation-delay: 0.2s;
+/* ── Checkmark pop ── */
+@keyframes checkPop {
+  0%   { transform: scale(0) rotate(-15deg); }
+  60%  { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.check-pop { animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* ── Notification ── */
+@keyframes notifSlideIn {
+  from { opacity: 0; transform: translateX(110%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes notifSlideOut {
+  to { opacity: 0; transform: translateX(110%); }
 }
 
-.delay-400 {
-    animation-delay: 0.4s;
+/* ── Overlay ── */
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
+.sidebar-overlay.is-visible { animation: overlayFade 0.25s ease forwards; }
 
-/* Existing animations kept above */
-
-/* Slide fade for hero images */
-.slide {
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
+/* ── Navbar entrance ── */
+@keyframes navbarSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }
+.navbar { animation: navbarSlideDown 0.4s ease forwards; }
 
-.slide.active {
-    opacity: 1;
+/* ── Step form slide ── */
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
+.step-panel.active { animation: stepIn 0.3s ease forwards; }
 
-/* Section Animations */
-.animate-fadeIn {
-    animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-slideUp {
-    animation: slideUp 1s ease-out forwards;
-}
-
-.animate-slideDown {
-    animation: slideDown 1s ease-out forwards;
-}
-
-/* Delays for staggered effects */
-.delay-100 {
-    animation-delay: 0.1s;
-}
-
-.delay-200 {
-    animation-delay: 0.2s;
-}
-
-.delay-300 {
-    animation-delay: 0.3s;
-}
-
-.delay-400 {
-    animation-delay: 0.4s;
-}
-
-/* Scroll Animation Base */
-
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: all 0.8s ease;
-}
-
-.scroll-animate.active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.card-hover:hover {
-    transform: scale(1.05);
-    transition: transform 0.3s ease;
-}
-
-.slide {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
-}
-
-.slide.active {
-    opacity: 1;
-}
-
-#navbar {
-    background: transparent;
-    transition: all 0.3s ease;
-}
-
-/* Notification Animations */
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-.notification {
-    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.notification-removing {
-    animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* Progress Bar Animation */
-@keyframes shrink {
-    from {
-        width: 100%;
-    }
-
-    to {
-        width: 0%;
-    }
-}
-
-.progress-bar {
-    animation: shrink 5s linear forwards;
-}
-
-/* Hover effect for notifications */
-.notification:hover {
-    transform: translateX(-4px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-}
+/* ── Count up numbers ── */
+.count-up { font-variant-numeric: tabular-nums; }

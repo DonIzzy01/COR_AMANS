@@ -1,0 +1,160 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+{# Chart data stored in data-attributes so VS Code JS linter never sees Jinja2 expressions #}
+<div id="chart-data"
+     data-revenue='{{ {"labels": revenue_labels, "values": revenue_data} | tojson }}'
+     data-users='{{ {"labels": user_labels, "values": user_growth_data} | tojson }}'
+     aria-hidden="true" style="display:none;"></div>
+
+<!-- Stat cards -->
+<div class="grid-4" style="margin-bottom:2rem;">
+  <div class="admin-stat-card reveal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Total Couples</div>
+      <div style="width:36px;height:36px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);"><i class="fas fa-people-group"></i></div>
+    </div>
+    <div class="admin-stat-card__value" data-count-to="{{ total_users }}">{{ total_users }}</div>
+    <div class="admin-stat-card__label">Registered this month: <strong>{{ new_users_this_month }}</strong></div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-1">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Paid Access</div>
+      <div style="width:36px;height:36px;background:#DCFCE7;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--success);"><i class="fas fa-check-circle"></i></div>
+    </div>
+    <div class="admin-stat-card__value" data-count-to="{{ paid_users }}">{{ paid_users }}</div>
+    <div class="admin-stat-card__label">Conversion rate: <strong>{{ payment_rate }}%</strong></div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-2">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Total Revenue</div>
+      <div style="width:36px;height:36px;background:#FEF3C7;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--gold-dark);"><i class="fas fa-naira-sign"></i></div>
+    </div>
+    <div class="admin-stat-card__value" style="font-size:1.5rem;">&#8358;{{ total_revenue }}</div>
+    <div class="admin-stat-card__label">@ &#8358;50,000 per couple</div>
+  </div>
+
+  <div class="admin-stat-card reveal delay-3">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:0.775rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Awaiting Payment</div>
+      <div style="width:36px;height:36px;background:#FEE2E2;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--error);"><i class="fas fa-hourglass-half"></i></div>
+    </div>
+    <div class="admin-stat-card__value" data-count-to="{{ unpaid_users }}">{{ unpaid_users }}</div>
+    <div class="admin-stat-card__label">Registered but not paid</div>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div class="grid-2" style="margin-bottom:2rem;">
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.5rem;box-shadow:var(--shadow-xs);" class="reveal">
+    <div style="font-size:0.825rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">Revenue &#8212; last 6 months</div>
+    <canvas id="revenueChart" height="200"></canvas>
+  </div>
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.5rem;box-shadow:var(--shadow-xs);" class="reveal delay-1">
+    <div style="font-size:0.825rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">Registrations &#8212; last 6 months</div>
+    <canvas id="userChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Recent users -->
+<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs);" class="reveal">
+  <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+    <div style="font-size:0.9rem;font-weight:700;color:var(--charcoal);">Recent Registrations</div>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-ghost btn-sm">View all <i class="fas fa-arrow-right"></i></a>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Couple</th>
+          <th>Ref</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in recent_users %}
+        <tr>
+          <td>
+            <div style="font-weight:600;color:var(--charcoal);">{{ user.get_couple_name() }}</div>
+          </td>
+          <td style="font-size:0.8rem;color:var(--muted);">{{ user.registration_number or '&#8212;' }}</td>
+          <td style="font-size:0.85rem;color:var(--muted);">{{ user.email }}</td>
+          <td><span class="badge {{ 'badge-success' if user.is_paid else 'badge-error' }}">{{ 'Paid' if user.is_paid else 'Unpaid' }}</span></td>
+          <td style="font-size:0.8rem;color:var(--muted);">{{ user.created_at.strftime('%b %d, %Y') if user.created_at else '&#8212;' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">No registrations yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var el      = document.getElementById('chart-data');
+  var revRaw  = JSON.parse(el.getAttribute('data-revenue'));
+  var userRaw = JSON.parse(el.getAttribute('data-users'));
+  var green   = '#1B4332';
+  var mint    = '#74C69D';
+
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: revRaw.labels,
+      datasets: [{
+        label: 'Revenue (₦)',
+        data: revRaw.values,
+        backgroundColor: mint + '99',
+        borderColor: green,
+        borderWidth: 2,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f0fdf4' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('userChart'), {
+    type: 'line',
+    data: {
+      labels: userRaw.labels,
+      datasets: [{
+        label: 'New Couples',
+        data: userRaw.values,
+        borderColor: green,
+        backgroundColor: mint + '22',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: green,
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f0fdf4' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

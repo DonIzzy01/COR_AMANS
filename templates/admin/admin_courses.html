@@ -1,0 +1,97 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}Courses{% endblock %}
+
+{% block content %}
+
+<div class="grid-2" style="gap:1.5rem;align-items:start;">
+
+  <!-- ── Add course form ───────────────────────────────── -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);">
+    <div style="font-size:0.95rem;font-weight:700;color:var(--charcoal);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.625rem;">
+      <i class="fas fa-plus-circle text-forest"></i> Add New Course
+    </div>
+    <form method="POST" action="{{ url_for('admin_add_course') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="idempotency_token" value="{{ idempotency_token() }}">
+
+      <div class="form-group">
+        <label class="form-label">Course title <span style="color:var(--error);">*</span></label>
+        <input type="text" name="title" class="form-input" placeholder="e.g. Communication in Marriage" required maxlength="200">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-input" rows="3" placeholder="Brief description of this module&#8230;" maxlength="1000" style="resize:vertical;"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Price (&#8358;)</label>
+        <input type="number" name="price" class="form-input" value="50000" min="0" step="100" placeholder="50000">
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">Leave at 50000 for the standard programme fee.</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;">
+        <i class="fas fa-plus"></i> Add Course
+      </button>
+    </form>
+
+    {% if doctrine_tracks %}
+    <div style="margin-top:1.75rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:0.875rem;">Core Doctrine Catalogue</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        {% for track in doctrine_tracks %}
+        <div style="padding:0.75rem;background:var(--surface);border-radius:var(--r-md);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:0.75rem;">
+          <div>
+            <div style="font-size:0.85rem;font-weight:600;color:var(--charcoal);">{{ track.title }}</div>
+            {% if track.description %}
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:0.2rem;">{{ track.description }}</div>
+            {% endif %}
+          </div>
+          <span class="badge badge-success" style="white-space:nowrap;">Built-in</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Existing courses ──────────────────────────────── -->
+  <div>
+    <div style="font-size:0.95rem;font-weight:700;color:var(--charcoal);margin-bottom:1rem;display:flex;align-items:center;gap:0.625rem;">
+      <i class="fas fa-book-open text-forest"></i>
+      Custom Courses
+      <span class="badge badge-info" style="margin-left:auto;">{{ courses | length }}</span>
+    </div>
+
+    {% if courses %}
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      {% for course in courses %}
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem 1.5rem;box-shadow:var(--shadow-xs);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;" class="reveal">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;color:var(--charcoal);font-size:0.9rem;margin-bottom:0.25rem;">{{ course.title }}</div>
+          {% if course.description %}
+          <div style="font-size:0.8rem;color:var(--muted);line-height:1.45;margin-bottom:0.5rem;">{{ course.description | truncate(120) }}</div>
+          {% endif %}
+          <div style="font-size:0.78rem;color:var(--forest);font-weight:600;">&#8358;{{ '{:,.0f}'.format(course.price) if course.price else '50,000' }}</div>
+        </div>
+        <form method="POST" action="{{ url_for('admin_delete_course', course_id=course.id) }}" style="flex-shrink:0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-danger btn-sm" title="Delete course"
+                  onclick="return confirm('Delete &#8220;{{ course.title | e }}&#8221;? This cannot be undone.')">
+            <i class="fas fa-trash-can"></i>
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="background:var(--white);border:1px dashed var(--border);border-radius:var(--r-xl);padding:3rem;text-align:center;color:var(--muted);">
+      <i class="fas fa-book-open" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>
+      No custom courses yet. Add one using the form.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
