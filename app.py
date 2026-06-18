@@ -630,24 +630,120 @@ def register():
             flash("Your registration form expired. Please try again.", "error")
             return redirect(url_for("register"))
 
-        bride_first = request.form.get("bride_first_name", "").strip()
-        bride_last = request.form.get("bride_last_name", "").strip()
-        bride_email = request.form.get("bride_email", "").strip().lower()
-        bride_parish = request.form.get("bride_parish", "").strip()
+        def _fg(key):
+            return request.form.get(key, "").strip()
 
-        groom_first = request.form.get("groom_first_name", "").strip()
-        groom_last = request.form.get("groom_last_name", "").strip()
-        groom_email = request.form.get("groom_email", "").strip().lower()
-        groom_parish = request.form.get("groom_parish", "").strip()
+        def _date(key):
+            val = _fg(key)
+            try:
+                return datetime.strptime(val, '%Y-%m-%d').date() if val else None
+            except ValueError:
+                return None
 
-        wedding_date = request.form.get("wedding_date")
-        password = request.form.get("password", "")
-        confirm_password = request.form.get("confirm_password", "")
+        def _int(key):
+            val = _fg(key)
+            try:
+                return int(val) if val else None
+            except ValueError:
+                return None
+
+        def _bool(key):
+            val = _fg(key).lower()
+            if val == 'yes':
+                return True
+            if val == 'no':
+                return False
+            return None
+
+        # ── Core required fields ──────────────────────────────────────
+        bride_first = _fg("bride_first_name")
+        bride_last  = _fg("bride_last_name")
+        bride_email = _fg("bride_email").lower()
+        bride_parish = _fg("bride_parish")
+        groom_first = _fg("groom_first_name")
+        groom_last  = _fg("groom_last_name")
+        groom_email = _fg("groom_email").lower()
+        groom_parish = _fg("groom_parish")
+        password = _fg("password")
+        confirm_password = _fg("confirm_password")
         accepted_terms = request.form.get("terms") == "on"
 
+        # ── Extended bride personal ───────────────────────────────────
+        bride_dob           = _date("bride_dob")
+        bride_phone         = _fg("bride_phone")
+        bride_social_media  = _fg("bride_social_media")
+        bride_address       = _fg("bride_address")
+        bride_parent_name   = _fg("bride_parent_name")
+        bride_parent_address= _fg("bride_parent_address")
+        bride_parents_alive = _fg("bride_parents_alive")
+        bride_place_of_birth= _fg("bride_place_of_birth")
+        bride_occupation    = _fg("bride_occupation")
+        bride_education     = _fg("bride_education")
+        bride_num_siblings  = _int("bride_num_siblings")
+        bride_family_position= _fg("bride_family_position")
+
+        # ── Bride religious ───────────────────────────────────────────
+        bride_is_catholic         = _bool("bride_is_catholic")
+        bride_domicile_parish     = _fg("bride_domicile_parish")
+        bride_years_domicile      = _int("bride_years_domicile")
+        bride_year_baptism        = _int("bride_year_baptism")
+        bride_year_first_communion= _int("bride_year_first_communion")
+        bride_year_confirmation   = _int("bride_year_confirmation")
+        bride_previous_marriages  = _bool("bride_previous_marriages")
+        bride_church_switching    = _bool("bride_church_switching")
+        bride_parents_religion    = _fg("bride_parents_religion")
+        bride_church_society      = _fg("bride_church_society")
+
+        # ── Bride medical ─────────────────────────────────────────────
+        bride_blood_group           = _fg("bride_blood_group")
+        bride_genotype              = _fg("bride_genotype")
+        bride_psychological_status  = _fg("bride_psychological_status")
+        bride_mental_illness_history= _fg("bride_mental_illness_history")
+        bride_phobias               = _fg("bride_phobias")
+        bride_allergies             = _fg("bride_allergies")
+
+        # ── Extended groom personal ───────────────────────────────────
+        groom_dob           = _date("groom_dob")
+        groom_phone         = _fg("groom_phone")
+        groom_social_media  = _fg("groom_social_media")
+        groom_address       = _fg("groom_address")
+        groom_parent_name   = _fg("groom_parent_name")
+        groom_parent_address= _fg("groom_parent_address")
+        groom_parents_alive = _fg("groom_parents_alive")
+        groom_place_of_birth= _fg("groom_place_of_birth")
+        groom_occupation    = _fg("groom_occupation")
+        groom_education     = _fg("groom_education")
+        groom_num_siblings  = _int("groom_num_siblings")
+        groom_family_position= _fg("groom_family_position")
+
+        # ── Groom religious ───────────────────────────────────────────
+        groom_is_catholic         = _bool("groom_is_catholic")
+        groom_domicile_parish     = _fg("groom_domicile_parish")
+        groom_years_domicile      = _int("groom_years_domicile")
+        groom_year_baptism        = _int("groom_year_baptism")
+        groom_year_first_communion= _int("groom_year_first_communion")
+        groom_year_confirmation   = _int("groom_year_confirmation")
+        groom_previous_marriages  = _bool("groom_previous_marriages")
+        groom_church_switching    = _bool("groom_church_switching")
+        groom_parents_religion    = _fg("groom_parents_religion")
+        groom_church_society      = _fg("groom_church_society")
+
+        # ── Groom medical ─────────────────────────────────────────────
+        groom_blood_group           = _fg("groom_blood_group")
+        groom_genotype              = _fg("groom_genotype")
+        groom_psychological_status  = _fg("groom_psychological_status")
+        groom_mental_illness_history= _fg("groom_mental_illness_history")
+        groom_phobias               = _fg("groom_phobias")
+        groom_allergies             = _fg("groom_allergies")
+
+        # ── Wedding & account ─────────────────────────────────────────
+        wedding_date = _fg("wedding_date")
+
         required_fields = [
-            bride_first, bride_last, bride_email, bride_parish,
-            groom_first, groom_last, groom_email, groom_parish,
+            bride_first, bride_last, bride_email,
+            bride_phone, bride_address, bride_blood_group, bride_genotype,
+            groom_first, groom_last, groom_email,
+            groom_phone, groom_address, groom_blood_group, groom_genotype,
             password, confirm_password,
         ]
         if not all(required_fields):
@@ -688,9 +784,71 @@ def register():
             groom_last_name=groom_last,
             groom_email=groom_email,
             groom_parish=groom_parish,
-            wedding_date=datetime.strptime(wedding_date, '%Y-%m-%d') if wedding_date else None,
+            wedding_date=datetime.strptime(wedding_date, '%Y-%m-%d').date() if wedding_date else None,
             is_paid=False,
             is_admin=False,
+            # Extended bride personal
+            bride_dob=bride_dob,
+            bride_phone=bride_phone,
+            bride_social_media=bride_social_media or None,
+            bride_address=bride_address or None,
+            bride_parent_name=bride_parent_name or None,
+            bride_parent_address=bride_parent_address or None,
+            bride_parents_alive=bride_parents_alive or None,
+            bride_place_of_birth=bride_place_of_birth or None,
+            bride_occupation=bride_occupation or None,
+            bride_education=bride_education or None,
+            bride_num_siblings=bride_num_siblings,
+            bride_family_position=bride_family_position or None,
+            # Bride religious
+            bride_is_catholic=bride_is_catholic,
+            bride_domicile_parish=bride_domicile_parish or None,
+            bride_years_domicile=bride_years_domicile,
+            bride_year_baptism=bride_year_baptism,
+            bride_year_first_communion=bride_year_first_communion,
+            bride_year_confirmation=bride_year_confirmation,
+            bride_previous_marriages=bride_previous_marriages,
+            bride_church_switching=bride_church_switching,
+            bride_parents_religion=bride_parents_religion or None,
+            bride_church_society=bride_church_society or None,
+            # Bride medical
+            bride_blood_group=bride_blood_group or None,
+            bride_genotype=bride_genotype or None,
+            bride_psychological_status=bride_psychological_status or None,
+            bride_mental_illness_history=bride_mental_illness_history or None,
+            bride_phobias=bride_phobias or None,
+            bride_allergies=bride_allergies or None,
+            # Extended groom personal
+            groom_dob=groom_dob,
+            groom_phone=groom_phone,
+            groom_social_media=groom_social_media or None,
+            groom_address=groom_address or None,
+            groom_parent_name=groom_parent_name or None,
+            groom_parent_address=groom_parent_address or None,
+            groom_parents_alive=groom_parents_alive or None,
+            groom_place_of_birth=groom_place_of_birth or None,
+            groom_occupation=groom_occupation or None,
+            groom_education=groom_education or None,
+            groom_num_siblings=groom_num_siblings,
+            groom_family_position=groom_family_position or None,
+            # Groom religious
+            groom_is_catholic=groom_is_catholic,
+            groom_domicile_parish=groom_domicile_parish or None,
+            groom_years_domicile=groom_years_domicile,
+            groom_year_baptism=groom_year_baptism,
+            groom_year_first_communion=groom_year_first_communion,
+            groom_year_confirmation=groom_year_confirmation,
+            groom_previous_marriages=groom_previous_marriages,
+            groom_church_switching=groom_church_switching,
+            groom_parents_religion=groom_parents_religion or None,
+            groom_church_society=groom_church_society or None,
+            # Groom medical
+            groom_blood_group=groom_blood_group or None,
+            groom_genotype=groom_genotype or None,
+            groom_psychological_status=groom_psychological_status or None,
+            groom_mental_illness_history=groom_mental_illness_history or None,
+            groom_phobias=groom_phobias or None,
+            groom_allergies=groom_allergies or None,
         )
         user.set_password(password)
         user.ensure_registration_number()
