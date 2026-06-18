@@ -1,77 +1,103 @@
 {% extends "layout.html" %}
+{% block title %}About — COR AMANS{% endblock %}
 
 {% block content %}
-<section class="designer-content-page">
-    <div class="floral-corner floral-corner-left designer-page-floral" aria-hidden="true">
-        <span></span><span></span><span></span><span></span>
-    </div>
-    <div class="mx-auto max-w-6xl space-y-8 px-6">
-        <div class="scroll-animate designer-course-hero px-6 py-10 sm:px-10">
-            <span class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-                About COR AMANS
-            </span>
-            <h1 class="mt-6 max-w-3xl text-4xl font-bold sm:text-5xl">A Catholic marriage formation platform rooted in doctrine, prayer, and pastoral care.</h1>
-            <p class="mt-5 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">
-                COR AMANS helps engaged couples prepare for marriage through faithful Catholic teaching, guided formation,
-                live meetings, and practical steps that support sacramental readiness and lifelong vocation.
-            </p>
-        </div>
 
-        <div class="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <article class="scroll-animate rounded-[1.8rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Mission</p>
-                <h2 class="mt-2 text-2xl font-bold text-slate-950">What COR AMANS is designed to do</h2>
-                <div class="mt-5 space-y-4 text-sm leading-7 text-slate-600">
-                    <p>
-                        COR AMANS provides a faithful and secure Catholic marriage preparation experience for engaged couples.
-                        The platform brings together doctrinal teaching, pastoral guidance, live classes, and couple-centered
-                        reflection in one structured journey.
-                    </p>
-                    <p>
-                        The curriculum follows the Church's teaching on matrimony as covenant and sacrament, supporting
-                        couples as they grow in prayer, mutual love, fidelity, and readiness for the vocation of family life.
-                    </p>
-                    <p>
-                        The goal is not only to deliver information, but to help couples build a strong spiritual and practical
-                        foundation for a Christ-centered marriage.
-                    </p>
-                </div>
-            </article>
-
-            <article class="scroll-animate rounded-[1.8rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Core emphasis</p>
-                <h2 class="mt-2 text-2xl font-bold text-slate-950">Catholic doctrine on marriage</h2>
-                <div class="mt-5 space-y-4">
-                    <div class="rounded-[1.25rem] bg-slate-50 p-4 ring-1 ring-slate-200">
-                        <h3 class="font-bold text-slate-900">Sacrament and covenant</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Marriage is presented as a lifelong covenant raised by Christ to the dignity of a sacrament.</p>
-                    </div>
-                    <div class="rounded-[1.25rem] bg-slate-50 p-4 ring-1 ring-slate-200">
-                        <h3 class="font-bold text-slate-900">Domestic church</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Couples are prepared to build homes shaped by prayer, charity, witness, and communion.</p>
-                    </div>
-                    <div class="rounded-[1.25rem] bg-slate-50 p-4 ring-1 ring-slate-200">
-                        <h3 class="font-bold text-slate-900">Pastoral support</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Live meetings and mentor guidance help couples apply doctrine in real, everyday married life.</p>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-        <div class="scroll-animate grid gap-6 md:grid-cols-3">
-            <article class="rounded-[1.5rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-md">
-                <h3 class="text-xl font-bold text-slate-900">Faith-based guidance</h3>
-                <p class="mt-3 text-sm leading-6 text-slate-600">All lessons and live sessions are aligned with Catholic doctrine and sacramental preparation.</p>
-            </article>
-            <article class="rounded-[1.5rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-md">
-                <h3 class="text-xl font-bold text-slate-900">Secure learning environment</h3>
-                <p class="mt-3 text-sm leading-6 text-slate-600">User access, dashboard workflow, and account protection are designed with modern security in mind.</p>
-            </article>
-            <article class="rounded-[1.5rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-md">
-                <h3 class="text-xl font-bold text-slate-900">Couples support</h3>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Mentor circles, classroom prompts, and practical resources help couples prepare together.</p>
-            </article>
-        </div>
-    </div>
+<!-- Hero -->
+<section style="background:linear-gradient(135deg,var(--forest) 0%,var(--forest-mid) 60%,var(--sage) 100%);padding:5rem 1.5rem 4rem;position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;pointer-events:none;opacity:0.08;">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;object-fit:cover;">
+      <circle cx="150" cy="150" r="120" fill="white"/>
+      <circle cx="450" cy="450" r="90" fill="white"/>
+      <circle cx="500" cy="100" r="60" fill="white"/>
+    </svg>
+  </div>
+  <div style="max-width:860px;margin:0 auto;position:relative;text-align:center;">
+    <span style="display:inline-block;background:rgba(255,255,255,0.15);color:#d1fae5;font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;padding:0.4rem 1rem;border-radius:999px;margin-bottom:1.25rem;">About COR AMANS</span>
+    <h1 style="font-family:var(--font-serif);font-size:clamp(2rem,5vw,3.25rem);font-weight:700;color:var(--white);line-height:1.2;margin-bottom:1.25rem;">
+      A Catholic marriage formation platform rooted in doctrine, prayer, and pastoral care.
+    </h1>
+    <p style="font-size:1rem;color:rgba(255,255,255,0.8);max-width:640px;margin:0 auto;line-height:1.7;">
+      COR AMANS helps engaged couples prepare for marriage through faithful Catholic teaching, guided formation, live meetings, and practical steps that support sacramental readiness and lifelong vocation.
+    </p>
+  </div>
 </section>
+
+<div style="max-width:1200px;margin:0 auto;padding:3rem 1.5rem;">
+
+  <!-- Mission + Core emphasis -->
+  <div class="grid-2" style="margin-bottom:2.5rem;align-items:start;">
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:2rem;box-shadow:var(--shadow-xs);" class="reveal">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--forest);margin-bottom:0.5rem;">Mission</div>
+      <h2 style="font-family:var(--font-serif);font-size:1.5rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">What COR AMANS is designed to do</h2>
+      <div style="display:flex;flex-direction:column;gap:0.875rem;font-size:0.9rem;color:var(--slate);line-height:1.7;">
+        <p>COR AMANS provides a faithful and secure Catholic marriage preparation experience for engaged couples. The platform brings together doctrinal teaching, pastoral guidance, live classes, and couple-centered reflection in one structured journey.</p>
+        <p>The curriculum follows the Church's teaching on matrimony as covenant and sacrament, supporting couples as they grow in prayer, mutual love, fidelity, and readiness for the vocation of family life.</p>
+        <p>The goal is not only to deliver information, but to help couples build a strong spiritual and practical foundation for a Christ-centered marriage.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:2rem;box-shadow:var(--shadow-xs);" class="reveal delay-1">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--forest);margin-bottom:0.5rem;">Core emphasis</div>
+      <h2 style="font-family:var(--font-serif);font-size:1.5rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">Catholic doctrine on marriage</h2>
+      <div style="display:flex;flex-direction:column;gap:0.875rem;">
+        <div style="background:var(--foam);border:1px solid var(--border-green);border-radius:var(--r-lg);padding:1rem;">
+          <div style="font-weight:700;color:var(--charcoal);font-size:0.9rem;margin-bottom:0.3rem;">Sacrament and covenant</div>
+          <div style="font-size:0.83rem;color:var(--slate);line-height:1.55;">Marriage is presented as a lifelong covenant raised by Christ to the dignity of a sacrament.</div>
+        </div>
+        <div style="background:var(--foam);border:1px solid var(--border-green);border-radius:var(--r-lg);padding:1rem;">
+          <div style="font-weight:700;color:var(--charcoal);font-size:0.9rem;margin-bottom:0.3rem;">Domestic church</div>
+          <div style="font-size:0.83rem;color:var(--slate);line-height:1.55;">Couples are prepared to build homes shaped by prayer, charity, witness, and communion.</div>
+        </div>
+        <div style="background:var(--foam);border:1px solid var(--border-green);border-radius:var(--r-lg);padding:1rem;">
+          <div style="font-weight:700;color:var(--charcoal);font-size:0.9rem;margin-bottom:0.3rem;">Pastoral support</div>
+          <div style="font-size:0.83rem;color:var(--slate);line-height:1.55;">Live meetings and mentor guidance help couples apply doctrine in real, everyday married life.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three pillars -->
+  <div class="grid-3" style="margin-bottom:2.5rem;">
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);transition:transform 0.25s,box-shadow 0.25s;" class="reveal feature-card">
+      <div style="width:48px;height:48px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);font-size:1.25rem;margin-bottom:1rem;">
+        <i class="fas fa-cross"></i>
+      </div>
+      <h3 style="font-weight:700;color:var(--charcoal);font-size:1.05rem;margin-bottom:0.5rem;">Faith-based guidance</h3>
+      <p style="font-size:0.875rem;color:var(--slate);line-height:1.6;">All lessons and live sessions are aligned with Catholic doctrine and sacramental preparation.</p>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);transition:transform 0.25s,box-shadow 0.25s;" class="reveal delay-1 feature-card">
+      <div style="width:48px;height:48px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);font-size:1.25rem;margin-bottom:1rem;">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h3 style="font-weight:700;color:var(--charcoal);font-size:1.05rem;margin-bottom:0.5rem;">Secure learning environment</h3>
+      <p style="font-size:0.875rem;color:var(--slate);line-height:1.6;">User access, dashboard workflow, and account protection are designed with modern security in mind.</p>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);transition:transform 0.25s,box-shadow 0.25s;" class="reveal delay-2 feature-card">
+      <div style="width:48px;height:48px;background:var(--foam);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--forest);font-size:1.25rem;margin-bottom:1rem;">
+        <i class="fas fa-heart"></i>
+      </div>
+      <h3 style="font-weight:700;color:var(--charcoal);font-size:1.05rem;margin-bottom:0.5rem;">Couple-centered support</h3>
+      <p style="font-size:0.875rem;color:var(--slate);line-height:1.6;">Mentor circles, classroom prompts, and practical resources help couples prepare together.</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="background:linear-gradient(135deg,var(--forest),var(--sage));border-radius:var(--r-xl);padding:3rem 2rem;text-align:center;position:relative;overflow:hidden;" class="reveal">
+    <div style="position:absolute;right:-2rem;bottom:-2rem;opacity:0.08;">
+      <svg width="200" height="200" viewBox="0 0 200 200" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="50"/><circle cx="100" cy="100" r="20"/>
+      </svg>
+    </div>
+    <div style="position:relative;">
+      <h2 style="font-family:var(--font-serif);font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;color:var(--white);margin-bottom:0.875rem;">Begin your formation journey together</h2>
+      <p style="font-size:0.95rem;color:rgba(255,255,255,0.8);max-width:520px;margin:0 auto 1.75rem;line-height:1.65;">Register as a couple, complete payment, and enter a guided Catholic classroom with live formation and a clear sacramental pathway.</p>
+      <div style="display:flex;gap:0.875rem;justify-content:center;flex-wrap:wrap;">
+        <a href="{{ url_for('register') }}" class="btn btn-gold">Register as a Couple</a>
+        <a href="{{ url_for('courses') }}" class="btn" style="background:rgba(255,255,255,0.12);color:var(--white);border:1px solid rgba(255,255,255,0.25);">Preview Courses</a>
+      </div>
+    </div>
+  </div>
+
+</div>
 {% endblock %}

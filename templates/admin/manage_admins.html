@@ -1,121 +1,112 @@
 {% extends "admin/admin_layout.html" %}
-
-{% block page_title %}Admin Management{% endblock %}
-{% block page_subtitle %}Create, manage, and remove admin users{% endblock %}
+{% block page_title %}Admins{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <article class="scroll-animate rounded-[1.8rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h3 class="text-xl font-bold text-slate-950">Create new admin</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">
-                Create a new admin account for trusted staff overseeing registration, payment access, doctrine quality, and classroom support.
-            </p>
 
-            <form method="POST" action="{{ url_for('admin_create_admin') }}" class="mt-6 space-y-4">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div>
-                    <label class="mb-2 block text-sm font-medium text-slate-700">Email address</label>
-                    <input type="email" name="email" required
-                        class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-red-400 focus:outline-none focus:ring-4 focus:ring-red-100">
-                </div>
+<div class="grid-2" style="align-items:start;gap:1.5rem;">
 
-                <div>
-                    <label class="mb-2 block text-sm font-medium text-slate-700">Admin name</label>
-                    <input type="text" name="name" placeholder="Admin Name"
-                        class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-red-400 focus:outline-none focus:ring-4 focus:ring-red-100">
-                    <p class="mt-2 text-xs text-slate-500">Used to label the profile if the admin is not already a registered user.</p>
-                </div>
+  <!-- ── Create admin form ─────────────────────────── -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);">
+    <div style="font-size:0.95rem;font-weight:700;color:var(--charcoal);margin-bottom:0.375rem;display:flex;align-items:center;gap:0.625rem;">
+      <i class="fas fa-user-shield text-forest"></i> Create New Admin
+    </div>
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.55;">
+      Grant admin access to a trusted coordinator. If the email is already registered, the existing account gets elevated.
+    </div>
 
-                <button type="submit"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
-                    <i class="fas fa-plus"></i>
-                    <span>Create admin</span>
-                </button>
-            </form>
-        </article>
+    <form method="POST" action="{{ url_for('admin_create_admin') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <article class="scroll-animate rounded-[1.8rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <div class="flex items-center justify-between gap-4">
-                <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-rose-600">Current admins</p>
-                    <h2 class="mt-2 text-2xl font-bold text-slate-950">Who can manage the platform</h2>
-                </div>
-                <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700">
-                    {{ admins|length }} active admin{{ '' if admins|length == 1 else 's' }}
-                </span>
-            </div>
+      <div class="form-group">
+        <label class="form-label">Email address <span style="color:var(--error);">*</span></label>
+        <input type="email" name="email" class="form-input" placeholder="coordinator@example.com" required maxlength="120">
+      </div>
 
-            {% if admins %}
-            <div class="mt-6 space-y-4">
-                {% for admin in admins %}
-                <article class="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 transition hover:shadow-sm">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <div class="flex items-center gap-3">
-                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
-                                    <i class="fas fa-user-shield"></i>
-                                </span>
-                                <div>
-                                    <p class="font-semibold text-slate-900">{{ admin.get_couple_name() }}</p>
-                                    <p class="text-sm text-slate-500">{{ admin.email }}</p>
-                                </div>
-                            </div>
-                            <p class="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
-                                Created {{ admin.created_at.strftime('%b %d, %Y') }}
-                            </p>
-                        </div>
+      <div class="form-group">
+        <label class="form-label">Display name</label>
+        <input type="text" name="name" class="form-input" placeholder="e.g. Fr. Joseph Obi" maxlength="100">
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">Used only if this is a brand-new account (not an existing user).</div>
+      </div>
 
-                        <div class="flex flex-wrap gap-3">
-                            {% if current_user.id != admin.id %}
-                            <form method="POST" action="{{ url_for('admin_reset_password', user_id=admin.id) }}"
-                                onsubmit="return confirm('Reset password for {{ admin.email }}? A new temporary password will be generated.')">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="rounded-full border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-50">
-                                    Reset password
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ url_for('admin_remove_admin', user_id=admin.id) }}"
-                                onsubmit="return confirm('Remove admin privileges from {{ admin.email }}?')">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="rounded-full border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50">
-                                    Remove access
-                                </button>
-                            </form>
-                            {% else %}
-                            <span class="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">Current session</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">
+        <i class="fas fa-shield-halved"></i> Grant Admin Access
+      </button>
+    </form>
+
+    <div style="margin-top:1.5rem;padding:1rem;background:var(--foam);border-radius:var(--r-lg);border:1px solid var(--border-green);">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--forest);margin-bottom:0.5rem;">
+        <i class="fas fa-triangle-exclamation"></i> Access policy
+      </div>
+      <ul style="font-size:0.78rem;color:var(--forest);line-height:1.7;margin:0;padding-left:1.25rem;">
+        <li>New admins receive a temporary password and must change it on first sign-in.</li>
+        <li>Admins can toggle payments, manage courses, and view all couple data.</li>
+        <li>Only grant access to trusted diocesan staff or coordinators.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Admin list ────────────────────────────────── -->
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+      <div style="font-size:0.95rem;font-weight:700;color:var(--charcoal);display:flex;align-items:center;gap:0.625rem;">
+        <i class="fas fa-shield-halved text-forest"></i> Current Admins
+      </div>
+      <span class="badge badge-info">{{ admins | length }} admin{{ 's' if admins | length != 1 }}</span>
+    </div>
+
+    {% if admins %}
+    <div style="display:flex;flex-direction:column;gap:0.875rem;">
+      {% for admin in admins %}
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.25rem 1.5rem;box-shadow:var(--shadow-xs);" class="reveal">
+        <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-start;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:0.875rem;min-width:0;">
+            {% if admin.profile_photo_url %}
+            <img src="{{ admin.profile_photo_url }}" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--border-green);flex-shrink:0;">
             {% else %}
-            <div class="mt-6 rounded-[1.35rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-                <h3 class="text-lg font-bold text-slate-900">No admins found</h3>
-                <p class="mt-3 text-sm text-slate-600">Create an admin account to begin managing registrations, courses, and payment access.</p>
+            <div style="width:42px;height:42px;border-radius:50%;background:var(--foam);display:flex;align-items:center;justify-content:center;color:var(--forest);font-weight:700;font-size:0.9rem;flex-shrink:0;">
+              {{ (admin.bride_first_name or admin.email or '?')[0] | upper }}
             </div>
             {% endif %}
-        </article>
-    </section>
+            <div style="min-width:0;">
+              <div style="font-weight:600;color:var(--charcoal);font-size:0.9rem;">{{ admin.get_couple_name() }}</div>
+              <div style="font-size:0.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ admin.email }}</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:0.25rem;">
+                Admin since {{ admin.created_at.strftime('%b %d, %Y') if admin.created_at else 'N/A' }}
+              </div>
+            </div>
+          </div>
 
-    <section class="scroll-animate rounded-[1.8rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-rose-600">Access policy</p>
-        <h2 class="mt-2 text-2xl font-bold text-slate-950">Admin workflow reminders</h2>
-        <div class="mt-6 grid gap-4 lg:grid-cols-3">
-            <article class="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                <h3 class="text-base font-bold text-slate-900">Temporary password flow</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">New admins receive a temporary password and should change it immediately after first sign-in.</p>
-            </article>
-            <article class="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                <h3 class="text-base font-bold text-slate-900">Shared responsibility</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">Admins can manage course content, user access, and live classroom operations across the platform.</p>
-            </article>
-            <article class="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                <h3 class="text-base font-bold text-slate-900">Use caution</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">Only grant admin rights to trusted coordinators because they can unlock payments and modify learning content.</p>
-            </article>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;flex-shrink:0;">
+            {% if current_user.id == admin.id %}
+            <span class="badge badge-success"><i class="fas fa-circle-dot"></i> You</span>
+            {% else %}
+            <form method="POST" action="{{ url_for('admin_reset_password', user_id=admin.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-ghost btn-sm"
+                      onclick="return confirm('Reset password for {{ admin.email | e }}?\nA temporary password will be emailed to them.')">
+                <i class="fas fa-key"></i> Reset PW
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('admin_remove_admin', user_id=admin.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger btn-sm"
+                      onclick="return confirm('Remove admin access from {{ admin.email | e }}?\nThey will become a regular user.')">
+                <i class="fas fa-user-minus"></i> Remove
+              </button>
+            </form>
+            {% endif %}
+          </div>
         </div>
-    </section>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="background:var(--white);border:1px dashed var(--border);border-radius:var(--r-xl);padding:3rem;text-align:center;color:var(--muted);">
+      <i class="fas fa-shield-halved" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>
+      No admins found. Use the form to add one.
+    </div>
+    {% endif %}
+  </div>
 </div>
+
 {% endblock %}

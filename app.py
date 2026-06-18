@@ -45,11 +45,14 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_globals():
+    pub_key = app.config.get('CLERK_PUBLISHABLE_KEY', '')
+    from clerk_auth import _frontend_api_from_key
     return {
         "csrf_token": generate_csrf_token,
         "idempotency_key": issue_idempotency_key,
         "clerk_enabled": app.config.get('CLERK_ENABLED', False),
-        "clerk_publishable_key": app.config.get('CLERK_PUBLISHABLE_KEY', ''),
+        "clerk_publishable_key": pub_key,
+        "clerk_frontend_api": _frontend_api_from_key(pub_key) if pub_key else '',
     }
 
 
@@ -59,8 +62,15 @@ def handle_unauthorized():
     return redirect(url_for("login"))
 
 
-with app.app_context():
-    db.create_all()
+def init_db():
+    """Create tables. Called by entrypoint.sh (once, before workers fork) or by python app.py."""
+    with app.app_context():
+        db.create_all()
+
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True, port=5000)
 
 # ──────────────────────────────────────────────────
 #  Security helpers
@@ -193,19 +203,23 @@ def add_security_headers(response):
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
 
-    clerk_src = ""
+    clerk_extra = ""
     if app.config.get('CLERK_ENABLED'):
-        clerk_src = " https://clerk.accounts.dev https://*.clerk.accounts.dev"
+        clerk_extra = (
+            " https://clerk.accounts.dev https://*.clerk.accounts.dev"
+            " https://*.clerk.com"
+        )
 
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         f"script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com "
-        f"https://cdnjs.cloudflare.com https://cdn.jsdelivr.net{clerk_src}; "
+        f"https://cdnjs.cloudflare.com https://cdn.jsdelivr.net{clerk_extra}; "
         "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com "
-        "https://fonts.googleapis.com; "
+        f"https://fonts.googleapis.com{clerk_extra}; "
         "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; "
-        "img-src 'self' data: blob:; "
-        "connect-src 'self'; "
+        f"img-src 'self' data: blob:{clerk_extra}; "
+        f"connect-src 'self'{clerk_extra}; "
+        f"frame-src 'self'{clerk_extra}; "
         "form-action 'self'; "
         "base-uri 'self'; "
         "frame-ancestors 'none';"
@@ -588,6 +602,12 @@ def courses():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+@app.route("/email-verified")
+def email_verified():
+    from datetime import date
+    return render_template("email_verified.html", verified_date=date.today().strftime('%b %d, %Y'))
 
 
 # ──────────────────────────────────────────────────

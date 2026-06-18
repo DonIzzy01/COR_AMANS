@@ -1,0 +1,45 @@
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Flask / instance
+instance/
+*.db
+*.sqlite3
+
+# Uploads (user-generated content)
+static/uploads/
+
+# Logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker local overrides
+docker-compose.override.yml
+
+# Misc scripts used during development
+add_admin_column.py
+fix_all_columns.py

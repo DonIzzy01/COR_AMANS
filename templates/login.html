@@ -59,6 +59,22 @@
         <p class="auth-subtitle">Sign in to continue your marriage formation journey</p>
       </div>
 
+      {% if clerk_enabled %}
+      <!-- ── Clerk sign-in UI ───────────────────────────────── -->
+      <div id="clerk-sign-in" style="width:100%;min-height:320px;display:flex;align-items:center;justify-content:center;">
+        <div style="color:var(--muted);font-size:0.85rem;text-align:center;">
+          <i class="fas fa-spinner fa-spin" style="margin-bottom:0.5rem;display:block;font-size:1.5rem;"></i>
+          Loading sign-in…
+        </div>
+      </div>
+
+      <div class="auth-footer">
+        Don't have an account?
+        <a href="{{ url_for('register') }}">Register as a couple</a>
+      </div>
+
+      {% else %}
+      <!-- ── Native email / password form ──────────────────── -->
       <form action="{{ url_for('login') }}" method="POST" autocomplete="on" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -100,6 +116,7 @@
         Don't have an account?
         <a href="{{ url_for('register') }}">Register as a couple</a>
       </div>
+      {% endif %}
 
       <!-- Back to home -->
       <div style="text-align:center;margin-top:1rem;">
@@ -112,3 +129,47 @@
   </section>
 </div>
 {% endblock %}
+
+{% if clerk_enabled %}
+{% block scripts %}
+<script>
+(function () {
+  var csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+  function mountClerk() {
+    if (typeof Clerk === 'undefined') { setTimeout(mountClerk, 100); return; }
+    Clerk.load().then(function () {
+      Clerk.mountSignIn(document.getElementById('clerk-sign-in'), {
+        signUpUrl: '{{ url_for("register") }}',
+        appearance: {
+          variables: {
+            colorPrimary: '#1B4332',
+            colorText: '#1C2B25',
+            colorBackground: '#FFFFFF',
+            borderRadius: '0.875rem',
+            fontFamily: 'Inter, sans-serif'
+          }
+        }
+      });
+
+      Clerk.addListener(function (data) {
+        if (data.session) {
+          data.session.getToken().then(function (token) {
+            fetch('{{ url_for("clerk_sync") }}', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+              body: JSON.stringify({ session_token: token })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (d) { if (d.redirect) window.location.href = d.redirect; });
+          });
+        }
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', mountClerk);
+})();
+</script>
+{% endblock %}
+{% endif %}

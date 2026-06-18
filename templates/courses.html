@@ -1,183 +1,185 @@
 {% extends "layout.html" %}
+{% block title %}Courses — COR AMANS{% endblock %}
 
 {% block content %}
-<section class="designer-content-page">
-    <div class="floral-corner floral-corner-left designer-page-floral" aria-hidden="true">
-        <span></span><span></span><span></span><span></span>
+
+<!-- Hero -->
+<section style="background:linear-gradient(135deg,var(--forest) 0%,var(--forest-mid) 60%,var(--sage) 100%);padding:4.5rem 1.5rem 3.5rem;position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;opacity:0.06;pointer-events:none;">
+    <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;object-fit:cover;">
+      <circle cx="700" cy="50"  r="150" fill="white"/>
+      <circle cx="100" cy="350" r="100" fill="white"/>
+    </svg>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;position:relative;">
+    <div style="display:grid;gap:2.5rem;align-items:center;" class="hero-grid-2">
+      <div class="hero-animate-1">
+        <span style="display:inline-block;background:rgba(255,255,255,0.15);color:#d1fae5;font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;padding:0.4rem 1rem;border-radius:999px;margin-bottom:1.25rem;">Catholic marriage curriculum</span>
+        <h1 style="font-family:var(--font-serif);font-size:clamp(1.9rem,4.5vw,3rem);font-weight:700;color:var(--white);line-height:1.2;margin-bottom:1.1rem;">
+          Formation built around sacramental marriage, prayer, and parish life.
+        </h1>
+        <p style="font-size:0.95rem;color:rgba(255,255,255,0.8);line-height:1.7;margin-bottom:1.5rem;">
+          The course library follows the Catholic understanding of marriage as covenant, sacrament, faithful communion, domestic church, and a life open to grace and mission.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+          {% for principle in doctrine_principles %}
+          <span style="background:rgba(255,255,255,0.12);color:#d1fae5;font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0.35rem 0.875rem;border-radius:999px;border:1px solid rgba(255,255,255,0.15);">{{ principle.refs }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-xl);padding:1.5rem;backdrop-filter:blur(8px);" class="hero-animate-2">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:#d1fae5;margin-bottom:1rem;">How formation works</div>
+        <div style="display:flex;flex-direction:column;gap:0.875rem;">
+          <div style="background:rgba(0,0,0,0.15);border-radius:var(--r-md);padding:1rem;">
+            <div style="font-weight:700;color:var(--white);font-size:0.9rem;margin-bottom:0.25rem;">Doctrine first</div>
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.55;">Every module starts with what the Church teaches and why it matters pastorally.</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.15);border-radius:var(--r-md);padding:1rem;">
+            <div style="font-weight:700;color:var(--white);font-size:0.9rem;margin-bottom:0.25rem;">Live instruction</div>
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.55;">Couples join meetings, mentor circles, and review sessions throughout the programme.</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.15);border-radius:var(--r-md);padding:1rem;">
+            <div style="font-weight:700;color:var(--white);font-size:0.9rem;margin-bottom:0.25rem;">Shared practice</div>
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.55;">Assignments and conversations are completed together to prepare for married life.</div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="relative mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
-        <section class="scroll-animate designer-course-hero">
-            <div class="grid gap-8 px-6 py-10 sm:px-8 lg:grid-cols-[1.25fr_0.95fr] lg:px-12 lg:py-14">
-                <div>
-                    <span class="inline-flex rounded-full bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-emerald-100">
-                        Catholic marriage curriculum
-                    </span>
-                    <h1 class="mt-6 max-w-4xl text-4xl font-bold leading-tight sm:text-5xl">
-                        Formation built around sacramental marriage, prayer, and parish life.
-                    </h1>
-                    <p class="mt-5 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">
-                        The course library follows the Catholic understanding of marriage as covenant, sacrament,
-                        faithful communion, domestic church, and a life open to grace and mission.
-                    </p>
-
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        {% for principle in doctrine_principles %}
-                        <span class="rounded-full bg-emerald-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100">
-                            {{ principle.refs }}
-                        </span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <aside class="rounded-[1.75rem] border border-white/10 bg-white/10 p-6 backdrop-blur">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-100">How formation works</p>
-                    <div class="mt-5 space-y-4 text-sm leading-6 text-slate-200">
-                        <div class="rounded-[1.15rem] bg-black/15 p-4">
-                            <p class="font-semibold text-white">Doctrine first</p>
-                            <p class="mt-1">Every module starts with what the Church teaches and why it matters pastorally.</p>
-                        </div>
-                        <div class="rounded-[1.15rem] bg-black/15 p-4">
-                            <p class="font-semibold text-white">Live instruction</p>
-                            <p class="mt-1">Couples join meetings, mentor circles, and review sessions throughout the program.</p>
-                        </div>
-                        <div class="rounded-[1.15rem] bg-black/15 p-4">
-                            <p class="font-semibold text-white">Shared practice</p>
-                            <p class="mt-1">Assignments and conversations are completed together to prepare for married life.</p>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-        </section>
-
-        <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <article class="scroll-animate rounded-[1.8rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:p-8">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Core curriculum</p>
-                        <h2 class="mt-2 text-3xl font-bold text-slate-950">Modules for engaged Catholic couples</h2>
-                    </div>
-                    <span class="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
-                        Responsive on phone, tablet, and desktop
-                    </span>
-                </div>
-
-                <div class="mt-8 grid gap-5 lg:grid-cols-2">
-                    {% for course in course_catalog %}
-                    <article class="rounded-[1.45rem] border border-slate-200 bg-slate-50 p-5 transition duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-md">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ course.level }}</p>
-                                <h3 class="mt-2 text-xl font-bold text-slate-900">{{ course.title }}</h3>
-                            </div>
-                            <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                                {{ course.duration }}
-                            </span>
-                        </div>
-
-                        <p class="mt-4 text-sm leading-7 text-slate-600">{{ course.summary }}</p>
-                        <p class="mt-4 text-sm font-medium text-slate-500">{{ course.format }}</p>
-
-                        <ul class="mt-5 space-y-2 text-sm leading-6 text-slate-700">
-                            {% for highlight in course.highlights %}
-                            <li class="flex gap-2">
-                                <span class="mt-2 h-2 w-2 rounded-full bg-red-500"></span>
-                                <span>{{ highlight }}</span>
-                            </li>
-                            {% endfor %}
-                        </ul>
-
-                        <div class="mt-5 rounded-[1rem] border border-emerald-100 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-red-600">
-                            {{ course.refs }}
-                        </div>
-                    </article>
-                    {% endfor %}
-                </div>
-            </article>
-
-            <div class="space-y-6">
-                <article class="scroll-animate rounded-[1.75rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Doctrine summary</p>
-                    <h2 class="mt-2 text-2xl font-bold text-slate-950">What the Church teaches about marriage</h2>
-                    <div class="mt-6 space-y-4">
-                        {% for principle in doctrine_principles %}
-                        <article class="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <h3 class="text-base font-bold text-slate-900">{{ principle.title }}</h3>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ principle.description }}</p>
-                                </div>
-                                <span class="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-red-600 ring-1 ring-slate-200">
-                                    {{ principle.refs }}
-                                </span>
-                            </div>
-                        </article>
-                        {% endfor %}
-                    </div>
-                </article>
-
-                <article class="scroll-animate rounded-[1.75rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Classroom features</p>
-                    <h2 class="mt-2 text-2xl font-bold text-slate-950">What couples receive inside the platform</h2>
-                    <div class="mt-6 space-y-4">
-                        {% for feature in classroom_features %}
-                        <article class="flex gap-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                                <i class="fas {{ feature.icon }}"></i>
-                            </span>
-                            <div>
-                                <h3 class="text-base font-bold text-slate-900">{{ feature.title }}</h3>
-                                <p class="mt-2 text-sm leading-6 text-slate-600">{{ feature.description }}</p>
-                            </div>
-                        </article>
-                        {% endfor %}
-                    </div>
-                </article>
-
-                <article class="scroll-animate rounded-[1.75rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Live meetings</p>
-                    <h2 class="mt-2 text-2xl font-bold text-slate-950">Weekly class rhythm</h2>
-                    <div class="mt-6 space-y-4">
-                        {% for session in live_sessions %}
-                        <article class="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ session.status }}</p>
-                                    <h3 class="mt-2 text-lg font-bold text-slate-900">{{ session.title }}</h3>
-                                </div>
-                                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                                    {{ session.room }}
-                                </span>
-                            </div>
-                            <p class="mt-3 text-sm text-slate-600">{{ session.time }} and {{ session.host }}</p>
-                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ session.focus }}</p>
-                        </article>
-                        {% endfor %}
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="scroll-animate rounded-[2rem] bg-[#078529] px-6 py-10 text-white shadow-[0_30px_80px_rgba(15,23,42,0.14)] sm:px-8">
-            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <div class="max-w-3xl">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-100">Begin the path</p>
-                    <h2 class="mt-2 text-3xl font-bold sm:text-4xl">Ready to begin your sacred journey together?</h2>
-                    <p class="mt-4 text-sm leading-7 text-emerald-50 sm:text-base">
-                        Register as a couple, complete payment, and enter a guided Catholic classroom with live formation,
-                        practical assignments, parish support, and a clear sacramental pathway.
-                    </p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <a href="{{ url_for('register') }}" class="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-red-700 transition hover:scale-[1.02]">
-                        Register as a Couple
-                    </a>
-                    <a href="{{ url_for('login') }}" class="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                        Login to Continue
-                    </a>
-                </div>
-            </div>
-        </section>
-    </div>
+  </div>
 </section>
+
+<div style="max-width:1200px;margin:0 auto;padding:3rem 1.5rem;">
+
+  <!-- Course catalogue -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.5rem;" class="reveal">
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--forest);margin-bottom:0.375rem;">Core curriculum</div>
+        <h2 style="font-family:var(--font-serif);font-size:clamp(1.4rem,3vw,1.9rem);font-weight:700;color:var(--charcoal);">Modules for engaged Catholic couples</h2>
+      </div>
+      <span class="badge badge-success">{{ course_catalog | length }} modules</span>
+    </div>
+
+    <div class="card-grid">
+      {% for course in course_catalog %}
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.5rem;box-shadow:var(--shadow-xs);transition:transform 0.25s,box-shadow 0.25s;display:flex;flex-direction:column;" class="reveal course-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.875rem;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:var(--forest);margin-bottom:0.375rem;">{{ course.level }}</div>
+            <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;color:var(--charcoal);line-height:1.3;">{{ course.title }}</h3>
+          </div>
+          <span style="background:var(--foam);color:var(--forest);font-size:0.72rem;font-weight:600;padding:0.3rem 0.75rem;border-radius:999px;white-space:nowrap;flex-shrink:0;">{{ course.duration }}</span>
+        </div>
+
+        <p style="font-size:0.85rem;color:var(--slate);line-height:1.65;margin-bottom:0.875rem;flex:1;">{{ course.summary }}</p>
+
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.875rem;">{{ course.format }}</div>
+
+        <ul style="list-style:none;margin:0 0 1rem;padding:0;display:flex;flex-direction:column;gap:0.4rem;">
+          {% for h in course.highlights %}
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.82rem;color:var(--slate);line-height:1.5;">
+            <span style="width:7px;height:7px;background:var(--forest);border-radius:50%;flex-shrink:0;margin-top:0.4rem;"></span>
+            <span>{{ h }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div style="background:var(--foam);border:1px solid var(--border-green);border-radius:var(--r-md);padding:0.6rem 0.875rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:var(--forest);margin-top:auto;">
+          {{ course.refs }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Doctrine + Features + Sessions — two-column on desktop -->
+  <div class="grid-2" style="align-items:start;margin-bottom:2.5rem;">
+    <!-- Left: Doctrine principles -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);" class="reveal">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--forest);margin-bottom:0.375rem;">Doctrine summary</div>
+      <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">What the Church teaches about marriage</h2>
+      <div style="display:flex;flex-direction:column;gap:0.875rem;">
+        {% for p in doctrine_principles %}
+        <div style="background:var(--foam);border:1px solid var(--border-green);border-radius:var(--r-lg);padding:1rem;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:var(--charcoal);font-size:0.88rem;margin-bottom:0.3rem;">{{ p.title }}</div>
+              <div style="font-size:0.8rem;color:var(--slate);line-height:1.55;">{{ p.description }}</div>
+            </div>
+            <span style="background:var(--white);color:var(--forest);font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;padding:0.25rem 0.625rem;border-radius:999px;border:1px solid var(--border-green);white-space:nowrap;flex-shrink:0;">{{ p.refs }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right: Classroom features + Live sessions -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);" class="reveal delay-1">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--forest);margin-bottom:0.375rem;">Classroom features</div>
+        <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">What couples receive inside the platform</h2>
+        <div style="display:flex;flex-direction:column;gap:0.875rem;">
+          {% for f in classroom_features %}
+          <div style="display:flex;align-items:flex-start;gap:0.875rem;padding:0.875rem;background:var(--foam);border-radius:var(--r-lg);border:1px solid var(--border-green);">
+            <div style="width:40px;height:40px;border-radius:var(--r-md);background:var(--forest);display:flex;align-items:center;justify-content:center;color:var(--white);font-size:0.9rem;flex-shrink:0;">
+              <i class="fas {{ f.icon }}"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;color:var(--charcoal);font-size:0.88rem;margin-bottom:0.25rem;">{{ f.title }}</div>
+              <div style="font-size:0.8rem;color:var(--slate);line-height:1.55;">{{ f.description }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.75rem;box-shadow:var(--shadow-xs);" class="reveal delay-2">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--forest);margin-bottom:0.375rem;">Live meetings</div>
+        <h2 style="font-family:var(--font-serif);font-size:1.35rem;font-weight:700;color:var(--charcoal);margin-bottom:1.25rem;">Weekly class rhythm</h2>
+        <div style="display:flex;flex-direction:column;gap:0.875rem;">
+          {% for s in live_sessions %}
+          <div style="background:var(--foam);border:1px solid var(--border-green);border-radius:var(--r-lg);padding:1rem;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.5rem;">
+              <div>
+                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:var(--sage);margin-bottom:0.2rem;">{{ s.status }}</div>
+                <div style="font-weight:700;color:var(--charcoal);font-size:0.9rem;">{{ s.title }}</div>
+              </div>
+              <span style="background:var(--white);color:var(--muted);font-size:0.72rem;font-weight:600;padding:0.2rem 0.625rem;border-radius:999px;border:1px solid var(--border);white-space:nowrap;flex-shrink:0;">{{ s.room }}</span>
+            </div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.35rem;">{{ s.time }} &#183; {{ s.host }}</div>
+            <div style="font-size:0.8rem;color:var(--slate);line-height:1.5;">{{ s.focus }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="background:linear-gradient(135deg,var(--forest),var(--sage));border-radius:var(--r-xl);padding:3rem 2rem;position:relative;overflow:hidden;" class="reveal">
+    <div style="position:absolute;right:-3rem;bottom:-3rem;opacity:0.07;">
+      <svg width="260" height="260" viewBox="0 0 260 260" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="130" cy="130" r="120"/><circle cx="130" cy="130" r="75"/><circle cx="130" cy="130" r="30"/>
+      </svg>
+    </div>
+    <div style="position:relative;display:flex;flex-wrap:wrap;gap:2rem;align-items:center;justify-content:space-between;">
+      <div style="flex:1;min-width:220px;">
+        <h2 style="font-family:var(--font-serif);font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:var(--white);margin-bottom:0.75rem;">Ready to begin your sacred journey?</h2>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.8);line-height:1.65;">Register as a couple, complete payment, and enter a guided Catholic classroom with live formation and a clear sacramental pathway.</p>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;flex-shrink:0;">
+        <a href="{{ url_for('register') }}" class="btn btn-gold">Register as a Couple</a>
+        <a href="{{ url_for('login') }}" class="btn" style="background:rgba(255,255,255,0.12);color:var(--white);border:1px solid rgba(255,255,255,0.25);">Login to continue</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  .hero-grid-2 { grid-template-columns: 1fr; }
+  @media (min-width: 768px) { .hero-grid-2 { grid-template-columns: 1.2fr 0.8fr; } }
+  .course-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+</style>
 {% endblock %}
