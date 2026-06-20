@@ -1,0 +1,186 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}{{ 'Edit' if resource else 'Add' }} Resource{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">{{ 'Edit Resource' if resource else 'Add Resource' }}</h1>
+    <p class="admin-page-subtitle">
+      {% if resource %}Update this {{ resource.resource_type }}.{% else %}Upload a new video or PDF for enrolled couples.{% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('admin_resources') }}" class="btn btn-ghost">
+    <i class="fas fa-arrow-left"></i> Back to Resources
+  </a>
+</div>
+
+<div class="admin-card" style="max-width:700px;">
+  <form method="POST"
+        action="{{ url_for('admin_edit_resource', resource_id=resource.id) if resource else url_for('admin_add_resource') }}"
+        enctype="multipart/form-data"
+        id="resource-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Type selector (only show for new resources) -->
+    {% if not resource %}
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label">Resource Type *</label>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;font-size:.9rem;">
+          <input type="radio" name="resource_type" value="video" checked id="type-video"
+                 onchange="toggleTypeFields()">
+          <span><i class="fas fa-play" style="color:var(--primary);"></i> YouTube / Vimeo Video</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;font-size:.9rem;">
+          <input type="radio" name="resource_type" value="document" id="type-doc"
+                 onchange="toggleTypeFields()">
+          <span><i class="fas fa-file-pdf" style="color:#dc2626;"></i> PDF Document</span>
+        </label>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Title -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="title">Title *</label>
+      <input type="text" id="title" name="title" class="form-input" required
+             value="{{ resource.title if resource else '' }}"
+             placeholder="e.g. Introduction to the Sacrament of Marriage">
+    </div>
+
+    <!-- Description -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="description">Description</label>
+      <textarea id="description" name="description" class="form-input" rows="3"
+                placeholder="Brief description shown to couples…">{{ resource.description or '' }}</textarea>
+    </div>
+
+    <!-- Video URL (show for video type) -->
+    <div id="video-fields" style="margin-bottom:1.25rem;">
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-label" for="video_url">YouTube or Vimeo URL *</label>
+        <input type="url" id="video_url" name="video_url" class="form-input"
+               value="{{ resource.video_url if resource else '' }}"
+               placeholder="https://www.youtube.com/watch?v=…  or  https://vimeo.com/…">
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:.35rem;">
+          Paste any YouTube or Vimeo link — private, unlisted, or public. The video ID is extracted automatically.
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="video_duration">Duration (optional)</label>
+        <input type="text" id="video_duration" name="video_duration" class="form-input"
+               value="{{ resource.video_duration or '' }}"
+               placeholder="e.g. 45:00" style="max-width:140px;">
+      </div>
+    </div>
+
+    <!-- Document upload (show for document type) -->
+    <div id="doc-fields" style="display:none;margin-bottom:1.25rem;">
+      <div class="form-group">
+        <label class="form-label" for="document_file">PDF File *</label>
+        {% if resource and resource.resource_type == 'document' and resource.file_name %}
+        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.5rem;">
+          <i class="fas fa-file-pdf" style="color:#dc2626;"></i>
+          Current file: <strong>{{ resource.file_name }}</strong> ({{ resource.get_size_display() }})
+          — upload a new file to replace it
+        </div>
+        {% endif %}
+        <input type="file" id="document_file" name="document_file" accept=".pdf"
+               class="form-input" {{ 'required' if not resource }}>
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:.35rem;">
+          PDF only. Maximum 25 MB. Files are stored securely and served only to paid couples.
+        </div>
+      </div>
+    </div>
+
+    <!-- Module + Category row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;" class="form-row-2">
+      <div class="form-group">
+        <label class="form-label" for="module_slug">Formation Module</label>
+        <select id="module_slug" name="module_slug" class="form-input">
+          <option value="">— General (no module) —</option>
+          {% for c in course_catalog %}
+          <option value="{{ c.slug }}" {{ 'selected' if resource and resource.module_slug == c.slug }}>
+            {{ c.title }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="category">Category</label>
+        <select id="category" name="category" class="form-input">
+          {% set cats = [('general','General'),('doctrine','Doctrine'),('pastoral','Pastoral'),('liturgy','Liturgy'),('prayer','Prayer & Spirituality')] %}
+          {% for val, label in cats %}
+          <option value="{{ val }}" {{ 'selected' if resource and resource.category == val }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="tags">Tags (comma-separated, optional)</label>
+      <input type="text" id="tags" name="tags" class="form-input"
+             value="{{ resource.tags or '' }}"
+             placeholder="e.g. consent, sacrament, covenant">
+    </div>
+
+    <!-- Sort order + featured + published row -->
+    <div style="display:grid;grid-template-columns:100px 1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;align-items:start;" class="form-row-3">
+      <div class="form-group">
+        <label class="form-label" for="sort_order">Sort Order</label>
+        <input type="number" id="sort_order" name="sort_order" class="form-input"
+               value="{{ resource.sort_order if resource else 0 }}" min="0" style="max-width:100px;">
+        <div style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;">Lower = first</div>
+      </div>
+      <div class="form-group" style="padding-top:1.75rem;">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+          <input type="checkbox" name="is_featured" value="1"
+                 {{ 'checked' if resource and resource.is_featured }}>
+          <span style="font-size:.875rem;font-weight:600;"><i class="fas fa-star" style="color:#f59e0b;"></i> Feature this resource on the dashboard</span>
+        </label>
+      </div>
+      {% if resource %}
+      <div class="form-group" style="padding-top:1.75rem;">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+          <input type="checkbox" name="is_published" value="1"
+                 {{ 'checked' if resource.is_published }}>
+          <span style="font-size:.875rem;font-weight:600;"><i class="fas fa-eye" style="color:var(--primary);"></i> Published (visible to couples)</span>
+        </label>
+      </div>
+      {% endif %}
+    </div>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas {{ 'fa-save' if resource else 'fa-upload' }}"></i>
+        {{ 'Save Changes' if resource else 'Add Resource' }}
+      </button>
+      <a href="{{ url_for('admin_resources') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+function toggleTypeFields() {
+  var isVideo = document.getElementById('type-video').checked;
+  document.getElementById('video-fields').style.display = isVideo ? '' : 'none';
+  document.getElementById('doc-fields').style.display = isVideo ? 'none' : '';
+  document.getElementById('video_url').required = isVideo;
+  document.getElementById('document_file').required = !isVideo;
+}
+
+// On load, if editing a document, show doc fields
+{% if resource and resource.resource_type == 'document' %}
+document.getElementById('video-fields').style.display = 'none';
+document.getElementById('doc-fields').style.display = '';
+{% endif %}
+</script>
+
+<style>
+@media (max-width: 640px) {
+  .form-row-2 { grid-template-columns: 1fr !important; }
+  .form-row-3 { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}

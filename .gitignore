@@ -40,6 +40,18 @@ Thumbs.db
 # Docker local overrides
 docker-compose.override.yml
 
-# Misc scripts used during development
+# One-time dev/migration scripts
 add_admin_column.py
 fix_all_columns.py
+fix_*.py
+seed_*.py
+
+# Test / scratch files
+test_*.py
+scratch_*.py
+
+# Coverage / pytest
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml

@@ -11,7 +11,7 @@ from flask import (Flask, abort, flash, redirect, render_template,
 from dotenv import load_dotenv
 from config import Config
 from extensions import db, login_manager, mail
-from models import User, Course, Enrollment
+from models import User, Course, Enrollment, Resource, LiveSession, AuditLog
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from functools import lru_cache, wraps
@@ -191,6 +191,48 @@ def allowed_image(filename):
     return ext in app.config['ALLOWED_IMAGE_EXTENSIONS']
 
 
+def allowed_document(filename):
+    return '.' in filename and filename.rsplit('.', 1)[-1].lower() == 'pdf'
+
+
+def extract_video_info(url):
+    """
+    Parse a YouTube or Vimeo URL.
+    Returns (embed_id, platform) or (None, None).
+    """
+    if not url:
+        return None, None
+    url = url.strip()
+    # YouTube
+    yt = re.search(
+        r'(?:youtube\.com/(?:watch\?v=|embed/|live/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})',
+        url
+    )
+    if yt:
+        return yt.group(1), 'youtube'
+    # Vimeo
+    vm = re.search(r'vimeo\.com/(?:video/)?(\d+)', url)
+    if vm:
+        return vm.group(1), 'vimeo'
+    return None, None
+
+
+def write_audit(action, target_type=None, target_id=None, detail=None):
+    """Record an admin/system action to the audit_logs table."""
+    import json as _json
+    user_id = current_user.id if current_user.is_authenticated else None
+    log = AuditLog(
+        user_id=user_id,
+        action=action,
+        target_type=target_type,
+        target_id=target_id,
+        detail=_json.dumps(detail) if detail else None,
+        ip_address=get_client_ip(),
+    )
+    db.session.add(log)
+    # Committed by the calling route — no separate commit here.
+
+
 # ──────────────────────────────────────────────────
 #  Security headers + session timeout
 # ──────────────────────────────────────────────────
@@ -210,6 +252,9 @@ def add_security_headers(response):
             " https://*.clerk.com"
         )
 
+    if app.config.get('FLASK_ENV') == 'production':
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         f"script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com "
@@ -217,9 +262,10 @@ def add_security_headers(response):
         "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com "
         f"https://fonts.googleapis.com{clerk_extra}; "
         "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; "
-        f"img-src 'self' data: blob:{clerk_extra}; "
+        f"img-src 'self' data: blob: https://img.youtube.com https://i.vimeocdn.com{clerk_extra}; "
         f"connect-src 'self'{clerk_extra}; "
-        f"frame-src 'self'{clerk_extra}; "
+        "frame-src 'self' https://www.youtube.com https://player.vimeo.com "
+        f"https://youtube.com{clerk_extra}; "
         "form-action 'self'; "
         "base-uri 'self'; "
         "frame-ancestors 'none';"
@@ -334,56 +380,77 @@ def get_core_course_catalog():
     return [
         {
             "slug": "covenant-sacrament",
-            "title": "The Covenant and Sacrament of Matrimony",
-            "duration": "2 weeks",
+            "title": "Marriage as Covenant and Sacrament",
+            "duration": "2 hours",
             "format": "Doctrine seminar + mentor discussion",
-            "summary": "Study Catholic marriage as a covenant ordered to the good of the spouses and the procreation and education of children, raised by Christ to a sacrament between the baptized.",
+            "summary": (
+                "Marriage is not a mere social contract but a sacred covenant: "
+                "'The matrimonial covenant, by which a man and a woman establish between themselves "
+                "a partnership of the whole of life, is by its nature ordered toward the good of the spouses "
+                "and the procreation and education of offspring' (CCC 1601). Among the baptized, "
+                "Christ raised this covenant to the dignity of a sacrament."
+            ),
             "highlights": [
-                "Marriage as a lifelong covenant and vocation",
-                "The grace of the sacrament for Christian spouses",
-                "Why the Church prepares couples before the liturgy",
+                "Marriage originates in God's creative act, not human convention (CCC 1603)",
+                "Christ's first miracle at Cana confirms the goodness of marriage (CCC 1613)",
+                "Sacramental grace strengthens spouses for the duties of their state (CCC 1641–1642)",
             ],
-            "refs": "CCC 1601, 1638–1642, 1660–1661",
+            "refs": "CCC 1601, 1603, 1612–1617, 1638–1642, 1660–1661",
             "level": "Foundation",
         },
         {
-            "slug": "consent-liturgical-celebration",
-            "title": "Consent, Freedom, and the Wedding Liturgy",
-            "duration": "1 week",
+            "slug": "consent-freedom-liturgy",
+            "title": "Matrimonial Consent and Freedom",
+            "duration": "1.5 hours",
             "format": "Guided workshop",
-            "summary": "Focus on matrimonial consent, readiness, freedom, and the public liturgical nature of Catholic marriage.",
+            "summary": (
+                "'The Church holds the exchange of consent between the spouses to be the "
+                "indispensable element that makes the marriage. If consent is lacking there is no marriage' "
+                "(CCC 1626). This module examines what authentic consent requires: freedom from coercion, "
+                "absence of canonical impediments, and personal capacity to enter a lifelong covenant."
+            ),
             "highlights": [
-                "What valid consent means in the Catholic tradition",
-                "Freedom, intention, and mature readiness",
-                "How the Church celebrates marriage within the community",
+                "Consent must be a free act of will — no human power can substitute for it (CCC 1628)",
+                "Freedom from external constraint and internal impediment (CCC 1625)",
+                "The priest receives consent as a witness on behalf of the Church (CCC 1630)",
             ],
-            "refs": "CCC 1625–1632, 1662–1663",
+            "refs": "CCC 1625–1637, 1662–1663",
             "level": "Core preparation",
         },
         {
             "slug": "unity-fidelity-indissolubility",
             "title": "Unity, Fidelity, and Indissolubility",
-            "duration": "2 weeks",
+            "duration": "2 hours",
             "format": "Case-study classroom",
-            "summary": "Explore the Church's teaching that conjugal love is faithful, exclusive, and lifelong, reflecting Christ's love for the Church.",
+            "summary": (
+                "'Love seeks to be definitive; it cannot be an arrangement until further notice' "
+                "(CCC 1646). Christian marriage demands total self-gift. This module explores unity "
+                "(one man and one woman, exclusively), fidelity (definitive and not provisional), "
+                "and indissolubility (the bond that persists until death)."
+            ),
             "highlights": [
-                "Why marriage is exclusive and faithful",
-                "The permanence of the marriage bond",
-                "How the Church supports couples in difficult seasons",
+                "The marriage bond is established by God and is perpetual and exclusive (CCC 1638)",
+                "Unity is required by the equal personal dignity of husband and wife (CCC 1645)",
+                "Fidelity mirrors God's own covenant faithfulness and Christ's fidelity (CCC 1647)",
             ],
-            "refs": "CCC 1643–1651, 1664–1665",
+            "refs": "CCC 1638, 1643–1651, 1664–1665",
             "level": "Formation",
         },
         {
             "slug": "domestic-church-prayer",
-            "title": "The Domestic Church and Prayer in Family Life",
-            "duration": "1 week",
+            "title": "The Domestic Church and Family Prayer",
+            "duration": "1.5 hours",
             "format": "Prayer practicum + live session",
-            "summary": "Build habits of prayer, sacramental life, and Christian witness in the home as the domestic church.",
+            "summary": (
+                "The Second Vatican Council described the Christian family as the Ecclesia domestica "
+                "— the domestic church. 'The Christian home is the place where children receive the first "
+                "proclamation of the faith... a community of grace and prayer, a school of human virtues "
+                "and of Christian charity' (CCC 1666)."
+            ),
             "highlights": [
-                "Shared prayer in married life",
-                "Faith formation within the home",
-                "The home as a school of charity and virtue",
+                "The family is 'Ecclesia domestica' — the domestic church (CCC 1656; LG 11)",
+                "Parents are 'the first heralds of the faith' with regard to their children (CCC 1656)",
+                "The Holy Family of Nazareth is the model for every Christian home",
             ],
             "refs": "CCC 1655–1658, 1666",
             "level": "Spiritual life",
@@ -391,29 +458,39 @@ def get_core_course_catalog():
         {
             "slug": "openness-to-life",
             "title": "Openness to Life and Responsible Parenthood",
-            "duration": "1 week",
+            "duration": "2 hours",
             "format": "Lecture + pastoral Q&A",
-            "summary": "Review Catholic teaching on fruitfulness, the dignity of children, and responsible parenthood in a way that honors conscience formed by the Church.",
+            "summary": (
+                "'Children are really the supreme gift of marriage and contribute very substantially "
+                "to the welfare of their parents' (CCC 1652). The Church teaches the intrinsic connection "
+                "between the unitive and procreative meanings of the conjugal act, and presents natural "
+                "family planning as a morally worthy approach to responsible parenthood."
+            ),
             "highlights": [
-                "Children as a gift within marriage",
-                "Service to life and parental responsibility",
-                "Pastoral formation for honest conversations as a couple",
+                "Children are 'the supreme gift of marriage' (CCC 1652)",
+                "Couples without children can radiate fruitfulness through charity and hospitality (CCC 1654)",
+                "Polygamy, divorce, and refusal of fertility contradict the nature of marriage (CCC 1664)",
             ],
-            "refs": "CCC 1652–1654, 1664",
+            "refs": "CCC 1652–1654, 1664; Humanae Vitae 16; Amoris Laetitia 80–82",
             "level": "Pastoral guidance",
         },
         {
             "slug": "communication-stewardship-mission",
-            "title": "Communication, Stewardship, and Mission",
-            "duration": "2 weeks",
+            "title": "Christian Witness and Communication in Marriage",
+            "duration": "1.5 hours",
             "format": "Applied classroom track",
-            "summary": "Apply Catholic principles to communication, finances, conflict resolution, hospitality, and service in parish life.",
+            "summary": (
+                "'Christ dwells with the couple and gives them the strength to carry crosses, rise after "
+                "failings, and forgive one another' (CCC 1642). Drawing on Amoris Laetitia (2016), "
+                "this module forms couples in the virtues that sustain marriage: patience, gratitude, "
+                "generosity, and the ongoing willingness to seek and grant forgiveness."
+            ),
             "highlights": [
-                "Faithful communication and mutual respect",
-                "Stewardship of money, time, and responsibilities",
-                "Serving the wider Church together",
+                "Christ gives strength to bear hardship and calls couples to grow in communion (CCC 1644)",
+                "Faithful marriage is itself a public witness to God's own fidelity (CCC 1648)",
+                "Good Christian marriage requires generous, ongoing communication (Amoris Laetitia 218–222)",
             ],
-            "refs": "Built from the vocation of spouses to communion, charity, and witness.",
+            "refs": "CCC 1641–1642, 1644, 1648; Amoris Laetitia Ch. 4 & 6",
             "level": "Applied practice",
         },
     ]
@@ -528,23 +605,58 @@ def get_doctrine_principles():
     return [
         {
             "title": "Marriage as Covenant",
-            "description": "Catholic marriage is a covenant for the good of the spouses and the gift of family life.",
+            "description": (
+                "'The matrimonial covenant, by which a man and a woman establish between themselves "
+                "a partnership of the whole of life, is by its nature ordered toward the good of the spouses "
+                "and the procreation and education of offspring.' Among baptized persons, Christ raised "
+                "this covenant to the dignity of a sacrament."
+            ),
             "refs": "CCC 1601",
         },
         {
-            "title": "Grace of the Sacrament",
-            "description": "Christ strengthens baptized spouses with sacramental grace for daily married life.",
-            "refs": "CCC 1638–1642",
+            "title": "The Indissoluble Bond",
+            "description": (
+                "'The marriage bond has been established by God himself in such a way that a marriage "
+                "concluded and consummated between baptized persons can never be dissolved. This bond… "
+                "gives rise to a covenant guaranteed by God's fidelity.'"
+            ),
+            "refs": "CCC 1640",
         },
         {
-            "title": "Fidelity and Indissolubility",
-            "description": "Christian marriage is faithful, exclusive, and lifelong in imitation of Christ's love.",
-            "refs": "CCC 1643–1651",
+            "title": "Fidelity and Unity",
+            "description": (
+                "'Love seeks to be definitive; it cannot be an arrangement until further notice.' "
+                "By its very nature conjugal love requires the inviolable fidelity of the spouses — "
+                "the consequence of the total gift of themselves which they make to each other."
+            ),
+            "refs": "CCC 1646",
         },
         {
-            "title": "Domestic Church",
-            "description": "The home becomes a place of prayer, virtue, hospitality, and witness.",
-            "refs": "CCC 1655–1666",
+            "title": "The Domestic Church",
+            "description": (
+                "'The Christian home is the place where children receive the first proclamation of the faith. "
+                "For this reason the family home is rightly called the domestic church — a community of grace "
+                "and prayer, a school of human virtues and of Christian charity.'"
+            ),
+            "refs": "CCC 1666",
+        },
+        {
+            "title": "Openness to Life",
+            "description": (
+                "'Children are really the supreme gift of marriage and contribute very substantially "
+                "to the welfare of their parents.' Marriage and conjugal love are by nature ordered "
+                "toward the procreation and education of children."
+            ),
+            "refs": "CCC 1652",
+        },
+        {
+            "title": "Sacramental Grace",
+            "description": (
+                "'From a valid marriage arises a bond… furthermore, in a Christian marriage the spouses "
+                "are strengthened and, as it were, consecrated for the duties and the dignity of their "
+                "state by a special sacrament.'"
+            ),
+            "refs": "CCC 1638",
         },
     ]
 
@@ -891,7 +1003,18 @@ def login():
 
         user = User.query.filter_by(email=email).first()
 
+        # Account lockout check
+        if user and user.is_locked():
+            remaining = int((user.locked_until - datetime.utcnow()).total_seconds() // 60) + 1
+            flash(f"Too many failed attempts. Account is locked. Try again in {remaining} minute(s).", "error")
+            return redirect(url_for("login"))
+
         if user and user.check_password(password):
+            # Reset lockout on success
+            user.failed_login_attempts = 0
+            user.locked_until = None
+            db.session.commit()
+
             session.clear()
             login_user(user, remember=False)
             generate_csrf_token()
@@ -911,10 +1034,79 @@ def login():
                 flash("Login successful! Please complete payment to access your dashboard.", "info")
                 return redirect(url_for("payment"))
         else:
-            flash("Invalid email or password. Please try again.", "error")
+            # Increment lockout counter
+            if user:
+                user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+                if user.failed_login_attempts >= 5:
+                    user.locked_until = datetime.utcnow() + timedelta(minutes=15)
+                    db.session.commit()
+                    flash("Too many failed attempts. Account locked for 15 minutes.", "error")
+                else:
+                    db.session.commit()
+                    remaining = 5 - user.failed_login_attempts
+                    flash(f"Invalid email or password. {remaining} attempt(s) remaining.", "error")
+            else:
+                flash("Invalid email or password. Please try again.", "error")
             return redirect(url_for("login"))
 
     return render_template("login.html")
+
+
+@app.route("/admin/login", methods=["GET", "POST"])
+@rate_limit(limit=10, window_seconds=15 * 60, scope="admin_auth")
+@csrf_protect
+def admin_login():
+    if current_user.is_authenticated:
+        if current_user.is_admin:
+            return redirect(url_for("admin_dashboard"))
+        return redirect(url_for("dashboard") if current_user.is_paid else url_for("payment"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        if not EMAIL_PATTERN.match(email):
+            flash("Please enter a valid email address.", "error")
+            return redirect(url_for("admin_login"))
+
+        user = User.query.filter_by(email=email, is_admin=True).first()
+
+        if user and user.is_locked():
+            remaining = int((user.locked_until - datetime.utcnow()).total_seconds() // 60) + 1
+            flash(f"Account is locked. Try again in {remaining} minute(s).", "error")
+            return redirect(url_for("admin_login"))
+
+        if user and user.check_password(password):
+            user.failed_login_attempts = 0
+            user.locked_until = None
+            db.session.commit()
+
+            session.clear()
+            login_user(user, remember=False)
+            generate_csrf_token()
+            session["last_activity"] = int(time.time())
+            write_audit('admin.login', 'user', user.id)
+            db.session.commit()
+
+            if user.force_password_change:
+                flash("Please change your temporary password before continuing.", "warning")
+                return redirect(url_for("change_password"))
+
+            flash(f"Welcome back, {user.email}.", "success")
+            return redirect(url_for("admin_dashboard"))
+        else:
+            if user:
+                user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+                if user.failed_login_attempts >= 5:
+                    user.locked_until = datetime.utcnow() + timedelta(minutes=15)
+                    db.session.commit()
+                    flash("Too many failed attempts. Account locked for 15 minutes.", "error")
+                else:
+                    db.session.commit()
+            flash("Invalid credentials.", "error")
+            return redirect(url_for("admin_login"))
+
+    return render_template("admin/admin_login.html")
 
 
 @app.route("/logout", methods=["POST"], endpoint="user_logout")
@@ -1034,15 +1226,34 @@ def dashboard():
         flash("Please complete payment to access your dashboard.", "warning")
         return redirect(url_for("payment"))
 
+    # Live sessions: upcoming first, then most recent
+    upcoming_sessions = (LiveSession.query
+        .filter(LiveSession.status.in_(['upcoming', 'live']))
+        .order_by(LiveSession.scheduled_at.asc())
+        .limit(3).all())
+
+    # Featured resources (pinned + newest)
+    featured_resources = (Resource.query
+        .filter_by(is_published=True)
+        .order_by(Resource.is_featured.desc(), Resource.created_at.desc())
+        .limit(6).all())
+
+    # Recent recordings
+    recent_recordings = (LiveSession.query
+        .filter(LiveSession.status == 'completed', LiveSession.recording_embed_id.isnot(None))
+        .order_by(LiveSession.scheduled_at.desc())
+        .limit(3).all())
+
     return render_template(
         "dashboard.html",
         course_catalog=get_core_course_catalog(),
         doctrine_principles=get_doctrine_principles(),
-        classroom_features=get_classroom_features(),
-        live_sessions=get_live_classroom_schedule(),
-        classroom_stream=get_classroom_stream(current_user),
+        live_sessions=upcoming_sessions,
+        featured_resources=featured_resources,
+        recent_recordings=recent_recordings,
         milestones=get_dashboard_milestones(current_user),
         session_timeout_minutes=SESSION_IDLE_TIMEOUT // 60,
+        overall_progress=current_user.overall_progress(),
     )
 
 
@@ -1509,6 +1720,438 @@ def admin_remove_admin(user_id):
     db.session.commit()
     flash(f"Admin privileges removed from {user.email}.", "success")
     return redirect(url_for("admin_manage_admins"))
+
+
+# ──────────────────────────────────────────────────
+#  Resource library (couples)
+# ──────────────────────────────────────────────────
+
+@app.route("/resources")
+@login_required
+def resources():
+    if not current_user.is_paid:
+        flash("Please complete payment to access formation resources.", "warning")
+        return redirect(url_for("payment"))
+
+    category = request.args.get('category', 'all')
+    module = request.args.get('module', 'all')
+    rtype = request.args.get('type', 'all')
+
+    q = Resource.query.filter_by(is_published=True)
+    if category != 'all':
+        q = q.filter_by(category=category)
+    if module != 'all':
+        q = q.filter_by(module_slug=module)
+    if rtype != 'all':
+        q = q.filter_by(resource_type=rtype)
+
+    all_resources = q.order_by(Resource.is_featured.desc(), Resource.sort_order.asc(), Resource.created_at.desc()).all()
+    return render_template(
+        "resources.html",
+        resources=all_resources,
+        course_catalog=get_core_course_catalog(),
+        active_category=category,
+        active_module=module,
+        active_type=rtype,
+    )
+
+
+@app.route("/resources/<int:resource_id>")
+@login_required
+def resource_detail(resource_id):
+    if not current_user.is_paid:
+        return redirect(url_for("payment"))
+    resource = Resource.query.filter_by(id=resource_id, is_published=True).first_or_404()
+    return render_template("resource_detail.html", resource=resource)
+
+
+# ──────────────────────────────────────────────────
+#  Live sessions (couples)
+# ──────────────────────────────────────────────────
+
+@app.route("/sessions")
+@login_required
+def sessions():
+    if not current_user.is_paid:
+        flash("Please complete payment to access live sessions.", "warning")
+        return redirect(url_for("payment"))
+
+    upcoming = (LiveSession.query
+        .filter(LiveSession.status.in_(['upcoming', 'live']))
+        .order_by(LiveSession.scheduled_at.asc()).all())
+    past = (LiveSession.query
+        .filter(LiveSession.status == 'completed')
+        .order_by(LiveSession.scheduled_at.desc()).limit(20).all())
+    return render_template("sessions.html", upcoming=upcoming, past=past)
+
+
+@app.route("/sessions/<int:session_id>")
+@login_required
+def session_detail(session_id):
+    if not current_user.is_paid:
+        return redirect(url_for("payment"))
+    ls = LiveSession.query.get_or_404(session_id)
+    return render_template("session_detail.html", ls=ls)
+
+
+# ──────────────────────────────────────────────────
+#  Admin: resources
+# ──────────────────────────────────────────────────
+
+DOCS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'documents')
+os.makedirs(DOCS_FOLDER, exist_ok=True)
+
+
+@app.route("/admin/resources")
+@login_required
+@admin_required
+def admin_resources():
+    resources = Resource.query.order_by(Resource.created_at.desc()).all()
+    return render_template(
+        "admin/admin_resources.html",
+        resources=resources,
+        course_catalog=get_core_course_catalog(),
+        active_page='resources',
+    )
+
+
+@app.route("/admin/resources/add", methods=["GET", "POST"])
+@login_required
+@admin_required
+@csrf_protect
+@rate_limit(limit=30, window_seconds=60 * 60, scope="admin")
+def admin_add_resource():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        resource_type = request.form.get("resource_type", "video")
+        module_slug = request.form.get("module_slug", "").strip()
+        category = request.form.get("category", "general")
+        tags = request.form.get("tags", "").strip()
+        is_featured = request.form.get("is_featured") == "1"
+        sort_order = int(request.form.get("sort_order", 0) or 0)
+        video_duration = request.form.get("video_duration", "").strip()
+
+        if not title:
+            flash("Title is required.", "error")
+            return redirect(url_for("admin_add_resource"))
+
+        new_res = Resource(
+            title=title,
+            description=description or None,
+            resource_type=resource_type,
+            module_slug=module_slug or None,
+            category=category,
+            tags=tags or None,
+            is_featured=is_featured,
+            sort_order=sort_order,
+            uploaded_by=current_user.id,
+        )
+
+        if resource_type == "video":
+            video_url = request.form.get("video_url", "").strip()
+            embed_id, platform = extract_video_info(video_url)
+            if not embed_id:
+                flash("Could not parse a YouTube or Vimeo ID from that URL.", "error")
+                return redirect(url_for("admin_add_resource"))
+            new_res.video_url = video_url
+            new_res.video_embed_id = embed_id
+            new_res.video_platform = platform
+            new_res.video_duration = video_duration or None
+
+        elif resource_type == "document":
+            file = request.files.get("document_file")
+            if not file or not file.filename:
+                flash("Please select a PDF file to upload.", "error")
+                return redirect(url_for("admin_add_resource"))
+            if not allowed_document(file.filename):
+                flash("Only PDF files are accepted.", "error")
+                return redirect(url_for("admin_add_resource"))
+            safe_name = f"doc_{secrets.token_hex(10)}_{secure_filename(file.filename)}"
+            file_path = os.path.join(DOCS_FOLDER, safe_name)
+            file.save(file_path)
+            file_size_kb = max(1, os.path.getsize(file_path) // 1024)
+            new_res.file_path = f"documents/{safe_name}"
+            new_res.file_name = file.filename
+            new_res.file_size_kb = file_size_kb
+
+        try:
+            db.session.add(new_res)
+            write_audit('resource.create', 'resource', detail={'title': title, 'type': resource_type})
+            db.session.commit()
+            flash(f"Resource '{title}' added successfully.", "success")
+        except Exception:
+            db.session.rollback()
+            flash("Could not save resource. Please try again.", "error")
+
+        return redirect(url_for("admin_resources"))
+
+    return render_template(
+        "admin/admin_resource_form.html",
+        resource=None,
+        course_catalog=get_core_course_catalog(),
+        active_page='resources',
+    )
+
+
+@app.route("/admin/resources/<int:resource_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+@csrf_protect
+def admin_edit_resource(resource_id):
+    res = Resource.query.get_or_404(resource_id)
+
+    if request.method == "POST":
+        res.title = request.form.get("title", "").strip() or res.title
+        res.description = request.form.get("description", "").strip() or None
+        res.module_slug = request.form.get("module_slug", "").strip() or None
+        res.category = request.form.get("category", res.category)
+        res.tags = request.form.get("tags", "").strip() or None
+        res.is_featured = request.form.get("is_featured") == "1"
+        res.sort_order = int(request.form.get("sort_order", 0) or 0)
+        res.is_published = request.form.get("is_published") == "1"
+        res.video_duration = request.form.get("video_duration", "").strip() or res.video_duration
+
+        if res.resource_type == "video":
+            new_url = request.form.get("video_url", "").strip()
+            if new_url and new_url != res.video_url:
+                embed_id, platform = extract_video_info(new_url)
+                if embed_id:
+                    res.video_url = new_url
+                    res.video_embed_id = embed_id
+                    res.video_platform = platform
+                else:
+                    flash("Could not parse video URL — keeping previous URL.", "warning")
+
+        res.updated_at = datetime.utcnow()
+        try:
+            write_audit('resource.edit', 'resource', resource_id, {'title': res.title})
+            db.session.commit()
+            flash("Resource updated.", "success")
+        except Exception:
+            db.session.rollback()
+            flash("Update failed. Please try again.", "error")
+
+        return redirect(url_for("admin_resources"))
+
+    return render_template(
+        "admin/admin_resource_form.html",
+        resource=res,
+        course_catalog=get_core_course_catalog(),
+        active_page='resources',
+    )
+
+
+@app.route("/admin/resources/<int:resource_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+@csrf_protect
+def admin_delete_resource(resource_id):
+    res = Resource.query.get_or_404(resource_id)
+    title = res.title
+    if res.file_path:
+        full_path = os.path.join(app.config['UPLOAD_FOLDER'], res.file_path)
+        if os.path.exists(full_path):
+            os.remove(full_path)
+    try:
+        write_audit('resource.delete', 'resource', resource_id, {'title': title})
+        db.session.delete(res)
+        db.session.commit()
+        flash(f"Resource '{title}' deleted.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Delete failed.", "error")
+    return redirect(url_for("admin_resources"))
+
+
+@app.route("/admin/resources/<int:resource_id>/toggle-published", methods=["POST"])
+@login_required
+@admin_required
+@csrf_protect
+def admin_toggle_resource_published(resource_id):
+    res = Resource.query.get_or_404(resource_id)
+    res.is_published = not res.is_published
+    db.session.commit()
+    return jsonify({"success": True, "is_published": res.is_published})
+
+
+# ──────────────────────────────────────────────────
+#  Admin: live sessions
+# ──────────────────────────────────────────────────
+
+@app.route("/admin/sessions")
+@login_required
+@admin_required
+def admin_sessions():
+    sessions = LiveSession.query.order_by(LiveSession.scheduled_at.desc()).all()
+    return render_template(
+        "admin/admin_sessions.html",
+        sessions=sessions,
+        course_catalog=get_core_course_catalog(),
+        active_page='sessions',
+    )
+
+
+@app.route("/admin/sessions/add", methods=["GET", "POST"])
+@login_required
+@admin_required
+@csrf_protect
+@rate_limit(limit=20, window_seconds=60 * 60, scope="admin")
+def admin_add_session():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        host_name = request.form.get("host_name", "").strip()
+        host_role = request.form.get("host_role", "").strip()
+        scheduled_at_str = request.form.get("scheduled_at", "")
+        duration = int(request.form.get("duration_minutes", 60) or 60)
+        meeting_url = request.form.get("meeting_url", "").strip()
+        meeting_id = request.form.get("meeting_id", "").strip()
+        meeting_password = request.form.get("meeting_password", "").strip()
+        platform = request.form.get("platform", "zoom")
+        module_slug = request.form.get("module_slug", "").strip()
+        session_topic = request.form.get("session_topic", "").strip()
+
+        if not title or not scheduled_at_str:
+            flash("Title and scheduled date/time are required.", "error")
+            return redirect(url_for("admin_add_session"))
+
+        try:
+            scheduled_at = datetime.strptime(scheduled_at_str, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            flash("Invalid date/time format.", "error")
+            return redirect(url_for("admin_add_session"))
+
+        ls = LiveSession(
+            title=title,
+            description=description or None,
+            host_name=host_name or None,
+            host_role=host_role or None,
+            scheduled_at=scheduled_at,
+            duration_minutes=duration,
+            meeting_url=meeting_url or None,
+            meeting_id=meeting_id or None,
+            meeting_password=meeting_password or None,
+            platform=platform,
+            module_slug=module_slug or None,
+            session_topic=session_topic or None,
+            status='upcoming',
+            created_by=current_user.id,
+        )
+        try:
+            db.session.add(ls)
+            write_audit('session.create', 'session', detail={'title': title})
+            db.session.commit()
+            flash(f"Session '{title}' scheduled.", "success")
+        except Exception:
+            db.session.rollback()
+            flash("Could not save session.", "error")
+        return redirect(url_for("admin_sessions"))
+
+    return render_template(
+        "admin/admin_session_form.html",
+        ls=None,
+        course_catalog=get_core_course_catalog(),
+        active_page='sessions',
+    )
+
+
+@app.route("/admin/sessions/<int:session_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+@csrf_protect
+def admin_edit_session(session_id):
+    ls = LiveSession.query.get_or_404(session_id)
+
+    if request.method == "POST":
+        ls.title = request.form.get("title", "").strip() or ls.title
+        ls.description = request.form.get("description", "").strip() or None
+        ls.host_name = request.form.get("host_name", "").strip() or None
+        ls.host_role = request.form.get("host_role", "").strip() or None
+        ls.duration_minutes = int(request.form.get("duration_minutes", 60) or 60)
+        ls.meeting_url = request.form.get("meeting_url", "").strip() or None
+        ls.meeting_id = request.form.get("meeting_id", "").strip() or None
+        ls.meeting_password = request.form.get("meeting_password", "").strip() or None
+        ls.platform = request.form.get("platform", ls.platform)
+        ls.module_slug = request.form.get("module_slug", "").strip() or None
+        ls.session_topic = request.form.get("session_topic", "").strip() or None
+        ls.status = request.form.get("status", ls.status)
+
+        # Recording URL
+        rec_url = request.form.get("recording_url", "").strip()
+        if rec_url:
+            embed_id, platform = extract_video_info(rec_url)
+            ls.recording_url = rec_url
+            ls.recording_embed_id = embed_id
+            ls.recording_platform = platform
+
+        scheduled_at_str = request.form.get("scheduled_at", "")
+        if scheduled_at_str:
+            try:
+                ls.scheduled_at = datetime.strptime(scheduled_at_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                flash("Invalid date/time format — keeping original time.", "warning")
+
+        ls.updated_at = datetime.utcnow()
+        try:
+            write_audit('session.edit', 'session', session_id, {'title': ls.title})
+            db.session.commit()
+            flash("Session updated.", "success")
+        except Exception:
+            db.session.rollback()
+            flash("Update failed.", "error")
+        return redirect(url_for("admin_sessions"))
+
+    return render_template(
+        "admin/admin_session_form.html",
+        ls=ls,
+        course_catalog=get_core_course_catalog(),
+        active_page='sessions',
+    )
+
+
+@app.route("/admin/sessions/<int:session_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+@csrf_protect
+def admin_delete_session(session_id):
+    ls = LiveSession.query.get_or_404(session_id)
+    title = ls.title
+    try:
+        write_audit('session.delete', 'session', session_id, {'title': title})
+        db.session.delete(ls)
+        db.session.commit()
+        flash(f"Session '{title}' deleted.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Delete failed.", "error")
+    return redirect(url_for("admin_sessions"))
+
+
+@app.route("/admin/sessions/<int:session_id>/cancel", methods=["POST"])
+@login_required
+@admin_required
+@csrf_protect
+def admin_cancel_session(session_id):
+    ls = LiveSession.query.get_or_404(session_id)
+    ls.status = 'cancelled'
+    write_audit('session.cancel', 'session', session_id, {'title': ls.title})
+    db.session.commit()
+    return jsonify({"success": True})
+
+
+# ──────────────────────────────────────────────────
+#  Admin: audit log
+# ──────────────────────────────────────────────────
+
+@app.route("/admin/audit")
+@login_required
+@admin_required
+def admin_audit():
+    logs = (AuditLog.query
+        .order_by(AuditLog.created_at.desc())
+        .limit(200).all())
+    return render_template("admin/admin_audit.html", logs=logs, active_page='audit')
 
 
 # ──────────────────────────────────────────────────

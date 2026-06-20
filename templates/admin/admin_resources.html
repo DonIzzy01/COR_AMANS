@@ -1,0 +1,157 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}Resources{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Formation Resources</h1>
+    <p class="admin-page-subtitle">Upload and manage videos and PDFs for enrolled couples.</p>
+  </div>
+  <a href="{{ url_for('admin_add_resource') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add Resource
+  </a>
+</div>
+
+<!-- Stats row -->
+{% set total = resources|length %}
+{% set videos = resources|selectattr('resource_type','eq','video')|list|length %}
+{% set docs = resources|selectattr('resource_type','eq','document')|list|length %}
+{% set featured = resources|selectattr('is_featured','eq',True)|list|length %}
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+  <div class="stat-card">
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-label">Total Resources</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ videos }}</div>
+    <div class="stat-label">Videos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ docs }}</div>
+    <div class="stat-label">Documents (PDF)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ featured }}</div>
+    <div class="stat-label">Featured</div>
+  </div>
+</div>
+
+<!-- Resources table -->
+<div class="admin-card">
+  {% if resources %}
+  <div style="overflow-x:auto;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Module</th>
+          <th>Status</th>
+          <th>Uploaded</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in resources %}
+        <tr>
+          <td style="max-width:240px;">
+            <div style="font-weight:700;color:var(--text-primary);font-size:.875rem;">
+              {% if res.is_featured %}<i class="fas fa-star" style="color:#f59e0b;font-size:.75rem;margin-right:.35rem;"></i>{% endif %}
+              {{ res.title }}
+            </div>
+            {% if res.description %}
+            <div style="font-size:.775rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">
+              {{ res.description[:70] }}{% if res.description|length > 70 %}…{% endif %}
+            </div>{% endif %}
+          </td>
+          <td>
+            {% if res.resource_type == 'video' %}
+            <span class="badge badge-info"><i class="fas fa-play"></i> Video
+              {% if res.video_platform %}({{ res.video_platform|capitalize }}){% endif %}
+            </span>
+            {% else %}
+            <span class="badge badge-neutral"><i class="fas fa-file-pdf"></i> PDF
+              {% if res.file_size_kb %}· {{ res.get_size_display() }}{% endif %}
+            </span>{% endif %}
+          </td>
+          <td>
+            {% if res.category %}<span class="badge badge-neutral">{{ res.category|capitalize }}</span>
+            {% else %}<span style="color:var(--text-muted);">—</span>{% endif %}
+          </td>
+          <td style="font-size:.8rem;max-width:150px;">
+            {% if res.module_slug %}
+            {% for c in course_catalog %}{% if c.slug == res.module_slug %}
+              <span title="{{ c.title }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                {{ c.title[:40] }}{% if c.title|length > 40 %}…{% endif %}
+              </span>
+            {% endif %}{% endfor %}
+            {% else %}<span style="color:var(--text-muted);">—</span>{% endif %}
+          </td>
+          <td>
+            {% if res.is_published %}
+            <span class="badge badge-success"><i class="fas fa-eye"></i> Published</span>
+            {% else %}
+            <span class="badge badge-neutral" style="opacity:.7;"><i class="fas fa-eye-slash"></i> Hidden</span>
+            {% endif %}
+          </td>
+          <td style="font-size:.8rem;color:var(--text-muted);">
+            {{ res.created_at.strftime('%d %b %Y') }}
+          </td>
+          <td>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+              <!-- Toggle published -->
+              <button class="btn btn-ghost btn-sm toggle-published-btn"
+                      data-id="{{ res.id }}"
+                      data-csrf="{{ csrf_token() }}"
+                      title="{{ 'Hide' if res.is_published else 'Publish' }}">
+                <i class="fas {{ 'fa-eye-slash' if res.is_published else 'fa-eye' }}"></i>
+              </button>
+              <!-- Edit -->
+              <a href="{{ url_for('admin_edit_resource', resource_id=res.id) }}"
+                 class="btn btn-ghost btn-sm" title="Edit">
+                <i class="fas fa-pencil"></i>
+              </a>
+              <!-- Delete -->
+              <form method="POST" action="{{ url_for('admin_delete_resource', resource_id=res.id) }}"
+                    onsubmit="return confirm('Delete ' + {{ res.title | tojson }} + '? This cannot be undone.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--error);" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:3rem;color:var(--text-muted);">
+    <i class="fas fa-folder-open" style="font-size:2rem;margin-bottom:.75rem;display:block;"></i>
+    <div style="font-size:1rem;font-weight:600;margin-bottom:.375rem;">No resources yet</div>
+    <div style="font-size:.875rem;">
+      <a href="{{ url_for('admin_add_resource') }}" style="color:var(--primary);">Add your first resource</a>
+      to make videos and PDFs available to enrolled couples.
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.toggle-published-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var id = btn.dataset.id;
+    var csrf = btn.dataset.csrf;
+    fetch('/admin/resources/' + id + '/toggle-published', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token': csrf},
+      body: 'csrf_token=' + encodeURIComponent(csrf)
+    }).then(function(r){ return r.json(); }).then(function(data){
+      if (data.success) { location.reload(); }
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}{{ 'Edit Session' if ls else 'Schedule Session' }}{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">{{ 'Edit Session' if ls else 'Schedule a Session' }}</h1>
+    <p class="admin-page-subtitle">
+      {% if ls %}Update session details. Couples will see the latest information.
+      {% else %}Create a new live class for enrolled couples.{% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('admin_sessions') }}" class="btn btn-ghost">
+    <i class="fas fa-arrow-left"></i> Back to Sessions
+  </a>
+</div>
+
+<div class="admin-card" style="max-width:700px;">
+  <form method="POST"
+        action="{{ url_for('admin_edit_session', session_id=ls.id) if ls else url_for('admin_add_session') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Title -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="title">Session Title *</label>
+      <input type="text" id="title" name="title" class="form-input" required
+             value="{{ ls.title if ls else '' }}"
+             placeholder="e.g. Live Class: Marriage as Covenant and Sacrament">
+    </div>
+
+    <!-- Topic -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="session_topic">Session Topic / Subtitle</label>
+      <input type="text" id="session_topic" name="session_topic" class="form-input"
+             value="{{ ls.session_topic if ls else '' }}"
+             placeholder="Short topic shown on session card, e.g. 'CCC 1601–1617: God's plan for marriage'">
+    </div>
+
+    <!-- Description -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="description">Description</label>
+      <textarea id="description" name="description" class="form-input" rows="3"
+                placeholder="What will be covered in this session?">{{ ls.description or '' }}</textarea>
+    </div>
+
+    <!-- Host row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;" class="form-row-2">
+      <div class="form-group">
+        <label class="form-label" for="host_name">Host Name</label>
+        <input type="text" id="host_name" name="host_name" class="form-input"
+               value="{{ ls.host_name or '' }}"
+               placeholder="Fr. Michael Obi">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="host_role">Host Role</label>
+        <input type="text" id="host_role" name="host_role" class="form-input"
+               value="{{ ls.host_role or '' }}"
+               placeholder="Parish Priest, Formation Director">
+      </div>
+    </div>
+
+    <!-- Date/time + Duration row -->
+    <div style="display:grid;grid-template-columns:1fr 120px;gap:1.25rem;margin-bottom:1.25rem;" class="form-row-2">
+      <div class="form-group">
+        <label class="form-label" for="scheduled_at">Date &amp; Time (WAT) *</label>
+        <input type="datetime-local" id="scheduled_at" name="scheduled_at" class="form-input"
+               required
+               value="{{ ls.scheduled_at.strftime('%Y-%m-%dT%H:%M') if ls else '' }}">
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem;">
+          West Africa Time (WAT = UTC+1). Couples see this time.
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="duration_minutes">Duration (min)</label>
+        <input type="number" id="duration_minutes" name="duration_minutes" class="form-input"
+               value="{{ ls.duration_minutes if ls else 60 }}" min="15" max="360">
+      </div>
+    </div>
+
+    <!-- Platform + meeting row -->
+    <div style="display:grid;grid-template-columns:130px 1fr;gap:1.25rem;margin-bottom:1.25rem;" class="form-row-2">
+      <div class="form-group">
+        <label class="form-label" for="platform">Platform</label>
+        <select id="platform" name="platform" class="form-input">
+          {% for val, label in [('zoom','Zoom'),('meet','Google Meet'),('teams','MS Teams'),('jitsi','Jitsi Meet'),('other','Other')] %}
+          <option value="{{ val }}" {{ 'selected' if ls and ls.platform == val }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="meeting_url">Meeting Link (URL) *</label>
+        <input type="url" id="meeting_url" name="meeting_url" class="form-input"
+               value="{{ ls.meeting_url or '' }}"
+               placeholder="https://zoom.us/j/…  or  https://meet.google.com/…">
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem;">
+          Couples click this to join. You can update it at any time before the session.
+        </div>
+      </div>
+    </div>
+
+    <!-- Meeting ID + password (optional) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;" class="form-row-2">
+      <div class="form-group">
+        <label class="form-label" for="meeting_id">Room / Meeting ID (optional)</label>
+        <input type="text" id="meeting_id" name="meeting_id" class="form-input"
+               value="{{ ls.meeting_id or '' }}"
+               placeholder="e.g. 851 2345 6789">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="meeting_password">Password (optional)</label>
+        <input type="text" id="meeting_password" name="meeting_password" class="form-input"
+               value="{{ ls.meeting_password or '' }}"
+               placeholder="e.g. coramans2025">
+      </div>
+    </div>
+
+    <!-- Module -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="module_slug">Related Formation Module (optional)</label>
+      <select id="module_slug" name="module_slug" class="form-input">
+        <option value="">— Not linked to a module —</option>
+        {% for c in course_catalog %}
+        <option value="{{ c.slug }}" {{ 'selected' if ls and ls.module_slug == c.slug }}>{{ c.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Status (edit only) -->
+    {% if ls %}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;" class="form-row-2">
+      <div class="form-group">
+        <label class="form-label" for="status">Session Status</label>
+        <select id="status" name="status" class="form-input">
+          {% for val, label in [('upcoming','Upcoming'),('live','Live Now'),('completed','Completed'),('cancelled','Cancelled')] %}
+          <option value="{{ val }}" {{ 'selected' if ls.status == val }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Recording URL (edit only, for completed sessions) -->
+    <div class="form-group" style="margin-bottom:1.25rem;padding:1rem;background:var(--surface-2,#f8f9fa);border-radius:var(--r-lg);border:1px solid var(--border);">
+      <label class="form-label" for="recording_url">
+        <i class="fas fa-circle-play" style="color:#0369a1;"></i> Recording URL (after the session)
+      </label>
+      <input type="url" id="recording_url" name="recording_url" class="form-input"
+             value="{{ ls.recording_url or '' }}"
+             placeholder="https://www.youtube.com/watch?v=…">
+      <div style="font-size:.78rem;color:var(--text-muted);margin-top:.35rem;">
+        Paste the YouTube or Vimeo URL of the recorded session. Couples can watch it in their dashboard.
+        {% if ls.recording_embed_id %}
+        <span style="color:#0369a1;font-weight:600;">Current recording: {{ ls.recording_platform|capitalize }} / {{ ls.recording_embed_id }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.5rem;">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> {{ 'Save Changes' if ls else 'Schedule Session' }}
+      </button>
+      <a href="{{ url_for('admin_sessions') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+@media (max-width: 640px) {
+  .form-row-2 { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}

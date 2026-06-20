@@ -6,13 +6,70 @@
 {% block head_extra %}
 <style>
   body { background: var(--frost); }
+
+  /* ── resource card thumbnail ──────────────────────────── */
+  .res-thumb {
+    width: 100%; aspect-ratio: 16/9; border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: var(--forest); overflow: hidden; position: relative; flex-shrink: 0;
+  }
+  .res-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .res-thumb .res-type-badge {
+    position: absolute; top: 0.5rem; left: 0.5rem;
+    background: rgba(27,67,50,0.88); color: #fff; font-size: 0.7rem;
+    padding: 0.2rem 0.6rem; border-radius: var(--r-full); font-weight: 600;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .res-thumb .play-btn {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .res-thumb .play-btn i {
+    font-size: 2.5rem; color: rgba(255,255,255,0.9); text-shadow: 0 2px 8px rgba(0,0,0,.4);
+    transition: transform .2s;
+  }
+  .res-thumb:hover .play-btn i { transform: scale(1.12); }
+
+  /* doc card icon */
+  .doc-icon-wrap {
+    height: 120px; border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: linear-gradient(135deg, var(--forest) 0%, var(--sage) 100%);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .doc-icon-wrap i { font-size: 3rem; color: rgba(255,255,255,.85); }
+
+  /* session card status */
+  .sess-status { display: inline-flex; align-items: center; gap: .4rem; font-size: .7rem; font-weight: 700;
+    padding: .2rem .65rem; border-radius: var(--r-full); }
+  .sess-status.live   { background: #fee2e2; color: #b91c1c; }
+  .sess-status.soon   { background: #dcfce7; color: #166534; }
+  .sess-status.upcoming { background: var(--foam); color: var(--forest); }
+
+  .join-btn { display: inline-flex; align-items: center; gap: .45rem; }
+
+  /* progress ring */
+  .progress-ring { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring .pct { position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; font-family: var(--font-serif); font-size: 1rem; font-weight: 700;
+    color: var(--forest); }
+
+  /* module pill */
+  .module-pill {
+    display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem;
+    border-radius: var(--r-lg); border: 1px solid var(--border-green);
+    background: var(--frost); transition: background .2s;
+  }
+  .module-pill:hover { background: #e6f4ee; }
+  .module-num { width: 32px; height: 32px; border-radius: 50%; background: var(--sage);
+    color: #fff; font-weight: 700; font-size: .85rem; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; }
+  .module-num.done { background: var(--forest); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-layout">
 
-  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <!-- ── Sidebar ───────────────────────────────────────── -->
   <aside class="sidebar" id="dashboard-sidebar">
     <div class="sidebar__header">
       <div class="couple-avatar">
@@ -37,14 +94,14 @@
         <a href="{{ url_for('dashboard') }}" class="sidebar__nav-link active">
           <i class="fas fa-house"></i> Dashboard
         </a>
-        <a href="#courses" class="sidebar__nav-link">
-          <i class="fas fa-book-open"></i> Courses
-        </a>
-        <a href="#sessions" class="sidebar__nav-link">
+        <a href="{{ url_for('sessions') }}" class="sidebar__nav-link">
           <i class="fas fa-video"></i> Live Sessions
         </a>
-        <a href="#stream" class="sidebar__nav-link">
-          <i class="fas fa-list-check"></i> Classroom Stream
+        <a href="{{ url_for('resources') }}" class="sidebar__nav-link">
+          <i class="fas fa-folder-open"></i> Resources
+        </a>
+        <a href="#modules" class="sidebar__nav-link">
+          <i class="fas fa-book-open"></i> Modules
         </a>
       </div>
       <div class="sidebar__nav-group">
@@ -76,10 +133,10 @@
   <!-- Sidebar overlay -->
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <!-- ── Main ──────────────────────────────────────────────── -->
+  <!-- ── Main ─────────────────────────────────────────── -->
   <div class="dashboard-main">
 
-    <!-- Topbar (mobile) -->
+    <!-- Mobile topbar -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
       <div style="display:flex;align-items:center;gap:0.75rem;">
         <button class="navbar__hamburger" data-sidebar-toggle aria-label="Open sidebar" style="display:flex;">
@@ -92,8 +149,7 @@
       </div>
       {% if session_timeout_minutes %}
       <div class="session-timer" id="session-timer" data-timeout="{{ session_timeout_minutes * 60 }}">
-        <i class="fas fa-clock"></i>
-        Session: {{ session_timeout_minutes }}:00
+        <i class="fas fa-clock"></i> Session: {{ session_timeout_minutes }}:00
       </div>
       {% endif %}
     </div>
@@ -117,20 +173,39 @@
 
     <!-- Progress + milestones row -->
     <div class="grid-2" style="margin-top:1.5rem;">
+
       <!-- Progress card -->
       <div class="card reveal delay-1">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-          <div style="font-size:0.825rem;font-weight:700;color:var(--charcoal);">Formation Progress</div>
-          <span style="font-family:var(--font-serif);font-size:1.25rem;font-weight:700;color:var(--forest);">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-bar__fill" style="width:0%"></div>
-        </div>
-        <div style="font-size:0.775rem;color:var(--muted);margin-top:0.5rem;">Start your first module to track progress</div>
-        <div style="margin-top:1.25rem;display:flex;gap:0.625rem;flex-wrap:wrap;">
-          {% for course in course_catalog[:3] %}
-          <span style="font-size:0.7rem;padding:0.25rem 0.625rem;background:var(--foam);color:var(--forest);border-radius:var(--r-full);font-weight:600;border:1px solid var(--border-green);">{{ course.level }}</span>
-          {% endfor %}
+        <div style="display:flex;align-items:center;gap:1.25rem;">
+          <!-- SVG ring -->
+          <div class="progress-ring">
+            {% set pct = overall_progress %}
+            {% set circ = 2 * 3.14159 * 28 %}
+            {% set dash = circ * pct / 100 %}
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="28" fill="none" stroke="var(--border-green)" stroke-width="8"/>
+              <circle cx="36" cy="36" r="28" fill="none" stroke="var(--sage)" stroke-width="8"
+                stroke-dasharray="{{ dash|round(2) }} {{ circ|round(2) }}"
+                stroke-linecap="round"/>
+            </svg>
+            <div class="pct">{{ pct }}%</div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.825rem;font-weight:700;color:var(--charcoal);margin-bottom:.25rem;">Formation Progress</div>
+            {% if pct == 0 %}
+            <div style="font-size:.8rem;color:var(--muted);">Start Module 1 to track your journey</div>
+            {% elif pct < 50 %}
+            <div style="font-size:.8rem;color:var(--muted);">Keep going — you're building a strong foundation</div>
+            {% elif pct < 100 %}
+            <div style="font-size:.8rem;color:var(--sage);font-weight:600;">More than halfway there!</div>
+            {% else %}
+            <div style="font-size:.8rem;color:var(--forest);font-weight:700;">Formation complete!</div>
+            {% endif %}
+            <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+              <span style="font-size:.7rem;padding:.2rem .6rem;background:var(--foam);color:var(--forest);border-radius:var(--r-full);font-weight:600;border:1px solid var(--border-green);">6 Modules</span>
+              <span style="font-size:.7rem;padding:.2rem .6rem;background:var(--foam);color:var(--forest);border-radius:var(--r-full);font-weight:600;border:1px solid var(--border-green);">CCC-based</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -154,79 +229,179 @@
       </div>
     </div>
 
-    <!-- Live sessions -->
+    <!-- ── Live Sessions ──────────────────────────────── -->
     <section id="sessions" style="margin-top:2rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
-        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Live Sessions</h2>
-        <span class="badge badge-neutral">Weekly schedule</span>
+        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Upcoming Live Sessions</h2>
+        <a href="{{ url_for('sessions') }}" class="badge badge-neutral" style="text-decoration:none;">View all sessions</a>
       </div>
+
+      {% if live_sessions %}
       <div class="grid-3">
-        {% for session in live_sessions %}
-        <div class="card card-hover reveal delay-{{ loop.index }}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.875rem;">
-            <span class="badge {{ 'badge-success' if session.status == 'Upcoming' else 'badge-info' if session.status == 'Open this week' else 'badge-neutral' }}">
-              {{ session.status }}
-            </span>
-            <span style="font-size:0.75rem;color:var(--muted);">{{ session.room }}</span>
+        {% for ls in live_sessions %}
+        <div class="card card-hover reveal delay-{{ loop.index }}" style="display:flex;flex-direction:column;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.875rem;">
+            {% if ls.status == 'live' or ls.is_joinable() %}
+            <span class="sess-status live"><i class="fas fa-circle fa-xs"></i> Live Now</span>
+            {% else %}
+            <span class="sess-status upcoming"><i class="fas fa-clock"></i> Upcoming</span>
+            {% endif %}
+            <span style="font-size:.75rem;color:var(--muted);">{{ ls.platform|capitalize }}</span>
           </div>
-          <h3 style="font-family:var(--font-serif);font-size:0.95rem;color:var(--forest);margin-bottom:0.5rem;line-height:1.3;">{{ session.title }}</h3>
-          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.375rem;"><i class="fas fa-clock" style="width:16px;"></i> {{ session.time }}</div>
-          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.375rem;"><i class="fas fa-user-tie" style="width:16px;"></i> {{ session.host }}</div>
-          <div style="font-size:0.8rem;color:var(--sage);margin-bottom:1rem;font-family:var(--font-accent);font-style:italic;">{{ session.focus }}</div>
-          <button class="btn btn-ghost btn-sm btn-full">
-            <i class="fas fa-door-open"></i> {{ session.join_label }}
+          <h3 style="font-family:var(--font-serif);font-size:.95rem;color:var(--forest);margin-bottom:.5rem;line-height:1.35;flex:1;">{{ ls.title }}</h3>
+          {% if ls.session_topic %}
+          <div style="font-size:.8rem;color:var(--sage);font-style:italic;margin-bottom:.5rem;font-family:var(--font-accent);">{{ ls.session_topic }}</div>
+          {% endif %}
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:.3rem;">
+            <i class="fas fa-calendar-day" style="width:16px;"></i>
+            {{ ls.scheduled_at.strftime('%A, %d %b %Y') }}
+          </div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:.3rem;">
+            <i class="fas fa-clock" style="width:16px;"></i>
+            {{ ls.scheduled_at.strftime('%I:%M %p') }} WAT · {{ ls.duration_minutes }} min
+          </div>
+          {% if ls.host_name %}
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:1rem;">
+            <i class="fas fa-user-tie" style="width:16px;"></i> {{ ls.host_name }}
+          </div>
+          {% else %}
+          <div style="margin-bottom:1rem;"></div>
+          {% endif %}
+
+          {% if ls.meeting_url and ls.is_joinable() %}
+          <a href="{{ ls.meeting_url }}" target="_blank" rel="noopener noreferrer"
+             class="btn btn-primary btn-sm btn-full join-btn">
+            <i class="fas fa-door-open"></i> Join Session
+          </a>
+          {% elif ls.meeting_url %}
+          <button class="btn btn-ghost btn-sm btn-full" disabled style="opacity:.6;cursor:not-allowed;">
+            <i class="fas fa-calendar-check"></i> Room opens 15 min before start
           </button>
+          {% else %}
+          <div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.5rem 0;">Link will be posted before the session</div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
+      {% else %}
+      <div class="card" style="text-align:center;padding:2.5rem;color:var(--muted);">
+        <i class="fas fa-video" style="font-size:2rem;margin-bottom:.75rem;display:block;color:var(--border-green);"></i>
+        <div style="font-weight:600;color:var(--charcoal);margin-bottom:.375rem;">No sessions scheduled yet</div>
+        <div style="font-size:.875rem;">Your parish will post upcoming live classes here soon.</div>
+      </div>
+      {% endif %}
     </section>
 
-    <!-- Classroom stream -->
-    <section id="stream" style="margin-top:2rem;">
-      <div style="margin-bottom:1.25rem;">
-        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Classroom Stream</h2>
+    <!-- ── Featured Resources ─────────────────────────── -->
+    <section id="resources" style="margin-top:2rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Formation Resources</h2>
+        <a href="{{ url_for('resources') }}" class="badge badge-neutral" style="text-decoration:none;">Browse all</a>
       </div>
-      <div style="display:flex;flex-direction:column;gap:1rem;">
-        {% set stream_icon = {"assignment":"fa-pen-to-square","discussion":"fa-comments","resource":"fa-folder-open","meeting":"fa-handshake"} %}
-        {% set stream_color = {"assignment":"text-forest","discussion":"text-info","resource":"text-gold","meeting":"text-sage"} %}
-        {% for item in classroom_stream %}
-        <div class="card reveal delay-{{ loop.index }}" style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
-          <div class="{{ stream_color.get(item.type, 'text-forest') }}" style="width:44px;height:44px;border-radius:var(--r-lg);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;">
-            <i class="fas {{ stream_icon.get(item.type, 'fa-circle') }}"></i>
+
+      {% if featured_resources %}
+      <div class="grid-3">
+        {% for res in featured_resources %}
+        <a href="{{ url_for('resource_detail', resource_id=res.id) }}"
+           class="card card-hover reveal delay-{{ loop.index }}"
+           style="text-decoration:none;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+
+          {% if res.resource_type == 'video' %}
+          <div class="res-thumb">
+            {% if res.get_thumbnail() %}
+            <img src="{{ res.get_thumbnail() }}" alt="{{ res.title }}" loading="lazy">
+            {% else %}
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--forest),var(--sage));"></div>
+            {% endif %}
+            <div class="res-type-badge"><i class="fas fa-play"></i> Video{% if res.video_duration %} · {{ res.video_duration }}{% endif %}</div>
+            <div class="play-btn"><i class="fas fa-circle-play"></i></div>
+          </div>
+          {% else %}
+          <div class="doc-icon-wrap">
+            <i class="fas fa-file-pdf"></i>
+          </div>
+          {% endif %}
+
+          <div style="padding:1rem;flex:1;display:flex;flex-direction:column;">
+            {% if res.category %}
+            <span style="font-size:.7rem;color:var(--sage);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;">{{ res.category|capitalize }}</span>
+            {% endif %}
+            <div style="font-size:.9rem;font-weight:700;color:var(--charcoal);line-height:1.35;flex:1;">{{ res.title }}</div>
+            {% if res.description %}
+            <div style="font-size:.8rem;color:var(--muted);margin-top:.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ res.description }}</div>
+            {% endif %}
+            {% if res.resource_type == 'document' and res.file_size_kb %}
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.5rem;"><i class="fas fa-file-pdf"></i> PDF · {{ res.get_size_display() }}</div>
+            {% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card" style="text-align:center;padding:2.5rem;color:var(--muted);">
+        <i class="fas fa-folder-open" style="font-size:2rem;margin-bottom:.75rem;display:block;color:var(--border-green);"></i>
+        <div style="font-weight:600;color:var(--charcoal);margin-bottom:.375rem;">No resources uploaded yet</div>
+        <div style="font-size:.875rem;">Your parish will upload videos, PDFs, and study materials here.</div>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- ── Recent Recordings ──────────────────────────── -->
+    {% if recent_recordings %}
+    <section style="margin-top:2rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Recent Recordings</h2>
+        <a href="{{ url_for('sessions') }}" class="badge badge-neutral" style="text-decoration:none;">All recordings</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.875rem;">
+        {% for ls in recent_recordings %}
+        <div class="card card-hover reveal delay-{{ loop.index }}" style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;">
+          <div style="width:44px;height:44px;border-radius:var(--r-lg);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--forest);font-size:1.1rem;">
+            <i class="fas fa-circle-play"></i>
           </div>
           <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;margin-bottom:0.375rem;">
-              <span class="badge badge-neutral">{{ item.badge }}</span>
+            <div style="font-size:.925rem;font-weight:700;color:var(--charcoal);">{{ ls.title }}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem;">
+              Recorded {{ ls.scheduled_at.strftime('%B %d, %Y') }}
+              {% if ls.host_name %} · {{ ls.host_name }}{% endif %}
             </div>
-            <div style="font-size:0.925rem;font-weight:700;color:var(--charcoal);margin-bottom:0.375rem;">{{ item.title }}</div>
-            <div style="font-size:0.85rem;color:var(--muted);line-height:1.5;margin-bottom:0.625rem;">{{ item.description }}</div>
-            <div style="font-size:0.775rem;color:var(--sage);font-style:italic;">{{ item.meta }}</div>
           </div>
-          <button class="btn btn-ghost btn-sm" style="flex-shrink:0;">{{ item.action }}</button>
+          <a href="{{ url_for('session_detail', session_id=ls.id) }}" class="btn btn-ghost btn-sm" style="flex-shrink:0;">
+            <i class="fas fa-play"></i> Watch
+          </a>
         </div>
         {% endfor %}
       </div>
     </section>
+    {% endif %}
 
-    <!-- Courses -->
-    <section id="courses" style="margin-top:2rem;padding-bottom:3rem;">
+    <!-- ── Formation Modules ──────────────────────────── -->
+    <section id="modules" style="margin-top:2rem;padding-bottom:3rem;">
       <div style="margin-bottom:1.25rem;">
         <h2 style="font-family:var(--font-serif);font-size:1.25rem;color:var(--forest);">Formation Modules</h2>
+        <p style="font-size:.875rem;color:var(--muted);margin-top:.35rem;">Six sessions based on the Catechism of the Catholic Church.</p>
       </div>
-      <div class="grid-3">
+      <div style="display:flex;flex-direction:column;gap:.625rem;">
+        {% set progress_map = current_user.get_module_progress() %}
         {% for course in course_catalog %}
-        <div class="course-card reveal delay-{{ loop.index }}">
-          <div class="course-card__header">
-            <div class="course-card__level">{{ course.level }}</div>
-            <div class="course-card__title">{{ course.title }}</div>
+        {% set pct = progress_map.get(course.slug, 0) %}
+        <div class="module-pill reveal delay-{{ loop.index }}">
+          <div class="module-num {{ 'done' if pct == 100 else '' }}">
+            {% if pct == 100 %}<i class="fas fa-check"></i>{% else %}{{ loop.index }}{% endif %}
           </div>
-          <div class="course-card__body">
-            <div class="course-card__meta">
-              <span><i class="fas fa-clock"></i> {{ course.duration }}</span>
-              <span><i class="fas fa-chalkboard-user"></i> {{ course.format }}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.2rem;">
+              <div style="font-size:.9rem;font-weight:700;color:var(--charcoal);">{{ course.title }}</div>
+              <span style="font-size:.7rem;color:var(--muted);flex-shrink:0;">{{ course.duration }} · {{ course.format }}</span>
             </div>
-            <p class="course-card__summary">{{ course.summary }}</p>
-            <div class="course-card__refs">{{ course.refs }}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-bottom:.5rem;">{{ course.summary[:120] }}{% if course.summary|length > 120 %}…{% endif %}</div>
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <div style="flex:1;height:5px;background:var(--border-green);border-radius:var(--r-full);overflow:hidden;">
+                <div style="height:100%;width:{{ pct }}%;background:var(--sage);border-radius:var(--r-full);transition:width .4s;"></div>
+              </div>
+              <span style="font-size:.75rem;color:var(--sage);font-weight:600;flex-shrink:0;">{{ pct }}%</span>
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem;font-style:italic;">{{ course.refs }}</div>
           </div>
         </div>
         {% endfor %}
@@ -238,7 +413,7 @@
 
 {% block scripts %}
 <script>
-  // Sidebar toggle wiring
+  // Sidebar toggle
   (function(){
     var btn  = document.querySelector('[data-sidebar-toggle]');
     var side = document.getElementById('dashboard-sidebar');

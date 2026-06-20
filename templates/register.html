@@ -7,897 +7,1305 @@
 
 {% block content %}
 <style>
-/* ── Registration Card ─────────────────────────────────────────── */
-.reg-card { max-width:580px; background:var(--white); border-radius:var(--r-xl); padding:2rem 2rem 1.75rem; box-shadow:var(--shadow-xl); position:relative; overflow:visible; }
+/* ══ PAGE SHELL ═══════════════════════════════════════════════ */
+.reg-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  background: var(--white);
+}
 
-/* Progress bar */
-.reg-progress { height:4px; background:var(--border); border-radius:2px; margin-bottom:1.5rem; overflow:hidden; }
-.reg-progress__fill { height:100%; background:linear-gradient(90deg,var(--forest),var(--sage)); border-radius:2px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+/* ══ LEFT PANEL ═══════════════════════════════════════════════ */
+.reg-panel {
+  display: none;
+  width: 300px;
+  flex-shrink: 0;
+  height: 100vh;
+  background: linear-gradient(175deg, var(--forest) 0%, var(--forest-mid) 60%, var(--sage) 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1.75rem;
+  flex-direction: column;
+  justify-content: space-between;
+}
+@media (min-width: 1080px) { .reg-panel { display: flex; } }
 
-/* Phase tabs */
-.reg-phases { display:flex; gap:.5rem; margin-bottom:1.1rem; }
-.reg-phase { flex:1; display:flex; align-items:center; justify-content:center; gap:.4rem; padding:.45rem .6rem; border-radius:var(--r-md); font-size:.75rem; font-weight:600; border:2px solid var(--border); color:var(--muted); background:var(--surface); transition:all .3s ease; letter-spacing:.03em; }
-.reg-phase.active { border-color:var(--forest); color:var(--forest); background:var(--frost); }
-.reg-phase.done  { border-color:var(--sage); color:var(--sage); background:#f0fdf4; }
-.reg-phase i { font-size:.8rem; }
+.reg-panel__deco { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+.rp-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.07);
+  animation: rpRingFloat 9s ease-in-out infinite;
+}
+.rp-ring:nth-child(1){width:240px;height:240px;top:-70px;left:-70px;animation-delay:0s}
+.rp-ring:nth-child(2){width:180px;height:180px;bottom:-60px;right:-60px;animation-delay:-3.5s}
+.rp-ring:nth-child(3){width:120px;height:120px;top:42%;right:-35px;animation-delay:-6s}
+@keyframes rpRingFloat{
+  0%,100%{transform:scale(1) rotate(0deg);opacity:.7}
+  50%{transform:scale(1.1) rotate(15deg);opacity:1}
+}
+.rp-petal {
+  position: absolute;
+  width: 56px;
+  height: 84px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: rgba(201,168,76,.1);
+  animation: rpPetalSway 7s ease-in-out infinite;
+}
+.rp-petal:nth-child(4){top:22%;left:10%;transform:rotate(30deg);animation-delay:0s}
+.rp-petal:nth-child(5){top:52%;right:8%;transform:rotate(-25deg);animation-delay:-2s}
+.rp-petal:nth-child(6){bottom:20%;left:35%;transform:rotate(12deg);animation-delay:-4.5s}
+@keyframes rpPetalSway{
+  0%,100%{transform:rotate(30deg) scale(1)}
+  50%{transform:rotate(40deg) scale(1.12)}
+}
 
-/* Step dots row */
-.reg-dots-row { display:flex; align-items:center; gap:.4rem; margin-bottom:1.5rem; }
-.reg-dot { width:8px; height:8px; border-radius:50%; background:var(--border); flex-shrink:0; transition:all .3s ease; }
-.reg-dot.active { background:var(--forest); transform:scale(1.4); }
-.reg-dot.done   { background:var(--sage); }
-.reg-dot-sep { flex:1; height:2px; background:var(--border); border-radius:1px; }
-.step-count-badge { font-size:.72rem; color:var(--muted); margin-left:auto; }
+.reg-panel__top { position:relative;z-index:1; }
+.reg-panel__logo {
+  width:52px;height:52px;border-radius:var(--r-lg);
+  border:2px solid rgba(255,255,255,.2);object-fit:cover;
+  margin-bottom:1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.2);
+}
+.reg-panel__title {
+  font-family:var(--font-serif);font-size:1.55rem;font-weight:700;
+  color:#fff;line-height:1.25;margin-bottom:.5rem;
+}
+.reg-panel__tagline {
+  font-family:var(--font-accent);font-size:.82rem;
+  color:rgba(255,255,255,.68);line-height:1.65;margin-bottom:1.5rem;
+}
+.reg-panel__divider {
+  height:1px;background:rgba(255,255,255,.1);margin-bottom:1.25rem;
+}
+.reg-panel__features {
+  display:flex;flex-direction:column;gap:.55rem;
+}
+.reg-panel__feat {
+  display:flex;align-items:flex-start;gap:.6rem;
+  color:rgba(255,255,255,.8);font-size:.78rem;line-height:1.5;
+}
+.reg-panel__feat i { color:var(--gold-light);width:14px;flex-shrink:0;margin-top:.18rem;font-size:.72rem; }
 
-/* Steps wrapper & animation */
-.reg-steps-wrap { position:relative; min-height:380px; }
-.reg-step { display:none; }
-.reg-step.active { display:block; }
-.reg-step.entering-fwd  { animation:stepEnterFwd .34s cubic-bezier(.4,0,.2,1) both; }
-.reg-step.entering-back { animation:stepEnterBack .34s cubic-bezier(.4,0,.2,1) both; }
-.reg-step.exiting { display:block; position:absolute; top:0; left:0; right:0; pointer-events:none; }
-.reg-step.exiting-fwd  { animation:stepExitFwd .26s cubic-bezier(.4,0,.2,1) forwards; }
-.reg-step.exiting-back { animation:stepExitBack .26s cubic-bezier(.4,0,.2,1) forwards; }
+.reg-panel__bottom { position:relative;z-index:1; }
+.reg-panel__verse {
+  font-family:var(--font-accent);font-style:italic;font-size:.8rem;
+  color:rgba(255,255,255,.6);line-height:1.6;
+  border-left:2px solid rgba(201,168,76,.4);padding-left:.875rem;
+}
+.reg-panel__verse cite {
+  display:block;font-style:normal;font-weight:600;
+  color:var(--gold-light);font-size:.7rem;margin-top:.35rem;
+}
 
-@keyframes stepEnterFwd  { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
-@keyframes stepEnterBack { from{opacity:0;transform:translateX(-50px)} to{opacity:1;transform:translateX(0)} }
-@keyframes stepExitFwd   { to{opacity:0;transform:translateX(-36px)} }
-@keyframes stepExitBack  { to{opacity:0;transform:translateX(36px)} }
+/* ══ RIGHT MAIN ═══════════════════════════════════════════════ */
+.reg-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--ivory);
+  min-width: 0;
+}
 
-/* Section header */
-.reg-section-head { display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border-green); }
-.reg-section-badge { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; color:#fff; flex-shrink:0; }
-.reg-section-title { font-family:var(--font-serif); font-size:1.05rem; color:var(--forest); font-weight:600; line-height:1.3; }
-.reg-section-sub { font-size:.76rem; color:var(--muted); margin-top:.15rem; }
+/* ── Sticky top bar ─────────────────────────────────────────── */
+.reg-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(254,254,248,.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-green);
+  padding: .7rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.reg-topbar__logo {
+  width:36px;height:36px;border-radius:var(--r-md);object-fit:cover;flex-shrink:0;
+}
+.reg-topbar__signin { font-size:.8rem;color:var(--muted);margin-left:auto;white-space:nowrap;flex-shrink:0; }
+.reg-topbar__signin a { color:var(--forest);font-weight:600; }
 
-/* Field layout */
-.reg-fields { display:flex; flex-direction:column; gap:.9rem; }
-.reg-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+/* ── Stepper ──────────────────────────────────────────────── */
+.reg-stepper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  max-width: 520px;
+  min-width: 0;
+}
+.reg-stepper__phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  flex: 1;
+  min-width: 0;
+}
+.reg-stepper__plabel {
+  font-size: .62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--muted);
+  transition: color .3s ease;
+  white-space: nowrap;
+}
+.reg-stepper__phase.s-active .reg-stepper__plabel { color: var(--forest); }
+.reg-stepper__phase.s-done   .reg-stepper__plabel { color: var(--sage); }
 
-/* Radio pills */
-.radio-pills { display:flex; flex-wrap:wrap; gap:.45rem; }
+.reg-stepper__row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.s-dot {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .67rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all .32s var(--ease);
+  position: relative;
+  z-index: 1;
+}
+.s-dot.s-active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(27,67,50,.14);
+  transform: scale(1.15);
+}
+.s-dot.s-done {
+  border-color: var(--sage);
+  background: var(--sage);
+  color: #fff;
+}
+.s-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  transition: background .38s ease;
+  margin: 0 -1px;
+  z-index: 0;
+}
+.s-line.s-done { background: var(--sage); }
+.s-phase-gap {
+  width: 20px;
+  height: 2px;
+  background: var(--border);
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 3px;
+  transition: background .38s ease;
+}
+.s-phase-gap.s-done { background: var(--sage); }
+
+/* ══ FORM BODY ════════════════════════════════════════════════ */
+.reg-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.reg-card {
+  width: 100%;
+  max-width: 700px;
+  background: var(--white);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* ── Step header stripe ───────────────────────────────────── */
+.reg-step-hd {
+  padding: 1.4rem 1.75rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.reg-step-hd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .035;
+}
+.rs-bride   .reg-step-hd::after { background: var(--forest); }
+.rs-groom   .reg-step-hd::after { background: #1E3A5F; }
+.rs-reli    .reg-step-hd::after { background: var(--forest-mid); }
+.rs-medical .reg-step-hd::after { background: #1565C0; }
+.rs-account .reg-step-hd::after { background: var(--gold); }
+
+.reg-step-ico {
+  width: 46px; height: 46px;
+  border-radius: var(--r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+.rs-bride   .reg-step-ico { background: var(--forest); }
+.rs-groom   .reg-step-ico { background: #1E3A5F; }
+.rs-reli    .reg-step-ico { background: var(--forest-mid); }
+.rs-medical .reg-step-ico { background: #1565C0; }
+.rs-account .reg-step-ico { background: var(--gold); }
+
+.reg-step-name { font-family:var(--font-serif);font-size:1.15rem;font-weight:700;color:var(--forest);line-height:1.25; }
+.reg-step-desc { font-size:.76rem;color:var(--muted);margin-top:.2rem; }
+
+/* ── Step body wrapper ────────────────────────────────────── */
+.reg-step-bd { padding: 1.6rem 1.75rem 1.75rem; }
+
+/* ── Sub-groups ───────────────────────────────────────────── */
+.reg-grp {
+  background: var(--frost);
+  border: 1px solid var(--border-green);
+  border-radius: var(--r-lg);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: .875rem;
+}
+.reg-grp:last-child { margin-bottom: 0; }
+.reg-grp__hd {
+  font-size: .64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--sage);
+  margin-bottom: .8rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.reg-grp__hd i { font-size: .68rem; }
+.reg-grp__fields { display: flex; flex-direction: column; gap: .7rem; }
+
+/* ── Grids ────────────────────────────────────────────────── */
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.7rem; }
+
+/* ── Icon-prefixed inputs ─────────────────────────────────── */
+.iw { position: relative; }
+.iw .ii {
+  position: absolute;
+  left: .8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: .78rem;
+  pointer-events: none;
+  z-index: 1;
+}
+.iw textarea + .ii,
+.iw .ii.ii-top { top: .85rem; transform: none; }
+.iw .form-input { padding-left: 2.35rem; }
+.iw textarea.form-input { padding-left: 2.35rem; }
+
+/* ── Step transitions ─────────────────────────────────────── */
+.reg-steps-wrap { position: relative; }
+.reg-step { display: none; }
+.reg-step.active { display: block; }
+.reg-step.entering-fwd  { animation: sEnterFwd  .38s cubic-bezier(.4,0,.2,1) both; }
+.reg-step.entering-back { animation: sEnterBack .38s cubic-bezier(.4,0,.2,1) both; }
+.reg-step.exiting {
+  display: block;
+  position: absolute; top: 0; left: 0; right: 0;
+  pointer-events: none; z-index: 2;
+}
+.reg-step.exiting-fwd  { animation: sExitFwd  .28s cubic-bezier(.4,0,.2,1) forwards; }
+.reg-step.exiting-back { animation: sExitBack .28s cubic-bezier(.4,0,.2,1) forwards; }
+
+@keyframes sEnterFwd  { from{opacity:0;transform:translateX(64px) scale(.97)} to{opacity:1;transform:translateX(0) scale(1)} }
+@keyframes sEnterBack { from{opacity:0;transform:translateX(-64px) scale(.97)} to{opacity:1;transform:translateX(0) scale(1)} }
+@keyframes sExitFwd   { to{opacity:0;transform:translateX(-44px) scale(.97)} }
+@keyframes sExitBack  { to{opacity:0;transform:translateX(44px) scale(.97)} }
+
+/* ── Radio pills ──────────────────────────────────────────── */
+.radio-pills { display:flex;flex-wrap:wrap;gap:.4rem; }
 .radio-pill { position:relative; }
-.radio-pill input[type="radio"] { position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
-.radio-pill label { display:flex; align-items:center; gap:.3rem; padding:.42rem .85rem; border:2px solid var(--border); border-radius:2rem; font-size:.8rem; font-weight:500; color:var(--slate); cursor:pointer; transition:all .2s ease; user-select:none; }
-.radio-pill input:checked + label { border-color:var(--forest); background:var(--frost); color:var(--forest); font-weight:600; }
-.radio-pill label:hover { border-color:var(--sage); color:var(--forest); }
+.radio-pill input[type="radio"] { position:absolute;opacity:0;pointer-events:none;width:0;height:0; }
+.radio-pill label {
+  display:flex;align-items:center;gap:.32rem;
+  padding:.42rem .95rem;border:2px solid var(--border);border-radius:var(--r-full);
+  font-size:.79rem;font-weight:500;color:var(--slate);cursor:pointer;
+  transition:all .2s ease;user-select:none;background:var(--white);
+}
+.radio-pill input:checked + label {
+  border-color:var(--forest);background:rgba(27,67,50,.06);
+  color:var(--forest);font-weight:600;
+  box-shadow:0 0 0 3px rgba(27,67,50,.08);
+}
+.radio-pill label:hover { border-color:var(--sage);color:var(--forest);background:var(--frost); }
 .radio-error .radio-pill label { border-color:var(--error); }
 
-/* Input error */
-.input-error { border-color:var(--error)!important; box-shadow:0 0 0 3px rgba(220,38,38,.12)!important; }
+/* ── Error states ─────────────────────────────────────────── */
+.input-error { border-color:var(--error)!important;box-shadow:0 0 0 3px rgba(220,38,38,.1)!important; }
 .check-error .form-check__label { color:var(--error); }
 
-/* Nav buttons */
-.reg-nav { display:flex; gap:.75rem; margin-top:1.25rem; }
-.reg-nav .btn-back { flex:0 0 44px; width:44px; min-width:0; padding:0!important; }
+/* ── Nav row ──────────────────────────────────────────────── */
+.reg-nav {
+  display:flex;gap:.7rem;
+  margin-top:1.4rem;padding-top:1.2rem;
+  border-top:1px solid var(--border);
+}
+.reg-btn-back {
+  width:46px;flex-shrink:0;
+  padding:0!important;
+  border-radius:var(--r-md)!important;
+}
 
-/* Password strength */
-.pwd-strength-bg { height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:.35rem; }
-.pwd-strength-fill { height:100%; width:0; border-radius:2px; transition:width .3s ease,background .3s ease; }
-.pwd-strength-lbl { font-size:.72rem; color:var(--muted); margin-top:.2rem; min-height:1rem; }
+/* ── Password ─────────────────────────────────────────────── */
+.pwd-bg { height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:.4rem; }
+.pwd-fill { height:100%;width:0;border-radius:2px;transition:width .3s ease,background .3s ease; }
+.pwd-lbl { font-size:.71rem;color:var(--muted);margin-top:.2rem;min-height:1rem; }
 
-/* Textarea */
-textarea.form-input { resize:vertical; min-height:68px; }
+/* ── Textarea ─────────────────────────────────────────────── */
+textarea.form-input { resize:vertical;min-height:70px; }
 
-/* Year number — hide spinners */
-.yr-input::-webkit-outer-spin-button,
-.yr-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
-.yr-input { -moz-appearance:textfield; }
+/* ── Spinner inputs ───────────────────────────────────────── */
+.yr::-webkit-outer-spin-button,
+.yr::-webkit-inner-spin-button { -webkit-appearance:none;margin:0; }
+.yr { -moz-appearance:textfield; }
 
-/* Scripture quote inside form */
-.reg-scripture { background:var(--frost); border-left:3px solid var(--gold); border-radius:0 var(--r-md) var(--r-md) 0; padding:.75rem 1rem; font-size:.82rem; color:var(--slate); font-style:italic; }
-.reg-scripture cite { display:block; margin-top:.3rem; font-style:normal; font-weight:600; color:var(--forest); font-size:.75rem; }
+/* ── Scripture verse ──────────────────────────────────────── */
+.reg-verse {
+  background: linear-gradient(135deg,var(--frost),rgba(201,168,76,.05));
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: var(--r-lg);
+  padding: .9rem 1.1rem;
+  font-family: var(--font-accent);
+  font-size: .84rem;
+  font-style: italic;
+  color: var(--slate);
+  line-height: 1.6;
+  margin-top: .875rem;
+}
+.reg-verse cite {
+  display:block;font-style:normal;font-weight:600;
+  color:var(--forest);font-size:.74rem;margin-top:.35rem;
+}
 
-/* Submit overlay */
-.reg-overlay { display:none; position:fixed; inset:0; background:rgba(10,25,15,.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:1.5rem; }
-.reg-overlay.show { display:flex; animation:oFadeIn .4s ease both; }
-@keyframes oFadeIn { from{opacity:0} to{opacity:1} }
-.reg-overlay__text { color:#fff; font-family:var(--font-serif); font-size:1.25rem; letter-spacing:.01em; text-align:center; }
-.reg-overlay__sub  { color:rgba(255,255,255,.55); font-size:.82rem; text-align:center; }
+/* ── Footer ───────────────────────────────────────────────── */
+.reg-foot { text-align:center;padding:1.25rem 1.75rem 1.5rem;font-size:.82rem;color:var(--muted);border-top:1px solid var(--border); }
+.reg-foot a { color:var(--forest);font-weight:600; }
+.reg-foot a.muted-lnk { color:var(--muted);font-weight:400; }
+.reg-foot a.muted-lnk:hover { color:var(--forest); }
 
-/* SVG ring animations */
-.ringa { animation:spinCW 2.2s linear infinite; transform-origin:60px 60px; }
-.ringb { animation:spinCCW 1.5s linear infinite; transform-origin:60px 60px; }
-.ringpulse { animation:ringPulse 1.8s ease-in-out infinite; transform-origin:60px 60px; }
+/* ── Submit overlay ───────────────────────────────────────── */
+.reg-overlay {
+  display:none;position:fixed;inset:0;
+  background:rgba(8,22,14,.91);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  z-index:9999;align-items:center;justify-content:center;
+  flex-direction:column;gap:1.75rem;
+}
+.reg-overlay.show { display:flex;animation:oIn .45s ease both; }
+@keyframes oIn { from{opacity:0} to{opacity:1} }
+.ov-rings { position:relative;width:140px;height:140px; }
+.ov-title { color:#fff;font-family:var(--font-serif);font-size:1.4rem;letter-spacing:.01em;text-align:center; }
+.ov-sub   { color:rgba(255,255,255,.48);font-size:.81rem;text-align:center; }
+
+/* SVG ring keyframes */
+.ringa { animation:spinCW  2.2s linear infinite;transform-origin:70px 70px; }
+.ringb { animation:spinCCW 1.5s linear infinite;transform-origin:70px 70px; }
+.ringpulse { animation:rPulse 1.8s ease-in-out infinite;transform-origin:70px 70px; }
 @keyframes spinCW   { to{transform:rotate(360deg)} }
 @keyframes spinCCW  { to{transform:rotate(-360deg)} }
-@keyframes ringPulse{ 0%,100%{opacity:.5;transform:scale(.85)} 50%{opacity:1;transform:scale(1.1)} }
+@keyframes rPulse   { 0%,100%{opacity:.4;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
 
-/* Mobile */
-@media(max-width:600px){
-  .reg-card { padding:1.5rem 1rem 1.25rem; }
-  .reg-grid-2 { grid-template-columns:1fr; }
-  .reg-phases { gap:.35rem; }
-  .reg-phase { font-size:.7rem; padding:.4rem .5rem; }
+/* ── Mobile ───────────────────────────────────────────────── */
+@media(max-width:700px){
+  .reg-topbar { padding:.6rem 1rem; }
+  .reg-stepper__plabel { display:none; }
+  .reg-body { padding:1rem .75rem 2.5rem; }
+  .reg-step-bd { padding:1.2rem 1rem 1.4rem; }
+  .reg-step-hd { padding:1.1rem 1rem; }
+  .g2,.g3 { grid-template-columns:1fr; }
+}
+@media(max-width:420px){
+  .s-dot { width:22px;height:22px;font-size:.6rem; }
+  .s-phase-gap { width:14px; }
+  .reg-topbar__signin { display:none; }
 }
 </style>
 
-<div class="auth-page">
+<div class="reg-page">
 
-  <!-- ── Left panel ─────────────────────────────────────────────── -->
-  <aside class="auth-panel" aria-hidden="true">
-    <svg class="auth-floral auth-floral--tl" width="240" height="240" viewBox="0 0 220 220" fill="none">
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.1" transform="rotate(0 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.1" transform="rotate(40 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.1" transform="rotate(80 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.1" transform="rotate(120 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.1" transform="rotate(160 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.1" transform="rotate(200 110 110)"/>
-      <circle cx="110" cy="110" r="20" fill="rgba(201,168,76,0.18)"/>
-    </svg>
-    <div class="auth-panel__content">
-      <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS" class="auth-panel__logo">
-      <h1 class="auth-panel__title">Begin Your Journey</h1>
-      <p class="auth-panel__tagline">
-        Register together as a couple and<br>
-        begin your preparation for the<br>
-        <em style="color:var(--gold-light);">Sacrament of Holy Matrimony</em>
-      </p>
-      <div class="auth-panel__features">
-        <div class="auth-panel__feature"><i class="fas fa-ring"></i><span>Couple registration number assigned immediately</span></div>
-        <div class="auth-panel__feature"><i class="fas fa-book-bible"></i><span>6 doctrine formation modules</span></div>
-        <div class="auth-panel__feature"><i class="fas fa-calendar-check"></i><span>Live weekly sessions with the formation team</span></div>
-        <div class="auth-panel__feature"><i class="fas fa-shield-halved"></i><span>All data is private and securely stored</span></div>
+  <!-- ══ LEFT PANEL ══════════════════════════════════════════ -->
+  <aside class="reg-panel" aria-hidden="true">
+    <div class="reg-panel__deco">
+      <div class="rp-ring"></div>
+      <div class="rp-ring"></div>
+      <div class="rp-ring"></div>
+      <div class="rp-petal"></div>
+      <div class="rp-petal"></div>
+      <div class="rp-petal"></div>
+    </div>
+
+    <div class="reg-panel__top">
+      <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS" class="reg-panel__logo">
+      <div class="reg-panel__title">Begin Your<br>Sacred Journey</div>
+      <div class="reg-panel__tagline">
+        Prepare together for the<br>
+        <span style="color:var(--gold-light);">Sacrament of Holy Matrimony</span>
+      </div>
+      <div class="reg-panel__divider"></div>
+      <div class="reg-panel__features">
+        <div class="reg-panel__feat"><i class="fas fa-ring"></i><span>Registration number assigned immediately</span></div>
+        <div class="reg-panel__feat"><i class="fas fa-book-bible"></i><span>6 formation modules &amp; weekly sessions</span></div>
+        <div class="reg-panel__feat"><i class="fas fa-shield-halved"></i><span>All data private &amp; securely stored</span></div>
+        <div class="reg-panel__feat"><i class="fas fa-users"></i><span>Join hundreds of Catholic couples</span></div>
+      </div>
+    </div>
+
+    <div class="reg-panel__bottom">
+      <div class="reg-panel__verse">
+        "Love is patient, love is kind… it bears all things, endures all things."
+        <cite>1 Corinthians 13:4–7</cite>
       </div>
     </div>
   </aside>
 
-  <!-- ── Right: form ────────────────────────────────────────────── -->
-  <section class="auth-form-side" style="overflow-y:auto;padding:2rem 1.5rem;">
-    <div class="reg-card page-enter">
+  <!-- ══ RIGHT: FORM ══════════════════════════════════════════ -->
+  <main class="reg-main">
 
-      <a href="{{ url_for('landing') }}">
-        <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS" class="auth-logo-sm">
+    <!-- Sticky topbar with stepper -->
+    <div class="reg-topbar">
+      <a href="{{ url_for('landing') }}" title="Back to home">
+        <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="" class="reg-topbar__logo">
       </a>
 
-      <!-- Progress bar -->
-      <div class="reg-progress"><div class="reg-progress__fill" id="reg-bar"></div></div>
-
-      <!-- Phase tabs -->
-      <div class="reg-phases" role="tablist" aria-label="Registration phases">
-        <div class="reg-phase active" id="phase-bride" role="tab" aria-selected="true">
-          <i class="fas fa-heart"></i> Bride
+      <nav class="reg-stepper" aria-label="Registration steps">
+        <!-- Phase: Bride -->
+        <div class="reg-stepper__phase s-active" id="sph-bride">
+          <div class="reg-stepper__plabel">Bride</div>
+          <div class="reg-stepper__row">
+            <div class="s-dot s-active" id="sd-1">1</div>
+            <div class="s-line" id="sl-12"></div>
+            <div class="s-dot" id="sd-2">2</div>
+            <div class="s-line" id="sl-23"></div>
+            <div class="s-dot" id="sd-3">3</div>
+          </div>
         </div>
-        <div class="reg-phase" id="phase-groom" role="tab" aria-selected="false">
-          <i class="fas fa-ring"></i> Groom
+        <div class="s-phase-gap" id="spg-1"></div>
+        <!-- Phase: Groom -->
+        <div class="reg-stepper__phase" id="sph-groom">
+          <div class="reg-stepper__plabel">Groom</div>
+          <div class="reg-stepper__row">
+            <div class="s-dot" id="sd-4">4</div>
+            <div class="s-line" id="sl-45"></div>
+            <div class="s-dot" id="sd-5">5</div>
+            <div class="s-line" id="sl-56"></div>
+            <div class="s-dot" id="sd-6">6</div>
+          </div>
         </div>
-        <div class="reg-phase" id="phase-account" role="tab" aria-selected="false">
-          <i class="fas fa-lock"></i> Account
+        <div class="s-phase-gap" id="spg-2"></div>
+        <!-- Phase: Account -->
+        <div class="reg-stepper__phase" id="sph-account">
+          <div class="reg-stepper__plabel">Account</div>
+          <div class="reg-stepper__row">
+            <div class="s-dot" id="sd-7">7</div>
+          </div>
         </div>
-      </div>
+      </nav>
 
-      <!-- Step dots -->
-      <div class="reg-dots-row" aria-hidden="true">
-        <div class="reg-dot active" id="dot-1"></div>
-        <div class="reg-dot"        id="dot-2"></div>
-        <div class="reg-dot"        id="dot-3"></div>
-        <div class="reg-dot-sep"></div>
-        <div class="reg-dot"        id="dot-4"></div>
-        <div class="reg-dot"        id="dot-5"></div>
-        <div class="reg-dot"        id="dot-6"></div>
-        <div class="reg-dot-sep"></div>
-        <div class="reg-dot"        id="dot-7"></div>
-        <span class="step-count-badge" id="step-count">Step 1 of 7</span>
-      </div>
-
-      <!-- ── FORM ──────────────────────────────────────────────── -->
-      <form id="reg-form" action="{{ url_for('register') }}" method="POST" novalidate autocomplete="on">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="idempotency_key" value="{{ idempotency_key('register') }}">
-
-        <div class="reg-steps-wrap" id="steps-wrap">
-
-          <!-- ════════ STEP 1 — Bride Personal ════════ -->
-          <div class="reg-step active" data-step="1">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:var(--forest);">
-                <i class="fas fa-heart"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Bride — Personal Information</div>
-                <div class="reg-section-sub">Personal details for the bride-to-be</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="bride_first_name">First Name <span class="required">*</span></label>
-                  <input class="form-input" type="text" id="bride_first_name" name="bride_first_name"
-                    placeholder="Mary" required autocomplete="given-name">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="bride_last_name">Last Name <span class="required">*</span></label>
-                  <input class="form-input" type="text" id="bride_last_name" name="bride_last_name"
-                    placeholder="Okafor" required autocomplete="family-name">
-                </div>
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="bride_dob">Date of Birth <span class="required">*</span></label>
-                  <input class="form-input" type="date" id="bride_dob" name="bride_dob" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="bride_phone">Phone Number <span class="required">*</span></label>
-                  <input class="form-input" type="tel" id="bride_phone" name="bride_phone"
-                    placeholder="+234 801 234 5678" required autocomplete="tel">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_email">Email Address <span class="required">*</span></label>
-                <input class="form-input" type="email" id="bride_email" name="bride_email"
-                  placeholder="mary@example.com" required autocomplete="email">
-                <span class="form-hint">This will be the couple's login email</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_social_media">Social Media Accounts</label>
-                <input class="form-input" type="text" id="bride_social_media" name="bride_social_media"
-                  placeholder="@handle or profile URL">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_address">Current Address <span class="required">*</span></label>
-                <textarea class="form-input" id="bride_address" name="bride_address"
-                  rows="2" placeholder="House no., Street, City, State" required></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_place_of_birth">Place of Birth <span class="required">*</span></label>
-                <input class="form-input" type="text" id="bride_place_of_birth" name="bride_place_of_birth"
-                  placeholder="City, State, Country" required>
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="bride_parent_name">Parent / Guardian Name</label>
-                  <input class="form-input" type="text" id="bride_parent_name" name="bride_parent_name"
-                    placeholder="Mr &amp; Mrs Okafor">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="bride_occupation">Occupation <span class="required">*</span></label>
-                  <input class="form-input" type="text" id="bride_occupation" name="bride_occupation"
-                    placeholder="e.g. Nurse, Teacher" required>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_parent_address">Parent / Guardian Address</label>
-                <textarea class="form-input" id="bride_parent_address" name="bride_parent_address"
-                  rows="2" placeholder="Parent's residential address"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Are Both Parents Alive?</label>
-                <div class="radio-pills" role="radiogroup" aria-label="Parents alive status">
-                  <span class="radio-pill">
-                    <input type="radio" id="bpa_both" name="bride_parents_alive" value="both">
-                    <label for="bpa_both">Both Alive</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="bpa_mother" name="bride_parents_alive" value="mother">
-                    <label for="bpa_mother">Mother Only</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="bpa_father" name="bride_parents_alive" value="father">
-                    <label for="bpa_father">Father Only</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="bpa_none" name="bride_parents_alive" value="none">
-                    <label for="bpa_none">Neither</label>
-                  </span>
-                </div>
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="bride_education">Educational Qualification</label>
-                  <select class="form-input" id="bride_education" name="bride_education">
-                    <option value="">Select&#8230;</option>
-                    <option value="Primary">Primary School</option>
-                    <option value="Secondary">Secondary / WAEC</option>
-                    <option value="OND">OND / NCE</option>
-                    <option value="HND">HND</option>
-                    <option value="BSc">B.Sc. / B.A.</option>
-                    <option value="MSc">M.Sc. / MBA</option>
-                    <option value="PhD">Ph.D.</option>
-                    <option value="Professional">Professional Degree</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="bride_family_position">Position in Family</label>
-                  <select class="form-input" id="bride_family_position" name="bride_family_position">
-                    <option value="">Select&#8230;</option>
-                    <option value="First Born">First Born</option>
-                    <option value="Middle Child">Middle Child</option>
-                    <option value="Last Born">Last Born</option>
-                    <option value="Only Child">Only Child</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_num_siblings">Number of Siblings</label>
-                <input class="form-input yr-input" type="number" id="bride_num_siblings" name="bride_num_siblings"
-                  min="0" max="30" placeholder="0">
-              </div>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-primary btn-full" data-next>
-                  Continue <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════════ STEP 2 — Bride Religious ════════ -->
-          <div class="reg-step" data-step="2">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:var(--forest-mid);">
-                <i class="fas fa-church"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Bride — Religious Information</div>
-                <div class="reg-section-sub">Faith background and sacramental history</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="form-group">
-                <label class="form-label">Is the Bride Catholic? <span class="required">*</span></label>
-                <div class="radio-pills" id="bride_cath_grp" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="bcath_yes" name="bride_is_catholic" value="yes" required>
-                    <label for="bcath_yes"><i class="fas fa-check" style="color:var(--success);font-size:.7rem;"></i> Yes</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="bcath_no" name="bride_is_catholic" value="no">
-                    <label for="bcath_no">No</label>
-                  </span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_parish">Name of Home Parish <span class="required">*</span></label>
-                <input class="form-input" type="text" id="bride_parish" name="bride_parish"
-                  placeholder="St. Mary's Catholic Church, Lagos" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_domicile_parish">Name of Domicile Parish</label>
-                <input class="form-input" type="text" id="bride_domicile_parish" name="bride_domicile_parish"
-                  placeholder="If different from home parish">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_years_domicile">Number of Years in Domicile Parish</label>
-                <input class="form-input yr-input" type="number" id="bride_years_domicile" name="bride_years_domicile"
-                  min="0" max="80" placeholder="e.g. 5">
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="bride_year_baptism">Year of Baptism</label>
-                  <input class="form-input yr-input" type="number" id="bride_year_baptism" name="bride_year_baptism"
-                    min="1940" max="2024" placeholder="e.g. 1998">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="bride_year_first_communion">Year of First Communion</label>
-                  <input class="form-input yr-input" type="number" id="bride_year_first_communion" name="bride_year_first_communion"
-                    min="1940" max="2024" placeholder="e.g. 2005">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_year_confirmation">Year of Confirmation</label>
-                <input class="form-input yr-input" type="number" id="bride_year_confirmation" name="bride_year_confirmation"
-                  min="1940" max="2024" placeholder="e.g. 2010">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Previous Marriages?</label>
-                <div class="radio-pills" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="bpm_yes" name="bride_previous_marriages" value="yes">
-                    <label for="bpm_yes">Yes</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="bpm_no" name="bride_previous_marriages" value="no">
-                    <label for="bpm_no">No</label>
-                  </span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Church Switching?</label>
-                <div class="radio-pills" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="bcs_yes" name="bride_church_switching" value="yes">
-                    <label for="bcs_yes">Yes</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="bcs_no" name="bride_church_switching" value="no">
-                    <label for="bcs_no">No</label>
-                  </span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_parents_religion">Parent's Religious Background</label>
-                <input class="form-input" type="text" id="bride_parents_religion" name="bride_parents_religion"
-                  placeholder="e.g. Both Catholic, Mixed denomination">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_church_society">Society / Group in the Church</label>
-                <input class="form-input" type="text" id="bride_church_society" name="bride_church_society"
-                  placeholder="e.g. Legion of Mary, CWO, Knights of St. Mulumba">
-              </div>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-ghost reg-nav-back" data-prev aria-label="Back">
-                  <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-full" data-next>
-                  Continue <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════════ STEP 3 — Bride Medical ════════ -->
-          <div class="reg-step" data-step="3">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:#1565C0;">
-                <i class="fas fa-notes-medical"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Bride — Medical Information</div>
-                <div class="reg-section-sub">Health details (kept strictly confidential)</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="bride_blood_group">Blood Group <span class="required">*</span></label>
-                  <select class="form-input" id="bride_blood_group" name="bride_blood_group" required>
-                    <option value="">Select&#8230;</option>
-                    <option>A+</option><option>A-</option>
-                    <option>B+</option><option>B-</option>
-                    <option>AB+</option><option>AB-</option>
-                    <option>O+</option><option>O-</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="bride_genotype">Genotype <span class="required">*</span></label>
-                  <select class="form-input" id="bride_genotype" name="bride_genotype" required>
-                    <option value="">Select&#8230;</option>
-                    <option>AA</option><option>AS</option>
-                    <option>SS</option><option>AC</option><option>SC</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_psychological_status">Psychological Status</label>
-                <select class="form-input" id="bride_psychological_status" name="bride_psychological_status">
-                  <option value="">Select&#8230;</option>
-                  <option>Excellent</option>
-                  <option>Good</option>
-                  <option>Fair</option>
-                  <option>Under Treatment</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_mental_illness_history">History of Mental Illness</label>
-                <textarea class="form-input" id="bride_mental_illness_history" name="bride_mental_illness_history"
-                  rows="2" placeholder="Describe briefly, or write 'None'"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_phobias">Phobias (if any)</label>
-                <input class="form-input" type="text" id="bride_phobias" name="bride_phobias"
-                  placeholder="e.g. Heights, Enclosed spaces, or None">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bride_allergies">Allergies (if any)</label>
-                <input class="form-input" type="text" id="bride_allergies" name="bride_allergies"
-                  placeholder="e.g. Penicillin, Peanuts, or None">
-              </div>
-              <div class="reg-scripture">
-                "Your body is a temple of the Holy Spirit within you."
-                <cite>1 Corinthians 6:19</cite>
-              </div>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-ghost reg-nav-back" data-prev aria-label="Back">
-                  <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-full" data-next>
-                  Groom's Info <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════════ STEP 4 — Groom Personal ════════ -->
-          <div class="reg-step" data-step="4">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:#6D4C41;">
-                <i class="fas fa-ring"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Groom — Personal Information</div>
-                <div class="reg-section-sub">Personal details for the groom-to-be</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="groom_first_name">First Name <span class="required">*</span></label>
-                  <input class="form-input" type="text" id="groom_first_name" name="groom_first_name"
-                    placeholder="Joseph" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="groom_last_name">Last Name <span class="required">*</span></label>
-                  <input class="form-input" type="text" id="groom_last_name" name="groom_last_name"
-                    placeholder="Eze" required>
-                </div>
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="groom_dob">Date of Birth <span class="required">*</span></label>
-                  <input class="form-input" type="date" id="groom_dob" name="groom_dob" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="groom_phone">Phone Number <span class="required">*</span></label>
-                  <input class="form-input" type="tel" id="groom_phone" name="groom_phone"
-                    placeholder="+234 802 345 6789" required autocomplete="tel">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_email">Groom's Email <span class="required">*</span></label>
-                <input class="form-input" type="email" id="groom_email" name="groom_email"
-                  placeholder="joseph@example.com" required>
-                <span class="form-hint">Must be different from the bride's email</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_social_media">Social Media Accounts</label>
-                <input class="form-input" type="text" id="groom_social_media" name="groom_social_media"
-                  placeholder="@handle or profile URL">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_address">Current Address <span class="required">*</span></label>
-                <textarea class="form-input" id="groom_address" name="groom_address"
-                  rows="2" placeholder="House no., Street, City, State" required></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_place_of_birth">Place of Birth <span class="required">*</span></label>
-                <input class="form-input" type="text" id="groom_place_of_birth" name="groom_place_of_birth"
-                  placeholder="City, State, Country" required>
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="groom_parent_name">Parent / Guardian Name</label>
-                  <input class="form-input" type="text" id="groom_parent_name" name="groom_parent_name"
-                    placeholder="Mr &amp; Mrs Eze">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="groom_occupation">Occupation <span class="required">*</span></label>
-                  <input class="form-input" type="text" id="groom_occupation" name="groom_occupation"
-                    placeholder="e.g. Engineer, Accountant" required>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_parent_address">Parent / Guardian Address</label>
-                <textarea class="form-input" id="groom_parent_address" name="groom_parent_address"
-                  rows="2" placeholder="Parent's residential address"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Are Both Parents Alive?</label>
-                <div class="radio-pills" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="gpa_both" name="groom_parents_alive" value="both">
-                    <label for="gpa_both">Both Alive</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="gpa_mother" name="groom_parents_alive" value="mother">
-                    <label for="gpa_mother">Mother Only</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="gpa_father" name="groom_parents_alive" value="father">
-                    <label for="gpa_father">Father Only</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="gpa_none" name="groom_parents_alive" value="none">
-                    <label for="gpa_none">Neither</label>
-                  </span>
-                </div>
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="groom_education">Educational Qualification</label>
-                  <select class="form-input" id="groom_education" name="groom_education">
-                    <option value="">Select&#8230;</option>
-                    <option value="Primary">Primary School</option>
-                    <option value="Secondary">Secondary / WAEC</option>
-                    <option value="OND">OND / NCE</option>
-                    <option value="HND">HND</option>
-                    <option value="BSc">B.Sc. / B.A.</option>
-                    <option value="MSc">M.Sc. / MBA</option>
-                    <option value="PhD">Ph.D.</option>
-                    <option value="Professional">Professional Degree</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="groom_family_position">Position in Family</label>
-                  <select class="form-input" id="groom_family_position" name="groom_family_position">
-                    <option value="">Select&#8230;</option>
-                    <option value="First Born">First Born</option>
-                    <option value="Middle Child">Middle Child</option>
-                    <option value="Last Born">Last Born</option>
-                    <option value="Only Child">Only Child</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_num_siblings">Number of Siblings</label>
-                <input class="form-input yr-input" type="number" id="groom_num_siblings" name="groom_num_siblings"
-                  min="0" max="30" placeholder="0">
-              </div>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-ghost reg-nav-back" data-prev aria-label="Back">
-                  <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-full" data-next>
-                  Continue <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════════ STEP 5 — Groom Religious ════════ -->
-          <div class="reg-step" data-step="5">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:var(--forest-mid);">
-                <i class="fas fa-cross"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Groom — Religious Information</div>
-                <div class="reg-section-sub">Faith background and sacramental history</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="form-group">
-                <label class="form-label">Is the Groom Catholic? <span class="required">*</span></label>
-                <div class="radio-pills" id="groom_cath_grp" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="gcath_yes" name="groom_is_catholic" value="yes" required>
-                    <label for="gcath_yes"><i class="fas fa-check" style="color:var(--success);font-size:.7rem;"></i> Yes</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="gcath_no" name="groom_is_catholic" value="no">
-                    <label for="gcath_no">No</label>
-                  </span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_parish">Name of Home Parish <span class="required">*</span></label>
-                <input class="form-input" type="text" id="groom_parish" name="groom_parish"
-                  placeholder="Holy Trinity Catholic Church, Abuja" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_domicile_parish">Name of Domicile Parish</label>
-                <input class="form-input" type="text" id="groom_domicile_parish" name="groom_domicile_parish"
-                  placeholder="If different from home parish">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_years_domicile">Number of Years in Domicile Parish</label>
-                <input class="form-input yr-input" type="number" id="groom_years_domicile" name="groom_years_domicile"
-                  min="0" max="80" placeholder="e.g. 3">
-              </div>
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="groom_year_baptism">Year of Baptism</label>
-                  <input class="form-input yr-input" type="number" id="groom_year_baptism" name="groom_year_baptism"
-                    min="1940" max="2024" placeholder="e.g. 1996">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="groom_year_first_communion">Year of First Communion</label>
-                  <input class="form-input yr-input" type="number" id="groom_year_first_communion" name="groom_year_first_communion"
-                    min="1940" max="2024" placeholder="e.g. 2003">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_year_confirmation">Year of Confirmation</label>
-                <input class="form-input yr-input" type="number" id="groom_year_confirmation" name="groom_year_confirmation"
-                  min="1940" max="2024" placeholder="e.g. 2008">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Previous Marriages?</label>
-                <div class="radio-pills" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="gpm_yes" name="groom_previous_marriages" value="yes">
-                    <label for="gpm_yes">Yes</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="gpm_no" name="groom_previous_marriages" value="no">
-                    <label for="gpm_no">No</label>
-                  </span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Church Switching?</label>
-                <div class="radio-pills" role="radiogroup">
-                  <span class="radio-pill">
-                    <input type="radio" id="gcs_yes" name="groom_church_switching" value="yes">
-                    <label for="gcs_yes">Yes</label>
-                  </span>
-                  <span class="radio-pill">
-                    <input type="radio" id="gcs_no" name="groom_church_switching" value="no">
-                    <label for="gcs_no">No</label>
-                  </span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_parents_religion">Parent's Religious Background</label>
-                <input class="form-input" type="text" id="groom_parents_religion" name="groom_parents_religion"
-                  placeholder="e.g. Both Catholic, Mixed denomination">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_church_society">Society / Group in the Church</label>
-                <input class="form-input" type="text" id="groom_church_society" name="groom_church_society"
-                  placeholder="e.g. Knights of St. Mulumba, St. Vincent de Paul">
-              </div>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-ghost reg-nav-back" data-prev aria-label="Back">
-                  <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-full" data-next>
-                  Continue <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════════ STEP 6 — Groom Medical ════════ -->
-          <div class="reg-step" data-step="6">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:#1565C0;">
-                <i class="fas fa-notes-medical"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Groom — Medical Information</div>
-                <div class="reg-section-sub">Health details (kept strictly confidential)</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="reg-grid-2">
-                <div class="form-group">
-                  <label class="form-label" for="groom_blood_group">Blood Group <span class="required">*</span></label>
-                  <select class="form-input" id="groom_blood_group" name="groom_blood_group" required>
-                    <option value="">Select&#8230;</option>
-                    <option>A+</option><option>A-</option>
-                    <option>B+</option><option>B-</option>
-                    <option>AB+</option><option>AB-</option>
-                    <option>O+</option><option>O-</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="groom_genotype">Genotype <span class="required">*</span></label>
-                  <select class="form-input" id="groom_genotype" name="groom_genotype" required>
-                    <option value="">Select&#8230;</option>
-                    <option>AA</option><option>AS</option>
-                    <option>SS</option><option>AC</option><option>SC</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_psychological_status">Psychological Status</label>
-                <select class="form-input" id="groom_psychological_status" name="groom_psychological_status">
-                  <option value="">Select&#8230;</option>
-                  <option>Excellent</option>
-                  <option>Good</option>
-                  <option>Fair</option>
-                  <option>Under Treatment</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_mental_illness_history">History of Mental Illness</label>
-                <textarea class="form-input" id="groom_mental_illness_history" name="groom_mental_illness_history"
-                  rows="2" placeholder="Describe briefly, or write 'None'"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_phobias">Phobias (if any)</label>
-                <input class="form-input" type="text" id="groom_phobias" name="groom_phobias"
-                  placeholder="e.g. Heights, Enclosed spaces, or None">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="groom_allergies">Allergies (if any)</label>
-                <input class="form-input" type="text" id="groom_allergies" name="groom_allergies"
-                  placeholder="e.g. Penicillin, Peanuts, or None">
-              </div>
-              <div class="reg-scripture">
-                "Therefore what God has joined together, let no one separate."
-                <cite>Mark 10:9</cite>
-              </div>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-ghost reg-nav-back" data-prev aria-label="Back">
-                  <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-full" data-next>
-                  Create Account <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════════ STEP 7 — Account Setup ════════ -->
-          <div class="reg-step" data-step="7">
-            <div class="reg-section-head">
-              <div class="reg-section-badge" style="background:var(--gold);">
-                <i class="fas fa-lock"></i>
-              </div>
-              <div>
-                <div class="reg-section-title">Create Your Couple Account</div>
-                <div class="reg-section-sub">Set a secure password to complete registration</div>
-              </div>
-            </div>
-            <div class="reg-fields">
-              <div class="form-group">
-                <label class="form-label" for="wedding_date">Planned Wedding Date</label>
-                <input class="form-input" type="date" id="wedding_date" name="wedding_date">
-                <span class="form-hint">An approximate date is fine if not yet confirmed</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="password">Password <span class="required">*</span></label>
-                <div class="password-wrap">
-                  <input class="form-input" type="password" id="password" name="password"
-                    placeholder="At least 8 characters" required autocomplete="new-password">
-                  <button type="button" class="password-toggle" aria-label="Show/hide password">
-                    <i class="fas fa-eye-slash"></i>
-                  </button>
-                </div>
-                <div class="pwd-strength-bg"><div class="pwd-strength-fill" id="pwd-bar"></div></div>
-                <div class="pwd-strength-lbl" id="pwd-label"></div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="confirm_password">Confirm Password <span class="required">*</span></label>
-                <div class="password-wrap">
-                  <input class="form-input" type="password" id="confirm_password" name="confirm_password"
-                    placeholder="Repeat your password" required autocomplete="new-password">
-                  <button type="button" class="password-toggle" aria-label="Show/hide password">
-                    <i class="fas fa-eye-slash"></i>
-                  </button>
-                </div>
-                <div class="pwd-strength-lbl" id="pwd-match"></div>
-              </div>
-              <label class="form-check">
-                <input type="checkbox" name="terms" id="terms-check" required>
-                <span class="form-check__label">
-                  I agree to the
-                  <a href="#" style="color:var(--forest);font-weight:600;">Terms of Service</a>
-                  and
-                  <a href="#" style="color:var(--forest);font-weight:600;">Privacy Policy</a>
-                </span>
-              </label>
-              <div class="reg-nav">
-                <button type="button" class="btn btn-ghost reg-nav-back" data-prev aria-label="Back">
-                  <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
-                  <i class="fas fa-heart"></i> Create Our Account
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /steps-wrap -->
-      </form>
-
-      <div class="auth-footer" style="margin-top:1.5rem;">
-        Already registered? <a href="{{ url_for('login') }}">Sign in here</a>
-      </div>
-      <div style="text-align:center;margin-top:.75rem;">
-        <a href="{{ url_for('landing') }}" style="font-size:.8rem;color:var(--muted);">
-          <i class="fas fa-arrow-left" style="margin-right:4px;"></i> Back to home
-        </a>
-      </div>
+      <div class="reg-topbar__signin">Have an account? <a href="{{ url_for('login') }}">Sign in</a></div>
     </div>
-  </section>
+
+    <!-- Form area -->
+    <div class="reg-body">
+      <div class="reg-card page-enter">
+
+        <form id="reg-form" action="{{ url_for('register') }}" method="POST" novalidate autocomplete="on">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotency_key('register') }}">
+
+          <div class="reg-steps-wrap" id="steps-wrap">
+
+            <!-- ════════ STEP 1 — Bride Personal ════════ -->
+            <div class="reg-step rs-bride active" data-step="1">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-heart"></i></div>
+                <div>
+                  <div class="reg-step-name">Bride — Personal Information</div>
+                  <div class="reg-step-desc">Step 1 of 7 &nbsp;·&nbsp; Personal details for the bride-to-be</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-user"></i> Identity</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_first_name">First Name <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-user"></i>
+                          <input class="form-input" type="text" id="bride_first_name" name="bride_first_name" placeholder="Mary" required autocomplete="given-name">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_last_name">Last Name <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-user"></i>
+                          <input class="form-input" type="text" id="bride_last_name" name="bride_last_name" placeholder="Okafor" required autocomplete="family-name">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_dob">Date of Birth <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-calendar"></i>
+                          <input class="form-input" type="date" id="bride_dob" name="bride_dob" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_place_of_birth">Place of Birth <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-map-pin"></i>
+                          <input class="form-input" type="text" id="bride_place_of_birth" name="bride_place_of_birth" placeholder="City, State, Country" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-address-card"></i> Contact</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_email">Email Address <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-envelope"></i>
+                          <input class="form-input" type="email" id="bride_email" name="bride_email" placeholder="mary@example.com" required autocomplete="email">
+                        </div>
+                        <span class="form-hint">Couple's login email</span>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_phone">Phone Number <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-phone"></i>
+                          <input class="form-input" type="tel" id="bride_phone" name="bride_phone" placeholder="+234 801 234 5678" required autocomplete="tel">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_address">Current Address <span class="required">*</span></label>
+                      <div class="iw">
+                        <i class="ii ii-top fas fa-location-dot"></i>
+                        <textarea class="form-input" id="bride_address" name="bride_address" rows="2" placeholder="House no., Street, City, State" required></textarea>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_social_media">Social Media Accounts</label>
+                      <div class="iw">
+                        <i class="ii fab fa-instagram"></i>
+                        <input class="form-input" type="text" id="bride_social_media" name="bride_social_media" placeholder="@handle or profile URL">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-people-group"></i> Family &amp; Background</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_occupation">Occupation <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-briefcase"></i>
+                          <input class="form-input" type="text" id="bride_occupation" name="bride_occupation" placeholder="e.g. Nurse, Teacher" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_education">Education</label>
+                        <select class="form-input" id="bride_education" name="bride_education">
+                          <option value="">Select&#8230;</option>
+                          <option value="Primary">Primary School</option>
+                          <option value="Secondary">Secondary / WAEC</option>
+                          <option value="OND">OND / NCE</option>
+                          <option value="HND">HND</option>
+                          <option value="BSc">B.Sc. / B.A.</option>
+                          <option value="MSc">M.Sc. / MBA</option>
+                          <option value="PhD">Ph.D.</option>
+                          <option value="Professional">Professional Degree</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_parent_name">Parent / Guardian Name</label>
+                      <div class="iw">
+                        <i class="ii fas fa-users"></i>
+                        <input class="form-input" type="text" id="bride_parent_name" name="bride_parent_name" placeholder="Mr &amp; Mrs Okafor">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_parent_address">Parent / Guardian Address</label>
+                      <textarea class="form-input" id="bride_parent_address" name="bride_parent_address" rows="2" placeholder="Parent's residential address"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Are Both Parents Alive?</label>
+                      <div class="radio-pills" role="radiogroup" aria-label="Parents alive">
+                        <span class="radio-pill"><input type="radio" id="bpa_both"   name="bride_parents_alive" value="both">  <label for="bpa_both">Both Alive</label></span>
+                        <span class="radio-pill"><input type="radio" id="bpa_mother" name="bride_parents_alive" value="mother"><label for="bpa_mother">Mother Only</label></span>
+                        <span class="radio-pill"><input type="radio" id="bpa_father" name="bride_parents_alive" value="father"><label for="bpa_father">Father Only</label></span>
+                        <span class="radio-pill"><input type="radio" id="bpa_none"   name="bride_parents_alive" value="none">  <label for="bpa_none">Neither</label></span>
+                      </div>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_family_position">Position in Family</label>
+                        <select class="form-input" id="bride_family_position" name="bride_family_position">
+                          <option value="">Select&#8230;</option>
+                          <option value="First Born">First Born</option>
+                          <option value="Middle Child">Middle Child</option>
+                          <option value="Last Born">Last Born</option>
+                          <option value="Only Child">Only Child</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_num_siblings">Number of Siblings</label>
+                        <input class="form-input yr" type="number" id="bride_num_siblings" name="bride_num_siblings" min="0" max="30" placeholder="0">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-primary btn-full" data-next>
+                    Continue &nbsp;<i class="fas fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════════ STEP 2 — Bride Religious ════════ -->
+            <div class="reg-step rs-reli" data-step="2">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-church"></i></div>
+                <div>
+                  <div class="reg-step-name">Bride — Religious Information</div>
+                  <div class="reg-step-desc">Step 2 of 7 &nbsp;·&nbsp; Faith background and sacramental history</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-cross"></i> Faith Status</div>
+                  <div class="reg-grp__fields">
+                    <div class="form-group">
+                      <label class="form-label">Is the Bride Catholic? <span class="required">*</span></label>
+                      <div class="radio-pills" id="bride_cath_grp" role="radiogroup">
+                        <span class="radio-pill"><input type="radio" id="bcath_yes" name="bride_is_catholic" value="yes" required><label for="bcath_yes"><i class="fas fa-check" style="color:var(--success);font-size:.62rem"></i> Yes, Catholic</label></span>
+                        <span class="radio-pill"><input type="radio" id="bcath_no"  name="bride_is_catholic" value="no"><label for="bcath_no">Not Catholic</label></span>
+                      </div>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_parish">Home Parish <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-church"></i>
+                          <input class="form-input" type="text" id="bride_parish" name="bride_parish" placeholder="St. Mary's, Lagos" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_domicile_parish">Domicile Parish</label>
+                        <div class="iw">
+                          <i class="ii fas fa-location-dot"></i>
+                          <input class="form-input" type="text" id="bride_domicile_parish" name="bride_domicile_parish" placeholder="If different from home">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group" style="max-width:260px">
+                      <label class="form-label" for="bride_years_domicile">Years in Domicile Parish</label>
+                      <input class="form-input yr" type="number" id="bride_years_domicile" name="bride_years_domicile" min="0" max="80" placeholder="e.g. 5">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-dove"></i> Sacraments Received</div>
+                  <div class="reg-grp__fields">
+                    <div class="g3">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_year_baptism">Baptism Year</label>
+                        <input class="form-input yr" type="number" id="bride_year_baptism" name="bride_year_baptism" min="1940" max="2024" placeholder="e.g. 1998">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_year_first_communion">1st Communion</label>
+                        <input class="form-input yr" type="number" id="bride_year_first_communion" name="bride_year_first_communion" min="1940" max="2024" placeholder="e.g. 2005">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_year_confirmation">Confirmation</label>
+                        <input class="form-input yr" type="number" id="bride_year_confirmation" name="bride_year_confirmation" min="1940" max="2024" placeholder="e.g. 2010">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-circle-info"></i> Additional Details</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label">Previous Marriages?</label>
+                        <div class="radio-pills" role="radiogroup">
+                          <span class="radio-pill"><input type="radio" id="bpm_yes" name="bride_previous_marriages" value="yes"><label for="bpm_yes">Yes</label></span>
+                          <span class="radio-pill"><input type="radio" id="bpm_no"  name="bride_previous_marriages" value="no"> <label for="bpm_no">No</label></span>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Church Switching?</label>
+                        <div class="radio-pills" role="radiogroup">
+                          <span class="radio-pill"><input type="radio" id="bcs_yes" name="bride_church_switching" value="yes"><label for="bcs_yes">Yes</label></span>
+                          <span class="radio-pill"><input type="radio" id="bcs_no"  name="bride_church_switching" value="no"> <label for="bcs_no">No</label></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_parents_religion">Parent's Religious Background</label>
+                      <input class="form-input" type="text" id="bride_parents_religion" name="bride_parents_religion" placeholder="e.g. Both Catholic, Mixed denomination">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_church_society">Church Society / Group</label>
+                      <div class="iw">
+                        <i class="ii fas fa-hands-praying"></i>
+                        <input class="form-input" type="text" id="bride_church_society" name="bride_church_society" placeholder="e.g. Legion of Mary, CWO">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-ghost reg-btn-back" data-prev aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+                  <button type="button" class="btn btn-primary btn-full" data-next>Continue &nbsp;<i class="fas fa-arrow-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════════ STEP 3 — Bride Medical ════════ -->
+            <div class="reg-step rs-medical" data-step="3">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-notes-medical"></i></div>
+                <div>
+                  <div class="reg-step-name">Bride — Medical Information</div>
+                  <div class="reg-step-desc">Step 3 of 7 &nbsp;·&nbsp; Health details (kept strictly confidential)</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-vial"></i> Blood &amp; Genetics</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_blood_group">Blood Group <span class="required">*</span></label>
+                        <select class="form-input" id="bride_blood_group" name="bride_blood_group" required>
+                          <option value="">Select&#8230;</option>
+                          <option>A+</option><option>A-</option>
+                          <option>B+</option><option>B-</option>
+                          <option>AB+</option><option>AB-</option>
+                          <option>O+</option><option>O-</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_genotype">Genotype <span class="required">*</span></label>
+                        <select class="form-input" id="bride_genotype" name="bride_genotype" required>
+                          <option value="">Select&#8230;</option>
+                          <option>AA</option><option>AS</option>
+                          <option>SS</option><option>AC</option><option>SC</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="bride_psychological_status">Psychological Status</label>
+                      <select class="form-input" id="bride_psychological_status" name="bride_psychological_status">
+                        <option value="">Select&#8230;</option>
+                        <option>Excellent</option><option>Good</option>
+                        <option>Fair</option><option>Under Treatment</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-file-medical"></i> Medical History</div>
+                  <div class="reg-grp__fields">
+                    <div class="form-group">
+                      <label class="form-label" for="bride_mental_illness_history">History of Mental Illness</label>
+                      <textarea class="form-input" id="bride_mental_illness_history" name="bride_mental_illness_history" rows="2" placeholder="Describe briefly, or write 'None'"></textarea>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="bride_phobias">Phobias</label>
+                        <input class="form-input" type="text" id="bride_phobias" name="bride_phobias" placeholder="e.g. Heights, or None">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="bride_allergies">Allergies</label>
+                        <input class="form-input" type="text" id="bride_allergies" name="bride_allergies" placeholder="e.g. Penicillin, or None">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-verse">"Your body is a temple of the Holy Spirit within you." <cite>1 Corinthians 6:19</cite></div>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-ghost reg-btn-back" data-prev aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+                  <button type="button" class="btn btn-primary btn-full" data-next>Groom's Info &nbsp;<i class="fas fa-arrow-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════════ STEP 4 — Groom Personal ════════ -->
+            <div class="reg-step rs-groom" data-step="4">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-ring"></i></div>
+                <div>
+                  <div class="reg-step-name">Groom — Personal Information</div>
+                  <div class="reg-step-desc">Step 4 of 7 &nbsp;·&nbsp; Personal details for the groom-to-be</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-user"></i> Identity</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_first_name">First Name <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-user"></i>
+                          <input class="form-input" type="text" id="groom_first_name" name="groom_first_name" placeholder="Joseph" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_last_name">Last Name <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-user"></i>
+                          <input class="form-input" type="text" id="groom_last_name" name="groom_last_name" placeholder="Eze" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_dob">Date of Birth <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-calendar"></i>
+                          <input class="form-input" type="date" id="groom_dob" name="groom_dob" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_place_of_birth">Place of Birth <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-map-pin"></i>
+                          <input class="form-input" type="text" id="groom_place_of_birth" name="groom_place_of_birth" placeholder="City, State, Country" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-address-card"></i> Contact</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_email">Email Address <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-envelope"></i>
+                          <input class="form-input" type="email" id="groom_email" name="groom_email" placeholder="joseph@example.com" required>
+                        </div>
+                        <span class="form-hint">Must differ from bride's email</span>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_phone">Phone Number <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-phone"></i>
+                          <input class="form-input" type="tel" id="groom_phone" name="groom_phone" placeholder="+234 802 345 6789" required autocomplete="tel">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_address">Current Address <span class="required">*</span></label>
+                      <div class="iw">
+                        <i class="ii ii-top fas fa-location-dot"></i>
+                        <textarea class="form-input" id="groom_address" name="groom_address" rows="2" placeholder="House no., Street, City, State" required></textarea>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_social_media">Social Media Accounts</label>
+                      <div class="iw">
+                        <i class="ii fab fa-instagram"></i>
+                        <input class="form-input" type="text" id="groom_social_media" name="groom_social_media" placeholder="@handle or profile URL">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-people-group"></i> Family &amp; Background</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_occupation">Occupation <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-briefcase"></i>
+                          <input class="form-input" type="text" id="groom_occupation" name="groom_occupation" placeholder="e.g. Engineer, Accountant" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_education">Education</label>
+                        <select class="form-input" id="groom_education" name="groom_education">
+                          <option value="">Select&#8230;</option>
+                          <option value="Primary">Primary School</option>
+                          <option value="Secondary">Secondary / WAEC</option>
+                          <option value="OND">OND / NCE</option>
+                          <option value="HND">HND</option>
+                          <option value="BSc">B.Sc. / B.A.</option>
+                          <option value="MSc">M.Sc. / MBA</option>
+                          <option value="PhD">Ph.D.</option>
+                          <option value="Professional">Professional Degree</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_parent_name">Parent / Guardian Name</label>
+                      <div class="iw">
+                        <i class="ii fas fa-users"></i>
+                        <input class="form-input" type="text" id="groom_parent_name" name="groom_parent_name" placeholder="Mr &amp; Mrs Eze">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_parent_address">Parent / Guardian Address</label>
+                      <textarea class="form-input" id="groom_parent_address" name="groom_parent_address" rows="2" placeholder="Parent's residential address"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Are Both Parents Alive?</label>
+                      <div class="radio-pills" role="radiogroup" aria-label="Parents alive">
+                        <span class="radio-pill"><input type="radio" id="gpa_both"   name="groom_parents_alive" value="both">  <label for="gpa_both">Both Alive</label></span>
+                        <span class="radio-pill"><input type="radio" id="gpa_mother" name="groom_parents_alive" value="mother"><label for="gpa_mother">Mother Only</label></span>
+                        <span class="radio-pill"><input type="radio" id="gpa_father" name="groom_parents_alive" value="father"><label for="gpa_father">Father Only</label></span>
+                        <span class="radio-pill"><input type="radio" id="gpa_none"   name="groom_parents_alive" value="none">  <label for="gpa_none">Neither</label></span>
+                      </div>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_family_position">Position in Family</label>
+                        <select class="form-input" id="groom_family_position" name="groom_family_position">
+                          <option value="">Select&#8230;</option>
+                          <option value="First Born">First Born</option>
+                          <option value="Middle Child">Middle Child</option>
+                          <option value="Last Born">Last Born</option>
+                          <option value="Only Child">Only Child</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_num_siblings">Number of Siblings</label>
+                        <input class="form-input yr" type="number" id="groom_num_siblings" name="groom_num_siblings" min="0" max="30" placeholder="0">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-ghost reg-btn-back" data-prev aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+                  <button type="button" class="btn btn-primary btn-full" data-next>Continue &nbsp;<i class="fas fa-arrow-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════════ STEP 5 — Groom Religious ════════ -->
+            <div class="reg-step rs-reli" data-step="5">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-cross"></i></div>
+                <div>
+                  <div class="reg-step-name">Groom — Religious Information</div>
+                  <div class="reg-step-desc">Step 5 of 7 &nbsp;·&nbsp; Faith background and sacramental history</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-cross"></i> Faith Status</div>
+                  <div class="reg-grp__fields">
+                    <div class="form-group">
+                      <label class="form-label">Is the Groom Catholic? <span class="required">*</span></label>
+                      <div class="radio-pills" id="groom_cath_grp" role="radiogroup">
+                        <span class="radio-pill"><input type="radio" id="gcath_yes" name="groom_is_catholic" value="yes" required><label for="gcath_yes"><i class="fas fa-check" style="color:var(--success);font-size:.62rem"></i> Yes, Catholic</label></span>
+                        <span class="radio-pill"><input type="radio" id="gcath_no"  name="groom_is_catholic" value="no"><label for="gcath_no">Not Catholic</label></span>
+                      </div>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_parish">Home Parish <span class="required">*</span></label>
+                        <div class="iw">
+                          <i class="ii fas fa-church"></i>
+                          <input class="form-input" type="text" id="groom_parish" name="groom_parish" placeholder="Holy Trinity, Abuja" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_domicile_parish">Domicile Parish</label>
+                        <div class="iw">
+                          <i class="ii fas fa-location-dot"></i>
+                          <input class="form-input" type="text" id="groom_domicile_parish" name="groom_domicile_parish" placeholder="If different from home">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group" style="max-width:260px">
+                      <label class="form-label" for="groom_years_domicile">Years in Domicile Parish</label>
+                      <input class="form-input yr" type="number" id="groom_years_domicile" name="groom_years_domicile" min="0" max="80" placeholder="e.g. 3">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-dove"></i> Sacraments Received</div>
+                  <div class="reg-grp__fields">
+                    <div class="g3">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_year_baptism">Baptism Year</label>
+                        <input class="form-input yr" type="number" id="groom_year_baptism" name="groom_year_baptism" min="1940" max="2024" placeholder="e.g. 1996">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_year_first_communion">1st Communion</label>
+                        <input class="form-input yr" type="number" id="groom_year_first_communion" name="groom_year_first_communion" min="1940" max="2024" placeholder="e.g. 2003">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_year_confirmation">Confirmation</label>
+                        <input class="form-input yr" type="number" id="groom_year_confirmation" name="groom_year_confirmation" min="1940" max="2024" placeholder="e.g. 2008">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-circle-info"></i> Additional Details</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label">Previous Marriages?</label>
+                        <div class="radio-pills" role="radiogroup">
+                          <span class="radio-pill"><input type="radio" id="gpm_yes" name="groom_previous_marriages" value="yes"><label for="gpm_yes">Yes</label></span>
+                          <span class="radio-pill"><input type="radio" id="gpm_no"  name="groom_previous_marriages" value="no"> <label for="gpm_no">No</label></span>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Church Switching?</label>
+                        <div class="radio-pills" role="radiogroup">
+                          <span class="radio-pill"><input type="radio" id="gcs_yes" name="groom_church_switching" value="yes"><label for="gcs_yes">Yes</label></span>
+                          <span class="radio-pill"><input type="radio" id="gcs_no"  name="groom_church_switching" value="no"> <label for="gcs_no">No</label></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_parents_religion">Parent's Religious Background</label>
+                      <input class="form-input" type="text" id="groom_parents_religion" name="groom_parents_religion" placeholder="e.g. Both Catholic, Mixed denomination">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_church_society">Church Society / Group</label>
+                      <div class="iw">
+                        <i class="ii fas fa-hands-praying"></i>
+                        <input class="form-input" type="text" id="groom_church_society" name="groom_church_society" placeholder="e.g. Knights of St. Mulumba">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-ghost reg-btn-back" data-prev aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+                  <button type="button" class="btn btn-primary btn-full" data-next>Continue &nbsp;<i class="fas fa-arrow-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════════ STEP 6 — Groom Medical ════════ -->
+            <div class="reg-step rs-medical" data-step="6">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-notes-medical"></i></div>
+                <div>
+                  <div class="reg-step-name">Groom — Medical Information</div>
+                  <div class="reg-step-desc">Step 6 of 7 &nbsp;·&nbsp; Health details (kept strictly confidential)</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-vial"></i> Blood &amp; Genetics</div>
+                  <div class="reg-grp__fields">
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_blood_group">Blood Group <span class="required">*</span></label>
+                        <select class="form-input" id="groom_blood_group" name="groom_blood_group" required>
+                          <option value="">Select&#8230;</option>
+                          <option>A+</option><option>A-</option>
+                          <option>B+</option><option>B-</option>
+                          <option>AB+</option><option>AB-</option>
+                          <option>O+</option><option>O-</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_genotype">Genotype <span class="required">*</span></label>
+                        <select class="form-input" id="groom_genotype" name="groom_genotype" required>
+                          <option value="">Select&#8230;</option>
+                          <option>AA</option><option>AS</option>
+                          <option>SS</option><option>AC</option><option>SC</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="groom_psychological_status">Psychological Status</label>
+                      <select class="form-input" id="groom_psychological_status" name="groom_psychological_status">
+                        <option value="">Select&#8230;</option>
+                        <option>Excellent</option><option>Good</option>
+                        <option>Fair</option><option>Under Treatment</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-file-medical"></i> Medical History</div>
+                  <div class="reg-grp__fields">
+                    <div class="form-group">
+                      <label class="form-label" for="groom_mental_illness_history">History of Mental Illness</label>
+                      <textarea class="form-input" id="groom_mental_illness_history" name="groom_mental_illness_history" rows="2" placeholder="Describe briefly, or write 'None'"></textarea>
+                    </div>
+                    <div class="g2">
+                      <div class="form-group">
+                        <label class="form-label" for="groom_phobias">Phobias</label>
+                        <input class="form-input" type="text" id="groom_phobias" name="groom_phobias" placeholder="e.g. Heights, or None">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="groom_allergies">Allergies</label>
+                        <input class="form-input" type="text" id="groom_allergies" name="groom_allergies" placeholder="e.g. Penicillin, or None">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-verse">"Therefore what God has joined together, let no one separate." <cite>Mark 10:9</cite></div>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-ghost reg-btn-back" data-prev aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+                  <button type="button" class="btn btn-primary btn-full" data-next>Account Setup &nbsp;<i class="fas fa-arrow-right"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════════ STEP 7 — Account ════════ -->
+            <div class="reg-step rs-account" data-step="7">
+              <div class="reg-step-hd">
+                <div class="reg-step-ico"><i class="fas fa-lock"></i></div>
+                <div>
+                  <div class="reg-step-name">Create Your Couple Account</div>
+                  <div class="reg-step-desc">Step 7 of 7 &nbsp;·&nbsp; Set a secure password to complete registration</div>
+                </div>
+              </div>
+              <div class="reg-step-bd">
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-calendar-heart"></i> Wedding Details</div>
+                  <div class="reg-grp__fields">
+                    <div class="form-group" style="max-width:320px">
+                      <label class="form-label" for="wedding_date">Planned Wedding Date</label>
+                      <div class="iw">
+                        <i class="ii fas fa-calendar-heart"></i>
+                        <input class="form-input" type="date" id="wedding_date" name="wedding_date">
+                      </div>
+                      <span class="form-hint">An approximate date is fine if not yet confirmed</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reg-grp">
+                  <div class="reg-grp__hd"><i class="fas fa-shield-halved"></i> Account Security</div>
+                  <div class="reg-grp__fields">
+                    <div class="form-group">
+                      <label class="form-label" for="password">Password <span class="required">*</span></label>
+                      <div class="password-wrap">
+                        <input class="form-input" type="password" id="password" name="password" placeholder="At least 8 characters" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" aria-label="Show/hide password"><i class="fas fa-eye-slash"></i></button>
+                      </div>
+                      <div class="pwd-bg"><div class="pwd-fill" id="pwd-bar"></div></div>
+                      <div class="pwd-lbl" id="pwd-label"></div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="confirm_password">Confirm Password <span class="required">*</span></label>
+                      <div class="password-wrap">
+                        <input class="form-input" type="password" id="confirm_password" name="confirm_password" placeholder="Repeat your password" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" aria-label="Show/hide password"><i class="fas fa-eye-slash"></i></button>
+                      </div>
+                      <div class="pwd-lbl" id="pwd-match"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <label class="form-check" style="margin-top:.75rem">
+                  <input type="checkbox" name="terms" id="terms-check" required>
+                  <span class="form-check__label">
+                    I agree to the <a href="#" style="color:var(--forest);font-weight:600;">Terms of Service</a>
+                    and <a href="#" style="color:var(--forest);font-weight:600;">Privacy Policy</a>
+                  </span>
+                </label>
+
+                <div class="reg-nav">
+                  <button type="button" class="btn btn-ghost reg-btn-back" data-prev aria-label="Back"><i class="fas fa-arrow-left"></i></button>
+                  <button type="submit" class="btn btn-primary btn-full" id="submit-btn"
+                    style="background:linear-gradient(135deg,var(--forest) 0%,var(--forest-mid) 100%);box-shadow:var(--shadow-gold)">
+                    <i class="fas fa-heart"></i>&nbsp; Create Our Account
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /steps-wrap -->
+        </form>
+
+        <div class="reg-foot">
+          Already registered? <a href="{{ url_for('login') }}">Sign in here</a>
+          &ensp;&middot;&ensp;
+          <a href="{{ url_for('landing') }}" class="muted-lnk"><i class="fas fa-arrow-left" style="font-size:.72rem;margin-right:3px"></i>Back to home</a>
+        </div>
+
+      </div><!-- /reg-card -->
+    </div><!-- /reg-body -->
+  </main>
 </div>
 
-<!-- ── Submit Overlay ──────────────────────────────────────────── -->
+<!-- ══ SUBMIT OVERLAY ══════════════════════════════════════════ -->
 <div class="reg-overlay" id="reg-overlay" role="status" aria-live="polite" aria-label="Creating account">
-  <div style="position:relative;width:130px;height:130px;">
-    <svg width="130" height="130" viewBox="0 0 130 130" fill="none" aria-hidden="true">
-      <circle class="ringa" cx="65" cy="65" r="56" stroke="rgba(201,168,76,0.25)" stroke-width="3"/>
-      <circle class="ringa" cx="65" cy="65" r="50" stroke="#C9A84C" stroke-width="7" fill="none" stroke-dasharray="220 110" stroke-linecap="round"/>
-      <circle class="ringb" cx="65" cy="65" r="34" stroke="#40916C" stroke-width="5" fill="none" stroke-dasharray="130 70" stroke-linecap="round"/>
-      <circle class="ringpulse" cx="65" cy="65" r="17" fill="rgba(201,168,76,0.15)"/>
-      <text x="65" y="71" text-anchor="middle" font-size="18" fill="#C9A84C" font-family="Georgia,serif">&#10011;</text>
+  <div class="ov-rings">
+    <svg width="140" height="140" viewBox="0 0 140 140" fill="none" aria-hidden="true">
+      <circle cx="70" cy="70" r="64" stroke="rgba(201,168,76,.1)" stroke-width="2"/>
+      <circle class="ringa" cx="70" cy="70" r="56" stroke="#C9A84C" stroke-width="8" fill="none" stroke-dasharray="240 120" stroke-linecap="round"/>
+      <circle class="ringb" cx="70" cy="70" r="38" stroke="#40916C" stroke-width="5" fill="none" stroke-dasharray="140 75" stroke-linecap="round"/>
+      <circle class="ringpulse" cx="70" cy="70" r="19" fill="rgba(201,168,76,.13)"/>
+      <text x="70" y="77" text-anchor="middle" font-size="20" fill="#C9A84C" font-family="Georgia,serif">&#10011;</text>
     </svg>
   </div>
-  <div class="reg-overlay__text">Creating Your Couple Account&#8230;</div>
-  <div class="reg-overlay__sub">Please wait &#8212; do not close this page</div>
+  <div class="ov-title">Creating Your Couple Account&#8230;</div>
+  <div class="ov-sub">Please wait &mdash; do not close this page</div>
 </div>
 {% endblock %}
 
@@ -906,213 +1314,178 @@ textarea.form-input { resize:vertical; min-height:68px; }
 (function () {
   'use strict';
 
-  var TOTAL = 7;
+  var TOTAL   = 7;
   var current = 1;
 
-  var PHASE_MAP = { 1:'bride', 2:'bride', 3:'bride', 4:'groom', 5:'groom', 6:'groom', 7:'account' };
-  var PHASE_START = { bride:1, groom:4, account:7 };
+  var PHASE_MAP = {1:'bride',2:'bride',3:'bride',4:'groom',5:'groom',6:'groom',7:'account'};
+  var PHASES    = ['bride','groom','account'];
+  var PH_START  = {bride:1,groom:4,account:7};
 
-  function panel(n) { return document.querySelector('[data-step="' + n + '"]'); }
+  function panel(n){ return document.querySelector('[data-step="'+n+'"]'); }
 
-  /* ── Progress bar ─────────────────────────────────────── */
-  function setBar() {
-    var el = document.getElementById('reg-bar');
-    if (el) el.style.width = Math.round((current / TOTAL) * 100) + '%';
-  }
-
-  /* ── Phase tabs ────────────────────────────────────────── */
-  function setPhases() {
-    var activePhase = PHASE_MAP[current];
-    ['bride', 'groom', 'account'].forEach(function (p) {
-      var el = document.getElementById('phase-' + p);
-      if (!el) return;
-      el.classList.remove('active', 'done');
-      el.removeAttribute('aria-selected');
-      if (p === activePhase) {
-        el.classList.add('active');
-        el.setAttribute('aria-selected', 'true');
-      } else if (PHASE_START[p] < PHASE_START[activePhase]) {
-        el.classList.add('done');
-      }
-    });
-  }
-
-  /* ── Step dots ─────────────────────────────────────────── */
-  function setDots() {
-    for (var i = 1; i <= TOTAL; i++) {
-      var dot = document.getElementById('dot-' + i);
-      if (!dot) continue;
-      dot.classList.toggle('active', i === current);
-      dot.classList.toggle('done',   i < current);
+  /* ── Stepper ───────────────────────────────────────────────── */
+  function updateStepper(){
+    /* dots */
+    for(var i=1;i<=TOTAL;i++){
+      var d = document.getElementById('sd-'+i);
+      if(!d) continue;
+      d.classList.remove('s-active','s-done');
+      if(i===current){ d.classList.add('s-active'); d.innerHTML=i; }
+      else if(i<current){ d.classList.add('s-done'); d.innerHTML='<i class="fas fa-check" style="font-size:.58rem"></i>'; }
+      else{ d.innerHTML=i; }
     }
-    var sc = document.getElementById('step-count');
-    if (sc) sc.textContent = 'Step ' + current + ' of ' + TOTAL;
+    /* inter-dot lines */
+    [{a:1,b:2},{a:2,b:3},{a:4,b:5},{a:5,b:6}].forEach(function(p){
+      var l=document.getElementById('sl-'+p.a+''+p.b);
+      if(l) l.classList.toggle('s-done', p.b<=current);
+    });
+    /* phase gap lines */
+    var pg1=document.getElementById('spg-1');
+    var pg2=document.getElementById('spg-2');
+    if(pg1) pg1.classList.toggle('s-done', current>3);
+    if(pg2) pg2.classList.toggle('s-done', current>6);
+    /* phase labels */
+    var activePhase = PHASE_MAP[current];
+    var activeIdx   = PHASES.indexOf(activePhase);
+    PHASES.forEach(function(p){
+      var el=document.getElementById('sph-'+p);
+      if(!el) return;
+      el.classList.remove('s-active','s-done');
+      if(p===activePhase) el.classList.add('s-active');
+      else if(PHASES.indexOf(p)<activeIdx) el.classList.add('s-done');
+    });
   }
 
-  function updateUI() { setBar(); setPhases(); setDots(); }
-
-  /* ── Validation ────────────────────────────────────────── */
-  function validateStep(step) {
-    var p = panel(step);
-    var ok = true;
-
-    /* Text / date / select / textarea */
-    p.querySelectorAll('input[required]:not([type="radio"]):not([type="checkbox"]), select[required], textarea[required]').forEach(function (el) {
+  /* ── Validation ─────────────────────────────────────────────── */
+  function validateStep(s){
+    var p=panel(s), ok=true;
+    p.querySelectorAll('input[required]:not([type="radio"]):not([type="checkbox"]),select[required],textarea[required]').forEach(function(el){
       el.classList.remove('input-error');
-      if (!el.value.trim()) {
+      if(!el.value.trim()){
         el.classList.add('input-error');
-        if (ok) { el.focus(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
-        ok = false;
+        if(ok){ el.focus(); el.scrollIntoView({block:'center',behavior:'smooth'}); }
+        ok=false;
       }
     });
-
-    /* Required radio groups */
-    var rGroups = {};
-    p.querySelectorAll('input[type="radio"][required]').forEach(function (r) {
-      if (!rGroups[r.name]) rGroups[r.name] = [];
-      rGroups[r.name].push(r);
+    var rg={};
+    p.querySelectorAll('input[type="radio"][required]').forEach(function(r){
+      if(!rg[r.name]) rg[r.name]=[];
+      rg[r.name].push(r);
     });
-    Object.keys(rGroups).forEach(function (name) {
-      var group = rGroups[name];
-      var wrap  = group[0] && group[0].closest('.radio-pills');
-      if (wrap) wrap.classList.remove('radio-error');
-      if (!group.some(function (r) { return r.checked; })) {
-        if (wrap) wrap.classList.add('radio-error');
-        ok = false;
+    Object.keys(rg).forEach(function(n){
+      var g=rg[n], w=g[0]&&g[0].closest('.radio-pills');
+      if(w) w.classList.remove('radio-error');
+      if(!g.some(function(r){return r.checked;})){
+        if(w) w.classList.add('radio-error');
+        ok=false;
       }
     });
-
-    /* Required checkboxes */
-    p.querySelectorAll('input[type="checkbox"][required]').forEach(function (cb) {
-      var wrap = cb.closest('.form-check');
-      if (wrap) wrap.classList.remove('check-error');
-      if (!cb.checked) {
-        if (wrap) wrap.classList.add('check-error');
-        ok = false;
-      }
+    p.querySelectorAll('input[type="checkbox"][required]').forEach(function(cb){
+      var w=cb.closest('.form-check');
+      if(w) w.classList.remove('check-error');
+      if(!cb.checked){ if(w) w.classList.add('check-error'); ok=false; }
     });
-
     return ok;
   }
 
-  /* ── Navigate ──────────────────────────────────────────── */
-  function goTo(next, dir) {
-    if (dir > 0 && !validateStep(current)) return;
-
-    var from = panel(current);
-    var to   = panel(next);
-    var exitCls  = dir > 0 ? 'exiting-fwd'  : 'exiting-back';
-    var enterCls = dir > 0 ? 'entering-fwd' : 'entering-back';
-
-    /* Exit current */
-    from.classList.add('exiting', exitCls);
+  /* ── Navigate ───────────────────────────────────────────────── */
+  function goTo(next,dir){
+    if(dir>0 && !validateStep(current)) return;
+    var from=panel(current), to=panel(next);
+    var ec=dir>0?'exiting-fwd':'exiting-back';
+    var nc=dir>0?'entering-fwd':'entering-back';
+    from.classList.add('exiting',ec);
     from.classList.remove('active');
-
-    /* Enter next */
-    to.classList.add('active', enterCls);
-    setTimeout(function () { to.classList.remove(enterCls); }, 380);
-
-    /* Cleanup exiting after animation */
-    setTimeout(function () { from.classList.remove('exiting', exitCls); }, 290);
-
-    current = next;
-    updateUI();
-
-    /* Scroll card into view */
-    var card = document.querySelector('.reg-card');
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    to.classList.add('active',nc);
+    setTimeout(function(){ to.classList.remove(nc); }, 420);
+    setTimeout(function(){ from.classList.remove('exiting',ec); }, 320);
+    current=next;
+    updateStepper();
+    window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  /* ── Wire navigation buttons ───────────────────────────── */
-  document.querySelectorAll('[data-next]').forEach(function (btn) {
-    btn.addEventListener('click', function () { if (current < TOTAL) goTo(current + 1, 1); });
+  /* ── Wire buttons ───────────────────────────────────────────── */
+  document.querySelectorAll('[data-next]').forEach(function(b){
+    b.addEventListener('click',function(){ if(current<TOTAL) goTo(current+1,1); });
   });
-  document.querySelectorAll('[data-prev]').forEach(function (btn) {
-    btn.addEventListener('click', function () { if (current > 1) goTo(current - 1, -1); });
+  document.querySelectorAll('[data-prev]').forEach(function(b){
+    b.addEventListener('click',function(){ if(current>1) goTo(current-1,-1); });
   });
 
-  /* ── Clear error on input ──────────────────────────────── */
-  document.querySelectorAll('.form-input').forEach(function (el) {
-    el.addEventListener('change', function () { el.classList.remove('input-error'); });
-    el.addEventListener('input',  function () { el.classList.remove('input-error'); });
+  /* ── Clear errors on input ──────────────────────────────────── */
+  document.querySelectorAll('.form-input').forEach(function(el){
+    ['input','change'].forEach(function(ev){
+      el.addEventListener(ev,function(){ el.classList.remove('input-error'); });
+    });
   });
-  document.querySelectorAll('.radio-pills').forEach(function (grp) {
-    grp.querySelectorAll('input').forEach(function (r) {
-      r.addEventListener('change', function () { grp.classList.remove('radio-error'); });
+  document.querySelectorAll('.radio-pills').forEach(function(g){
+    g.querySelectorAll('input').forEach(function(r){
+      r.addEventListener('change',function(){ g.classList.remove('radio-error'); });
     });
   });
 
-  /* ── Password strength ─────────────────────────────────── */
-  var pwdEl  = document.getElementById('password');
-  var pwdBar = document.getElementById('pwd-bar');
-  var pwdLbl = document.getElementById('pwd-label');
-  if (pwdEl) {
-    pwdEl.addEventListener('input', function () {
-      var v = this.value;
-      var s = 0;
-      if (v.length >= 8)          s++;
-      if (/[A-Z]/.test(v))        s++;
-      if (/[0-9]/.test(v))        s++;
-      if (/[^A-Za-z0-9]/.test(v)) s++;
-      var labels  = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-      var colors  = ['', '#ef4444', '#f59e0b', '#3b82f6', '#22c55e'];
-      var widths  = ['0%', '25%', '50%', '75%', '100%'];
-      if (pwdBar) { pwdBar.style.width = widths[s]; pwdBar.style.background = colors[s]; }
-      if (pwdLbl) { pwdLbl.textContent = labels[s] || ''; pwdLbl.style.color = colors[s]; }
+  /* ── Password strength ──────────────────────────────────────── */
+  var pwdEl =document.getElementById('password');
+  var pwdBar=document.getElementById('pwd-bar');
+  var pwdLbl=document.getElementById('pwd-label');
+  if(pwdEl){
+    pwdEl.addEventListener('input',function(){
+      var v=this.value, s=0;
+      if(v.length>=8)          s++;
+      if(/[A-Z]/.test(v))      s++;
+      if(/[0-9]/.test(v))      s++;
+      if(/[^A-Za-z0-9]/.test(v)) s++;
+      var lbs=['','Weak','Fair','Good','Strong'];
+      var cls=['','#ef4444','#f59e0b','#3b82f6','#22c55e'];
+      var wds=['0%','25%','50%','75%','100%'];
+      if(pwdBar){ pwdBar.style.width=wds[s]; pwdBar.style.background=cls[s]; }
+      if(pwdLbl){ pwdLbl.textContent=lbs[s]||''; pwdLbl.style.color=cls[s]; }
     });
   }
 
-  /* ── Password match ────────────────────────────────────── */
-  var confEl  = document.getElementById('confirm_password');
-  var matchEl = document.getElementById('pwd-match');
-  if (confEl && matchEl) {
-    confEl.addEventListener('input', function () {
-      if (!this.value) { matchEl.textContent = ''; return; }
-      var match = pwdEl && this.value === pwdEl.value;
-      matchEl.textContent = match ? '✓ Passwords match' : '✗ Passwords do not match';
-      matchEl.style.color = match ? 'var(--sage)' : 'var(--error)';
+  /* ── Password match ─────────────────────────────────────────── */
+  var confEl =document.getElementById('confirm_password');
+  var matchEl=document.getElementById('pwd-match');
+  if(confEl&&matchEl){
+    confEl.addEventListener('input',function(){
+      if(!this.value){ matchEl.textContent=''; return; }
+      var m=pwdEl&&this.value===pwdEl.value;
+      matchEl.textContent=m?'✓ Passwords match':'✗ Passwords do not match';
+      matchEl.style.color=m?'var(--sage)':'var(--error)';
     });
   }
 
-  /* ── Password toggles ──────────────────────────────────── */
-  document.querySelectorAll('.password-toggle').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var inp  = this.previousElementSibling;
-      var icon = this.querySelector('i');
-      if (inp.type === 'password') { inp.type = 'text';  icon.className = 'fas fa-eye'; }
-      else                         { inp.type = 'password'; icon.className = 'fas fa-eye-slash'; }
+  /* ── Password show/hide ─────────────────────────────────────── */
+  document.querySelectorAll('.password-toggle').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var inp=this.previousElementSibling;
+      var ico=this.querySelector('i');
+      if(inp.type==='password'){ inp.type='text'; ico.className='fas fa-eye'; }
+      else { inp.type='password'; ico.className='fas fa-eye-slash'; }
     });
   });
 
-  /* ── Submit animation ──────────────────────────────────── */
-  var form    = document.getElementById('reg-form');
-  var overlay = document.getElementById('reg-overlay');
-  var submitBtn = document.getElementById('submit-btn');
-
-  if (form && overlay) {
-    form.addEventListener('submit', function (e) {
-      /* Final validation */
-      if (!validateStep(7)) { e.preventDefault(); return; }
-
-      var pwd  = document.getElementById('password');
-      var conf = document.getElementById('confirm_password');
-      if (pwd && conf && pwd.value !== conf.value) {
-        conf.classList.add('input-error');
-        if (matchEl) { matchEl.textContent = '✗ Passwords do not match'; matchEl.style.color = 'var(--error)'; }
-        e.preventDefault();
-        return;
+  /* ── Submit ─────────────────────────────────────────────────── */
+  var form   =document.getElementById('reg-form');
+  var overlay=document.getElementById('reg-overlay');
+  var subBtn =document.getElementById('submit-btn');
+  if(form&&overlay){
+    form.addEventListener('submit',function(e){
+      if(!validateStep(7)){ e.preventDefault(); return; }
+      var p=document.getElementById('password');
+      var c=document.getElementById('confirm_password');
+      if(p&&c&&p.value!==c.value){
+        c.classList.add('input-error');
+        if(matchEl){ matchEl.textContent='✗ Passwords do not match'; matchEl.style.color='var(--error)'; }
+        e.preventDefault(); return;
       }
-
       overlay.classList.add('show');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating…';
-      }
+      if(subBtn){ subBtn.disabled=true; subBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating…'; }
     });
   }
 
-  /* ── Init ──────────────────────────────────────────────── */
-  updateUI();
+  /* ── Init ───────────────────────────────────────────────────── */
+  updateStepper();
 
 })();
 </script>

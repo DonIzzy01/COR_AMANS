@@ -1,0 +1,86 @@
+{% extends "admin/admin_layout.html" %}
+{% block page_title %}Audit Log{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-title">Audit Log</h1>
+    <p class="admin-page-subtitle">Tamper-evident record of all admin actions. Showing last 200 entries.</p>
+  </div>
+</div>
+
+<div class="admin-card">
+  {% if logs %}
+  <div style="overflow-x:auto;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Admin</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>IP Address</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="white-space:nowrap;font-size:.8rem;color:var(--text-muted);">
+            {{ log.created_at.strftime('%d %b %Y') }}<br>
+            {{ log.created_at.strftime('%H:%M:%S') }}
+          </td>
+          <td style="font-size:.825rem;">
+            {% if log.actor %}
+            <div style="font-weight:600;">{{ log.actor.email }}</div>
+            <div style="font-size:.775rem;color:var(--text-muted);">ID {{ log.user_id }}</div>
+            {% else %}
+            <span style="color:var(--text-muted);">System</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set action_colors = {
+              'resource.create': 'badge-success',
+              'resource.edit': 'badge-info',
+              'resource.delete': 'badge-danger',
+              'session.create': 'badge-success',
+              'session.edit': 'badge-info',
+              'session.delete': 'badge-danger',
+              'session.cancel': 'badge-neutral',
+            } %}
+            <span class="badge {{ action_colors.get(log.action, 'badge-neutral') }}">
+              {{ log.action }}
+            </span>
+          </td>
+          <td style="font-size:.825rem;">
+            {% if log.target_type %}
+            <span style="color:var(--text-muted);">{{ log.target_type }}</span>
+            {% if log.target_id %} #{{ log.target_id }}{% endif %}
+            {% else %}—{% endif %}
+          </td>
+          <td style="font-size:.8rem;color:var(--text-muted);white-space:nowrap;">
+            {{ log.ip_address or '—' }}
+          </td>
+          <td style="font-size:.8rem;max-width:200px;">
+            {% set detail = log.get_detail() %}
+            {% if detail %}
+            {% for k, v in detail.items() %}
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <span style="color:var(--text-muted);">{{ k }}:</span> {{ v }}
+            </div>
+            {% endfor %}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:3rem;color:var(--text-muted);">
+    <i class="fas fa-clipboard-list" style="font-size:2rem;margin-bottom:.75rem;display:block;"></i>
+    <div>No audit entries yet. Actions taken on resources and sessions will appear here.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

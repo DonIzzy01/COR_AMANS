@@ -1,0 +1,241 @@
+{% extends "layout.html" %}
+{% block title %}Formation Resources — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+{% block main_class %}{% endblock %}
+
+{% block head_extra %}
+<style>
+  body { background: var(--frost); }
+  .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.25rem; }
+
+  .res-card {
+    background: #fff; border-radius: var(--r-xl); overflow: hidden;
+    border: 1px solid var(--border-green); box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    transition: box-shadow .2s, transform .2s;
+  }
+  .res-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .res-thumb { width: 100%; aspect-ratio: 16/9; background: var(--forest);
+    position: relative; flex-shrink: 0; overflow: hidden; }
+  .res-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .res-thumb .type-tag {
+    position: absolute; top: .5rem; left: .5rem;
+    background: rgba(27,67,50,.85); color: #fff; font-size: .68rem;
+    padding: .2rem .6rem; border-radius: var(--r-full); font-weight: 700;
+    display: flex; align-items: center; gap: .3rem;
+  }
+  .res-thumb .play-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .res-thumb .play-overlay i { font-size: 2.8rem; color: rgba(255,255,255,.88); text-shadow: 0 2px 10px rgba(0,0,0,.4); transition: transform .2s; }
+  .res-card:hover .play-overlay i { transform: scale(1.1); }
+
+  .doc-thumb { height: 110px; border-radius: 0; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--forest), var(--sage));
+    display: flex; align-items: center; justify-content: center; }
+  .doc-thumb i { font-size: 2.8rem; color: rgba(255,255,255,.85); }
+
+  .res-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
+  .res-cat { font-size: .68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--sage); margin-bottom: .35rem; }
+  .res-title { font-size: .92rem; font-weight: 700; color: var(--charcoal);
+    line-height: 1.35; margin-bottom: .4rem; flex: 1; }
+  .res-desc { font-size: .8rem; color: var(--muted); margin-bottom: .6rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .res-meta { font-size: .75rem; color: var(--muted); display: flex; gap: .75rem; flex-wrap: wrap; margin-top: auto; }
+
+  /* filter strip */
+  .filter-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
+  .filter-btn { padding: .35rem .85rem; border-radius: var(--r-full); font-size: .8rem;
+    font-weight: 600; border: 1px solid var(--border-green); background: #fff;
+    color: var(--charcoal); cursor: pointer; text-decoration: none; transition: background .2s, color .2s; }
+  .filter-btn:hover, .filter-btn.active { background: var(--forest); color: #fff; border-color: var(--forest); }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--muted);
+    background: #fff; border-radius: var(--r-xl); border: 1px solid var(--border-green); }
+  .empty-state i { font-size: 2.5rem; display: block; margin-bottom: .75rem; color: var(--border-green); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="dashboard-sidebar">
+    <div class="sidebar__header">
+      <div class="couple-avatar">
+        {% if current_user.profile_photo_url %}
+        <img src="{{ current_user.profile_photo_url }}" alt="{{ current_user.get_couple_name() }}">
+        {% else %}<i class="fas fa-heart"></i>{% endif %}
+      </div>
+      <div class="couple-name">{{ current_user.get_couple_name() }}</div>
+      {% if current_user.registration_number %}
+      <div class="couple-regnum">{{ current_user.registration_number }}</div>{% endif %}
+      {% if current_user.is_paid %}
+      <div class="paid-badge"><i class="fas fa-check-circle"></i> Active</div>{% endif %}
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Formation</div>
+        <a href="{{ url_for('dashboard') }}" class="sidebar__nav-link">
+          <i class="fas fa-house"></i> Dashboard</a>
+        <a href="{{ url_for('sessions') }}" class="sidebar__nav-link">
+          <i class="fas fa-video"></i> Live Sessions</a>
+        <a href="{{ url_for('resources') }}" class="sidebar__nav-link active">
+          <i class="fas fa-folder-open"></i> Resources</a>
+      </div>
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Account</div>
+        <a href="{{ url_for('profile') }}" class="sidebar__nav-link">
+          <i class="fas fa-user-circle"></i> Profile</a>
+        <a href="{{ url_for('change_password') }}" class="sidebar__nav-link">
+          <i class="fas fa-key"></i> Change Password</a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar__nav-link">
+          <i class="fas fa-shield-halved"></i> Admin Panel</a>{% endif %}
+      </div>
+    </nav>
+    <div class="sidebar__footer">
+      <form method="POST" action="{{ url_for('user_logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="sidebar__nav-link btn-ghost" style="width:100%;border:none;cursor:pointer;background:none;color:var(--error);display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.875rem;border-radius:var(--r-md);font-size:0.875rem;font-weight:500;">
+          <i class="fas fa-right-from-bracket" style="width:18px;text-align:center;"></i> Sign Out
+        </button>
+      </form>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Main -->
+  <div class="dashboard-main">
+
+    <!-- Mobile topbar -->
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+      <button class="navbar__hamburger" data-sidebar-toggle aria-label="Open sidebar" style="display:flex;">
+        <i class="fas fa-bars"></i></button>
+      <span style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:var(--forest);">Formation Resources</span>
+    </div>
+
+    <!-- Page header -->
+    <div class="welcome-banner reveal" style="margin-bottom:1.5rem;">
+      <h1 style="font-family:var(--font-serif);font-size:1.6rem;color:var(--frost);margin-bottom:.375rem;">
+        <i class="fas fa-folder-open" style="margin-right:.5rem;opacity:.7;"></i> Formation Library
+      </h1>
+      <p style="color:rgba(255,255,255,.85);font-size:.9rem;">
+        Videos, PDFs, and study materials uploaded by your parish formation team.
+      </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <a href="{{ url_for('resources') }}"
+         class="filter-btn {{ 'active' if active_type == 'all' and active_category == 'all' and active_module == 'all' else '' }}">
+        All</a>
+      <a href="{{ url_for('resources', type='video') }}"
+         class="filter-btn {{ 'active' if active_type == 'video' else '' }}">
+        <i class="fas fa-play"></i> Videos</a>
+      <a href="{{ url_for('resources', type='document') }}"
+         class="filter-btn {{ 'active' if active_type == 'document' else '' }}">
+        <i class="fas fa-file-pdf"></i> Documents</a>
+      <a href="{{ url_for('resources', category='doctrine') }}"
+         class="filter-btn {{ 'active' if active_category == 'doctrine' else '' }}">Doctrine</a>
+      <a href="{{ url_for('resources', category='pastoral') }}"
+         class="filter-btn {{ 'active' if active_category == 'pastoral' else '' }}">Pastoral</a>
+      <a href="{{ url_for('resources', category='liturgy') }}"
+         class="filter-btn {{ 'active' if active_category == 'liturgy' else '' }}">Liturgy</a>
+      <a href="{{ url_for('resources', category='prayer') }}"
+         class="filter-btn {{ 'active' if active_category == 'prayer' else '' }}">Prayer</a>
+    </div>
+
+    <!-- Module filter -->
+    {% if course_catalog %}
+    <div class="filter-bar" style="margin-top:-.75rem;">
+      {% for course in course_catalog %}
+      <a href="{{ url_for('resources', module=course.slug) }}"
+         class="filter-btn {{ 'active' if active_module == course.slug else '' }}"
+         style="font-size:.75rem;">
+        {{ course.title[:35] }}{% if course.title|length > 35 %}…{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Resources grid -->
+    {% if resources %}
+    <div class="res-grid">
+      {% for res in resources %}
+      <a href="{{ url_for('resource_detail', resource_id=res.id) }}" class="res-card reveal delay-{{ (loop.index0 % 3) + 1 }}">
+
+        {% if res.resource_type == 'video' %}
+        <div class="res-thumb">
+          {% if res.get_thumbnail() %}
+          <img src="{{ res.get_thumbnail() }}" alt="{{ res.title }}" loading="lazy">
+          {% else %}
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--forest),var(--sage));"></div>
+          {% endif %}
+          <div class="type-tag"><i class="fas fa-play"></i> Video{% if res.video_duration %} · {{ res.video_duration }}{% endif %}</div>
+          <div class="play-overlay"><i class="fas fa-circle-play"></i></div>
+        </div>
+        {% else %}
+        <div class="doc-thumb"><i class="fas fa-file-pdf"></i></div>
+        {% endif %}
+
+        <div class="res-body">
+          {% if res.category %}<div class="res-cat">{{ res.category|capitalize }}</div>{% endif %}
+          <div class="res-title">
+            {% if res.is_featured %}<i class="fas fa-star" style="color:var(--gold);font-size:.75rem;margin-right:.3rem;"></i>{% endif %}
+            {{ res.title }}
+          </div>
+          {% if res.description %}
+          <div class="res-desc">{{ res.description }}</div>{% endif %}
+          <div class="res-meta">
+            {% if res.resource_type == 'document' %}
+            <span><i class="fas fa-file-pdf"></i> PDF{% if res.file_size_kb %} · {{ res.get_size_display() }}{% endif %}</span>
+            {% else %}
+            <span><i class="fas fa-play-circle"></i> {{ res.video_platform|capitalize if res.video_platform else 'Video' }}</span>
+            {% endif %}
+            {% if res.module_slug %}
+            <span><i class="fas fa-book-open"></i>
+              {% for c in course_catalog %}{% if c.slug == res.module_slug %}{{ c.title[:30] }}{% if c.title|length > 30 %}…{% endif %}{% endif %}{% endfor %}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-folder-open"></i>
+      <div style="font-size:1rem;font-weight:700;color:var(--charcoal);margin-bottom:.375rem;">No resources found</div>
+      <div style="font-size:.875rem;">
+        {% if active_type != 'all' or active_category != 'all' or active_module != 'all' %}
+        Try removing some filters, or
+        <a href="{{ url_for('resources') }}" style="color:var(--sage);">view all resources</a>.
+        {% else %}
+        Your parish formation team will upload videos and documents here.
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+  (function(){
+    var btn  = document.querySelector('[data-sidebar-toggle]');
+    var side = document.getElementById('dashboard-sidebar');
+    var over = document.getElementById('sidebar-overlay');
+    if (!btn || !side) return;
+    function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+    function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+    btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+    over && over.addEventListener('click', close);
+  })();
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends "layout.html" %}
+{% block title %}Live Sessions — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+{% block main_class %}{% endblock %}
+
+{% block head_extra %}
+<style>
+  body { background: var(--frost); }
+  .sess-card {
+    background: #fff; border-radius: var(--r-xl); border: 1px solid var(--border-green);
+    box-shadow: var(--shadow-sm); padding: 1.25rem; display: flex; flex-direction: column; gap: .625rem;
+    transition: box-shadow .2s;
+  }
+  .sess-card:hover { box-shadow: var(--shadow-lg); }
+
+  .status-badge { display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .7rem; font-weight: 700; padding: .2rem .65rem; border-radius: var(--r-full); }
+  .status-live     { background: #fee2e2; color: #b91c1c; }
+  .status-upcoming { background: var(--foam); color: var(--forest); }
+  .status-past     { background: #f1f5f9; color: #64748b; }
+  .status-cancelled{ background: #fef3c7; color: #92400e; }
+  .status-rec      { background: #e0f2fe; color: #0369a1; }
+
+  .platform-icon { width: 32px; height: 32px; border-radius: var(--r-md);
+    background: var(--foam); display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: var(--forest); flex-shrink: 0; }
+
+  .join-btn { display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1.1rem; border-radius: var(--r-md); font-size: .85rem; font-weight: 700;
+    background: var(--forest); color: #fff; text-decoration: none; transition: background .2s; }
+  .join-btn:hover { background: var(--sage); color: #fff; }
+  .join-btn.disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+
+  .watch-btn { display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1.1rem; border-radius: var(--r-md); font-size: .85rem; font-weight: 700;
+    background: #0369a1; color: #fff; text-decoration: none; transition: background .2s; }
+  .watch-btn:hover { background: #0284c7; }
+
+  .section-head { font-family: var(--font-serif); font-size: 1.15rem; color: var(--forest);
+    margin: 2rem 0 1rem; display: flex; align-items: center; gap: .625rem; }
+  .section-head .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--sage); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="dashboard-sidebar">
+    <div class="sidebar__header">
+      <div class="couple-avatar">
+        {% if current_user.profile_photo_url %}
+        <img src="{{ current_user.profile_photo_url }}" alt="{{ current_user.get_couple_name() }}">
+        {% else %}<i class="fas fa-heart"></i>{% endif %}
+      </div>
+      <div class="couple-name">{{ current_user.get_couple_name() }}</div>
+      {% if current_user.registration_number %}
+      <div class="couple-regnum">{{ current_user.registration_number }}</div>{% endif %}
+      {% if current_user.is_paid %}
+      <div class="paid-badge"><i class="fas fa-check-circle"></i> Active</div>{% endif %}
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Formation</div>
+        <a href="{{ url_for('dashboard') }}" class="sidebar__nav-link"><i class="fas fa-house"></i> Dashboard</a>
+        <a href="{{ url_for('sessions') }}" class="sidebar__nav-link active"><i class="fas fa-video"></i> Live Sessions</a>
+        <a href="{{ url_for('resources') }}" class="sidebar__nav-link"><i class="fas fa-folder-open"></i> Resources</a>
+      </div>
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Account</div>
+        <a href="{{ url_for('profile') }}" class="sidebar__nav-link"><i class="fas fa-user-circle"></i> Profile</a>
+        <a href="{{ url_for('change_password') }}" class="sidebar__nav-link"><i class="fas fa-key"></i> Change Password</a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar__nav-link"><i class="fas fa-shield-halved"></i> Admin Panel</a>
+        {% endif %}
+      </div>
+    </nav>
+    <div class="sidebar__footer">
+      <form method="POST" action="{{ url_for('user_logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="sidebar__nav-link btn-ghost" style="width:100%;border:none;cursor:pointer;background:none;color:var(--error);display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-radius:var(--r-md);font-size:.875rem;font-weight:500;">
+          <i class="fas fa-right-from-bracket" style="width:18px;text-align:center;"></i> Sign Out
+        </button>
+      </form>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Main -->
+  <div class="dashboard-main">
+
+    <!-- Mobile topbar -->
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+      <button class="navbar__hamburger" data-sidebar-toggle aria-label="Open sidebar" style="display:flex;">
+        <i class="fas fa-bars"></i></button>
+      <span style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:var(--forest);">Live Sessions</span>
+    </div>
+
+    <!-- Page header -->
+    <div class="welcome-banner reveal" style="margin-bottom:1.5rem;">
+      <h1 style="font-family:var(--font-serif);font-size:1.6rem;color:var(--frost);margin-bottom:.375rem;">
+        <i class="fas fa-video" style="margin-right:.5rem;opacity:.7;"></i> Live Sessions
+      </h1>
+      <p style="color:rgba(255,255,255,.85);font-size:.9rem;">
+        Join live classes with your parish formation team, or watch past recordings.
+      </p>
+    </div>
+
+    <!-- Upcoming sessions -->
+    <div class="section-head reveal">
+      <div class="dot"></div> Upcoming &amp; Live
+    </div>
+
+    {% if upcoming %}
+    <div class="grid-2" style="margin-bottom:1.5rem;">
+      {% for ls in upcoming %}
+      <div class="sess-card reveal delay-{{ loop.index }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:.625rem;">
+            {% set platform_icon = {'zoom':'fa-video','meet':'fa-google','teams':'fa-microsoft','jitsi':'fa-globe'} %}
+            <div class="platform-icon">
+              <i class="fas {{ platform_icon.get(ls.platform, 'fa-video') }}"></i>
+            </div>
+            <div>
+              {% if ls.status == 'live' or ls.is_joinable() %}
+              <span class="status-badge status-live"><i class="fas fa-circle fa-xs"></i> Live Now</span>
+              {% else %}
+              <span class="status-badge status-upcoming"><i class="fas fa-clock"></i> Upcoming</span>
+              {% endif %}
+            </div>
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);">{{ ls.platform|capitalize }}</div>
+        </div>
+
+        <h3 style="font-family:var(--font-serif);font-size:1rem;color:var(--forest);line-height:1.3;">{{ ls.title }}</h3>
+        {% if ls.session_topic %}
+        <div style="font-size:.82rem;color:var(--sage);font-style:italic;font-family:var(--font-accent);">{{ ls.session_topic }}</div>{% endif %}
+        {% if ls.description %}
+        <div style="font-size:.82rem;color:var(--muted);line-height:1.55;">{{ ls.description }}</div>{% endif %}
+
+        <div style="display:flex;flex-direction:column;gap:.25rem;margin:.25rem 0;">
+          <div style="font-size:.8rem;color:var(--muted);"><i class="fas fa-calendar-day" style="width:18px;"></i>
+            {{ ls.scheduled_at.strftime('%A, %d %B %Y') }}</div>
+          <div style="font-size:.8rem;color:var(--muted);"><i class="fas fa-clock" style="width:18px;"></i>
+            {{ ls.scheduled_at.strftime('%I:%M %p') }} WAT · {{ ls.duration_minutes }} minutes</div>
+          {% if ls.host_name %}
+          <div style="font-size:.8rem;color:var(--muted);"><i class="fas fa-user-tie" style="width:18px;"></i>
+            {{ ls.host_name }}{% if ls.host_role %} — {{ ls.host_role }}{% endif %}</div>{% endif %}
+        </div>
+
+        <div style="margin-top:.25rem;">
+          {% if ls.meeting_url and ls.is_joinable() %}
+          <a href="{{ ls.meeting_url }}" target="_blank" rel="noopener noreferrer" class="join-btn">
+            <i class="fas fa-door-open"></i> Join Session
+          </a>
+          {% elif ls.meeting_url %}
+          <a href="{{ url_for('session_detail', session_id=ls.id) }}" class="btn btn-ghost btn-sm">
+            <i class="fas fa-info-circle"></i> Session Details
+          </a>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:.5rem;">
+            <i class="fas fa-lock" style="color:var(--border-green);"></i>
+            Room opens 15 minutes before the start time
+          </div>
+          {% else %}
+          <div style="font-size:.78rem;color:var(--muted);">
+            Meeting link will be posted here before the session.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="card" style="text-align:center;padding:2.5rem;color:var(--muted);margin-bottom:1.5rem;">
+      <i class="fas fa-calendar-xmark" style="font-size:2rem;margin-bottom:.75rem;display:block;color:var(--border-green);"></i>
+      <div style="font-weight:600;color:var(--charcoal);margin-bottom:.375rem;">No upcoming sessions</div>
+      <div style="font-size:.875rem;">Your parish will schedule classes here. Check back soon.</div>
+    </div>
+    {% endif %}
+
+    <!-- Past sessions / recordings -->
+    {% if past %}
+    <div class="section-head reveal">
+      <div class="dot" style="background:#0369a1;"></div> Recordings
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.875rem;padding-bottom:3rem;">
+      {% for ls in past %}
+      <div class="sess-card reveal delay-{{ loop.index }}" style="flex-direction:row;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+        <div style="width:44px;height:44px;border-radius:var(--r-lg);flex-shrink:0;
+          background:{{ '#e0f2fe' if ls.recording_embed_id else '#f1f5f9' }};
+          display:flex;align-items:center;justify-content:center;color:{{ '#0369a1' if ls.recording_embed_id else '#94a3b8' }};font-size:1.1rem;">
+          <i class="fas {{ 'fa-circle-play' if ls.recording_embed_id else 'fa-clock-rotate-left' }}"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.92rem;font-weight:700;color:var(--charcoal);margin-bottom:.2rem;">{{ ls.title }}</div>
+          <div style="font-size:.78rem;color:var(--muted);">
+            {{ ls.scheduled_at.strftime('%d %B %Y') }} · {{ ls.duration_minutes }} min
+            {% if ls.host_name %} · {{ ls.host_name }}{% endif %}
+          </div>
+          {% if ls.session_topic %}
+          <div style="font-size:.78rem;color:var(--sage);font-style:italic;margin-top:.15rem;">{{ ls.session_topic }}</div>{% endif %}
+        </div>
+        {% if ls.recording_embed_id %}
+        <span class="status-badge status-rec" style="flex-shrink:0;">
+          <i class="fas fa-circle-play"></i> Recording
+        </span>
+        <a href="{{ url_for('session_detail', session_id=ls.id) }}" class="watch-btn">
+          <i class="fas fa-play"></i> Watch
+        </a>
+        {% else %}
+        <span class="status-badge status-past" style="flex-shrink:0;">
+          <i class="fas fa-check"></i> Completed
+        </span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="padding-bottom:3rem;"></div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+  (function(){
+    var btn  = document.querySelector('[data-sidebar-toggle]');
+    var side = document.getElementById('dashboard-sidebar');
+    var over = document.getElementById('sidebar-overlay');
+    if (!btn || !side) return;
+    function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+    function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+    btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+    over && over.addEventListener('click', close);
+  })();
+</script>
+{% endblock %}
+{% endblock %}

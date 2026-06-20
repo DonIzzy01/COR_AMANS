@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+{% block title %}{{ ls.title }} — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+{% block main_class %}{% endblock %}
+
+{% block head_extra %}
+<style>
+  body { background: var(--frost); }
+  .video-frame { width: 100%; aspect-ratio: 16/9; border-radius: var(--r-xl); overflow: hidden; background: #000; }
+  .video-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+  .back-link { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem;
+    color: var(--sage); text-decoration: none; margin-bottom: 1.25rem; font-weight: 600; }
+  .back-link:hover { color: var(--forest); }
+  .status-badge { display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .72rem; font-weight: 700; padding: .22rem .65rem; border-radius: var(--r-full); }
+  .join-btn { display: inline-flex; align-items: center; gap: .5rem;
+    padding: .65rem 1.4rem; border-radius: var(--r-md); font-size: .925rem; font-weight: 700;
+    background: var(--forest); color: #fff; text-decoration: none; transition: background .2s; }
+  .join-btn:hover { background: var(--sage); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- Sidebar (same shell) -->
+  <aside class="sidebar" id="dashboard-sidebar">
+    <div class="sidebar__header">
+      <div class="couple-avatar">
+        {% if current_user.profile_photo_url %}
+        <img src="{{ current_user.profile_photo_url }}" alt="{{ current_user.get_couple_name() }}">
+        {% else %}<i class="fas fa-heart"></i>{% endif %}
+      </div>
+      <div class="couple-name">{{ current_user.get_couple_name() }}</div>
+      {% if current_user.registration_number %}
+      <div class="couple-regnum">{{ current_user.registration_number }}</div>{% endif %}
+      {% if current_user.is_paid %}
+      <div class="paid-badge"><i class="fas fa-check-circle"></i> Active</div>{% endif %}
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Formation</div>
+        <a href="{{ url_for('dashboard') }}" class="sidebar__nav-link"><i class="fas fa-house"></i> Dashboard</a>
+        <a href="{{ url_for('sessions') }}" class="sidebar__nav-link active"><i class="fas fa-video"></i> Live Sessions</a>
+        <a href="{{ url_for('resources') }}" class="sidebar__nav-link"><i class="fas fa-folder-open"></i> Resources</a>
+      </div>
+      <div class="sidebar__nav-group">
+        <div class="sidebar__nav-label">Account</div>
+        <a href="{{ url_for('profile') }}" class="sidebar__nav-link"><i class="fas fa-user-circle"></i> Profile</a>
+        <a href="{{ url_for('change_password') }}" class="sidebar__nav-link"><i class="fas fa-key"></i> Change Password</a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar__nav-link"><i class="fas fa-shield-halved"></i> Admin Panel</a>
+        {% endif %}
+      </div>
+    </nav>
+    <div class="sidebar__footer">
+      <form method="POST" action="{{ url_for('user_logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="sidebar__nav-link btn-ghost" style="width:100%;border:none;cursor:pointer;background:none;color:var(--error);display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-radius:var(--r-md);font-size:.875rem;font-weight:500;">
+          <i class="fas fa-right-from-bracket" style="width:18px;text-align:center;"></i> Sign Out
+        </button>
+      </form>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Main -->
+  <div class="dashboard-main">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+      <button class="navbar__hamburger" data-sidebar-toggle aria-label="Open sidebar" style="display:flex;"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <a href="{{ url_for('sessions') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Sessions</a>
+
+    <!-- Meta card -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <!-- Status -->
+          {% if ls.status == 'cancelled' %}
+          <span class="status-badge" style="background:#fef3c7;color:#92400e;margin-bottom:.75rem;display:inline-flex;">
+            <i class="fas fa-ban"></i> Cancelled</span>
+          {% elif ls.status == 'completed' and ls.recording_embed_id %}
+          <span class="status-badge" style="background:#e0f2fe;color:#0369a1;margin-bottom:.75rem;display:inline-flex;">
+            <i class="fas fa-circle-play"></i> Recording Available</span>
+          {% elif ls.is_joinable() %}
+          <span class="status-badge" style="background:#fee2e2;color:#b91c1c;margin-bottom:.75rem;display:inline-flex;">
+            <i class="fas fa-circle fa-xs"></i> Live Now</span>
+          {% else %}
+          <span class="status-badge" style="background:var(--foam);color:var(--forest);margin-bottom:.75rem;display:inline-flex;">
+            <i class="fas fa-clock"></i> Upcoming</span>
+          {% endif %}
+
+          <h1 style="font-family:var(--font-serif);font-size:1.5rem;color:var(--forest);line-height:1.3;margin-bottom:.75rem;">{{ ls.title }}</h1>
+          {% if ls.session_topic %}
+          <div style="font-size:.9rem;color:var(--sage);font-style:italic;font-family:var(--font-accent);margin-bottom:.75rem;">{{ ls.session_topic }}</div>{% endif %}
+
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem;">
+            <div style="font-size:.875rem;color:var(--charcoal);">
+              <i class="fas fa-calendar-day" style="width:20px;color:var(--sage);"></i>
+              {{ ls.scheduled_at.strftime('%A, %d %B %Y') }}
+            </div>
+            <div style="font-size:.875rem;color:var(--charcoal);">
+              <i class="fas fa-clock" style="width:20px;color:var(--sage);"></i>
+              {{ ls.scheduled_at.strftime('%I:%M %p') }} WAT · {{ ls.duration_minutes }} minutes
+            </div>
+            {% if ls.host_name %}
+            <div style="font-size:.875rem;color:var(--charcoal);">
+              <i class="fas fa-user-tie" style="width:20px;color:var(--sage);"></i>
+              {{ ls.host_name }}{% if ls.host_role %} — <span style="color:var(--muted);">{{ ls.host_role }}</span>{% endif %}
+            </div>{% endif %}
+            <div style="font-size:.875rem;color:var(--charcoal);">
+              <i class="fas fa-video" style="width:20px;color:var(--sage);"></i>
+              Platform: {{ ls.platform|capitalize }}
+            </div>
+          </div>
+
+          {% if ls.description %}
+          <div style="font-size:.9rem;color:var(--charcoal);line-height:1.65;padding-top:1rem;border-top:1px solid var(--border-green);">
+            {{ ls.description }}</div>{% endif %}
+        </div>
+
+        <!-- Join button -->
+        <div style="flex-shrink:0;">
+          {% if ls.meeting_url and ls.is_joinable() %}
+          <a href="{{ ls.meeting_url }}" target="_blank" rel="noopener noreferrer" class="join-btn">
+            <i class="fas fa-door-open"></i> Join Now
+          </a>
+          {% elif ls.meeting_url and ls.status not in ('cancelled','completed') %}
+          <button class="join-btn" style="opacity:.5;cursor:not-allowed;" disabled>
+            <i class="fas fa-lock"></i> Opens at {{ ls.scheduled_at.strftime('%I:%M %p') }}
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recording -->
+    {% if ls.status == 'completed' and ls.get_recording_embed_url() %}
+    <div class="card" style="margin-bottom:.5rem;">
+      <div style="font-size:.825rem;font-weight:700;color:var(--charcoal);margin-bottom:.875rem;">
+        <i class="fas fa-circle-play" style="color:#0369a1;margin-right:.4rem;"></i> Session Recording
+      </div>
+      <div class="video-frame">
+        <iframe src="{{ ls.get_recording_embed_url() }}"
+          title="{{ ls.title }}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy">
+        </iframe>
+      </div>
+    </div>
+    {% elif ls.status == 'completed' %}
+    <div class="card" style="text-align:center;padding:2rem;color:var(--muted);">
+      <i class="fas fa-clock-rotate-left" style="font-size:1.75rem;margin-bottom:.75rem;display:block;"></i>
+      This session has ended. A recording will be posted here once it is ready.
+    </div>
+    {% elif ls.meeting_url and not ls.is_joinable() %}
+    <div class="card" style="text-align:center;padding:2rem;color:var(--muted);">
+      <i class="fas fa-calendar-check" style="font-size:1.75rem;margin-bottom:.75rem;display:block;color:var(--border-green);"></i>
+      <div style="font-weight:600;color:var(--charcoal);margin-bottom:.4rem;">Room not yet open</div>
+      <div style="font-size:.875rem;">
+        The session room opens 15 minutes before the scheduled time.<br>
+        Return on {{ ls.scheduled_at.strftime('%A, %d %B at %I:%M %p') }}.
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="padding-bottom:3rem;"></div>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+  (function(){
+    var btn  = document.querySelector('[data-sidebar-toggle]');
+    var side = document.getElementById('dashboard-sidebar');
+    var over = document.getElementById('sidebar-overlay');
+    if (!btn || !side) return;
+    function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+    function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+    btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+    over && over.addEventListener('click', close);
+  })();
+</script>
+{% endblock %}
+{% endblock %}
