@@ -45,14 +45,9 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_globals():
-    pub_key = app.config.get('CLERK_PUBLISHABLE_KEY', '')
-    from clerk_auth import _frontend_api_from_key
     return {
         "csrf_token": generate_csrf_token,
         "idempotency_key": issue_idempotency_key,
-        "clerk_enabled": app.config.get('CLERK_ENABLED', False),
-        "clerk_publishable_key": pub_key,
-        "clerk_frontend_api": _frontend_api_from_key(pub_key) if pub_key else '',
     }
 
 
@@ -245,27 +240,20 @@ def add_security_headers(response):
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
 
-    clerk_extra = ""
-    if app.config.get('CLERK_ENABLED'):
-        clerk_extra = (
-            " https://clerk.accounts.dev https://*.clerk.accounts.dev"
-            " https://*.clerk.com"
-        )
-
     if app.config.get('FLASK_ENV') == 'production':
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
 
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        f"script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com "
-        f"https://cdnjs.cloudflare.com https://cdn.jsdelivr.net{clerk_extra}; "
+        "script-src 'self' 'unsafe-inline' "
+        "https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com "
-        f"https://fonts.googleapis.com{clerk_extra}; "
+        "https://fonts.googleapis.com; "
         "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; "
-        f"img-src 'self' data: blob: https://img.youtube.com https://i.vimeocdn.com{clerk_extra}; "
-        f"connect-src 'self'{clerk_extra}; "
+        "img-src 'self' data: blob: https://img.youtube.com https://i.vimeocdn.com; "
+        "connect-src 'self'; "
         "frame-src 'self' https://www.youtube.com https://player.vimeo.com "
-        f"https://youtube.com{clerk_extra}; "
+        "https://youtube.com; "
         "form-action 'self'; "
         "base-uri 'self'; "
         "frame-ancestors 'none';"
@@ -994,23 +982,21 @@ def login():
         return redirect(url_for("dashboard") if current_user.is_paid else url_for("payment"))
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
+        reg_num = request.form.get("registration_number", "").strip().upper()
         password = request.form.get("password", "")
 
-        if not EMAIL_PATTERN.match(email):
-            flash("Please enter a valid email address.", "error")
+        if not reg_num:
+            flash("Please enter your registration number.", "error")
             return redirect(url_for("login"))
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(registration_number=reg_num).first()
 
-        # Account lockout check
         if user and user.is_locked():
             remaining = int((user.locked_until - datetime.utcnow()).total_seconds() // 60) + 1
-            flash(f"Too many failed attempts. Account is locked. Try again in {remaining} minute(s).", "error")
+            flash(f"Too many failed attempts. Account locked for {remaining} more minute(s).", "error")
             return redirect(url_for("login"))
 
         if user and user.check_password(password):
-            # Reset lockout on success
             user.failed_login_attempts = 0
             user.locked_until = None
             db.session.commit()
@@ -1024,9 +1010,6 @@ def login():
                 flash("Please change your temporary password before continuing.", "warning")
                 return redirect(url_for("change_password"))
 
-            if user.is_admin:
-                return redirect(url_for("admin_dashboard"))
-
             if user.is_paid:
                 flash(f"Welcome back, {user.get_couple_name()}!", "success")
                 return redirect(url_for("dashboard"))
@@ -1034,7 +1017,6 @@ def login():
                 flash("Login successful! Please complete payment to access your dashboard.", "info")
                 return redirect(url_for("payment"))
         else:
-            # Increment lockout counter
             if user:
                 user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
                 if user.failed_login_attempts >= 5:
@@ -1044,9 +1026,9 @@ def login():
                 else:
                     db.session.commit()
                     remaining = 5 - user.failed_login_attempts
-                    flash(f"Invalid email or password. {remaining} attempt(s) remaining.", "error")
+                    flash(f"Invalid credentials. {remaining} attempt(s) remaining.", "error")
             else:
-                flash("Invalid email or password. Please try again.", "error")
+                flash("Invalid registration number or password.", "error")
             return redirect(url_for("login"))
 
     return render_template("login.html")
@@ -1117,74 +1099,6 @@ def user_logout():
     session.clear()
     flash("You have been signed out safely.", "info")
     return redirect(url_for("landing"))
-
-
-# ──────────────────────────────────────────────────
-#  Clerk integration routes (scaffold)
-# ──────────────────────────────────────────────────
-
-@app.route("/clerk/sync", methods=["POST"])
-@csrf_protect
-def clerk_sync():
-    """
-    Called by Clerk JS after sign-in/sign-up.
-    Verifies the Clerk session token and creates a Flask session.
-    """
-    if not app.config.get('CLERK_ENABLED'):
-        return jsonify({"error": "Clerk not enabled"}), 400
-
-    from clerk_auth import verify_clerk_session_token, sync_clerk_user_to_db
-    token = request.form.get("session_token") or request.json.get("session_token", "")
-
-    payload = verify_clerk_session_token(token)
-    if not payload:
-        return jsonify({"error": "Invalid session token"}), 401
-
-    user = sync_clerk_user_to_db(payload, db, User)
-    if not user:
-        return jsonify({"error": "Could not create user"}), 500
-
-    session.clear()
-    login_user(user)
-    generate_csrf_token()
-    session["last_activity"] = int(time.time())
-
-    redirect_url = url_for("dashboard") if user.is_paid else url_for("payment")
-    return jsonify({"success": True, "redirect": redirect_url})
-
-
-@app.route("/clerk/webhook", methods=["POST"])
-def clerk_webhook():
-    """
-    Clerk webhook handler — syncs user events (created, deleted, updated).
-    """
-    if not app.config.get('CLERK_ENABLED'):
-        return jsonify({"status": "disabled"}), 200
-
-    from clerk_auth import verify_clerk_webhook, sync_clerk_user_to_db
-    payload = request.get_data()
-    svix_id = request.headers.get("svix-id", "")
-    svix_timestamp = request.headers.get("svix-timestamp", "")
-    svix_signature = request.headers.get("svix-signature", "")
-
-    if not verify_clerk_webhook(payload, svix_id, svix_timestamp, svix_signature):
-        return jsonify({"error": "Invalid signature"}), 400
-
-    event = request.json
-    event_type = event.get("type", "")
-    data = event.get("data", {})
-
-    if event_type == "user.created":
-        sync_clerk_user_to_db(data, db, User)
-    elif event_type == "user.deleted":
-        clerk_user_id = data.get("id")
-        if clerk_user_id:
-            user = User.query.filter_by(clerk_user_id=clerk_user_id).first()
-            if user:
-                user.clerk_user_id = None  # Unlink rather than delete
-
-    db.session.commit()
-    return jsonify({"status": "ok"}), 200
 
 
 # ──────────────────────────────────────────────────

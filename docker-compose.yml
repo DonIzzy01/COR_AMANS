@@ -19,19 +19,32 @@ services:
   web:
     build: .
     restart: unless-stopped
+    # Expose directly for local dev; in production nginx sits in front
     ports:
       - "5001:5000"
     env_file:
       - .env
     environment:
-      # Override DATABASE_URL: inside Docker the DB host is "db", not "localhost"
       DATABASE_URL: postgresql://postgres:postgres@db/cor_amans_db
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      # Persist user-uploaded profile photos across container restarts
       - uploads:/app/static/uploads
+    # Scale with: docker compose up --scale web=3
+    # (remove ports: above and use nginx instead when scaling)
+
+  # ── Optional: nginx load balancer (uncomment for multi-instance) ──
+  # nginx:
+  #   image: nginx:alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - uploads:/app/static/uploads:ro
+  #   depends_on:
+  #     - web
 
 volumes:
   postgres_data:

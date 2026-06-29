@@ -24,12 +24,6 @@
 
   {% block head_extra %}{% endblock %}
 
-  {% if clerk_enabled %}
-  <script async crossorigin="anonymous" data-clerk-publishable-key="{{ clerk_publishable_key }}"
-    src="https://{{ clerk_frontend_api }}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-    type="text/javascript">
-  </script>
-  {% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
