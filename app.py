@@ -3,7 +3,7 @@ import re
 import secrets
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from threading import Lock
 
 from flask import (Flask, abort, flash, redirect, render_template,
@@ -11,7 +11,7 @@ from flask import (Flask, abort, flash, redirect, render_template,
 from dotenv import load_dotenv
 from config import Config
 from extensions import db, login_manager, mail
-from models import User, Course, Enrollment, Resource, LiveSession, AuditLog
+from models import User, Course, Resource, LiveSession, AuditLog
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from functools import lru_cache, wraps
@@ -70,6 +70,7 @@ if __name__ == "__main__":
 # ──────────────────────────────────────────────────
 #  Security helpers
 # ──────────────────────────────────────────────────
+
 
 def generate_reference(user_id):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -1324,7 +1325,6 @@ def change_password():
         current_user.force_password_change = False
         db.session.commit()
 
-        is_admin = current_user.is_admin
         logout_user()
         flash("Password changed successfully. Please log in with your new password.", "success")
         return redirect(url_for("login"))
@@ -1360,7 +1360,7 @@ def admin_dashboard():
         end_date = datetime.now() - timedelta(days=30 * i)
         month_users = User.query.filter(User.created_at >= start_date, User.created_at < end_date).count()
         user_growth_data.append(month_users)
-        month_paid = User.query.filter(User.is_paid == True, User.created_at >= start_date, User.created_at < end_date).count()
+        month_paid = User.query.filter(User.is_paid.is_(True), User.created_at >= start_date, User.created_at < end_date).count()
         revenue_data.append(month_paid * 50000)
 
     return render_template(

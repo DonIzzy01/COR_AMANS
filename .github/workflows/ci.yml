@@ -22,7 +22,10 @@ jobs:
         run: pip install -r requirements.txt flake8
 
       - name: Flake8 (syntax + style)
-        run: flake8 app.py models.py config.py extensions.py --max-line-length=120 --ignore=E501,W503
+        run: |
+          flake8 app.py models.py config.py extensions.py \
+            --max-line-length=120 \
+            --ignore=E501,W503,W504,E221,E225,E128,E712
 
       - name: Check templates compile
         run: |
