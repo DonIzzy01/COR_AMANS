@@ -68,39 +68,50 @@
 }
 
 /* ── Dark Mode Token Overrides ── */
+/* Warm neutral darks — not cold blue-black. Greens shift to lighter,
+   natural tones so they remain readable without being neon. */
 [data-theme="dark"] {
-  --forest:      #3fb950;
-  --forest-mid:  #56d364;
-  --sage:        #3fb950;
-  --meadow:      #2ea043;
-  --mint:        #388bfd;
-  --mist:        #21262d;
-  --foam:        #161b22;
-  --frost:       #0d1117;
+  /* Brand greens — lighter, softer on dark backgrounds */
+  --forest:      #52b788;   /* light theme's meadow — natural, not neon */
+  --forest-mid:  #74c69d;   /* light theme's mint */
+  --sage:        #95d5b2;   /* gentle sage highlight */
+  --meadow:      #3d9d6e;   /* mid-range green */
+  --mint:        #b7e4c7;   /* very light mint for small accents */
+  --mist:        #1e2d24;   /* dark green-tinted fill */
+  --foam:        #1a2820;   /* darker green-tinted surface */
+  --frost:       #1e2022;   /* banner / sidebar bg */
 
-  --white:       #21262d;
-  --ivory:       #0d1117;
-  --charcoal:    #e6edf3;
-  --slate:       #b1bac4;
-  --muted:       #8b949e;
-  --border:      #30363d;
-  --border-green:#238636;
-  --surface:     #161b22;
+  /* Backgrounds — 3 warm steps, no blue tint */
+  --ivory:       #1c1e20;   /* page background */
+  --white:       #262829;   /* card surface */
+  --surface:     #303234;   /* elevated: inputs, dropdowns, hovers */
 
-  --gold:        #e3b341;
-  --gold-light:  #f0c040;
+  /* Text — warm off-white, not stark #fff */
+  --charcoal:    #e0e0e0;   /* primary text */
+  --slate:       #ababab;   /* secondary text */
+  --muted:       #767b82;   /* muted / placeholder */
+
+  /* Borders */
+  --border:      #3a3c3e;   /* subtle divider */
+  --border-green:#2a4438;   /* green-tinted border */
+
+  /* Gold — slightly brighter so it pops on dark bg */
+  --gold:        #f0c040;
+  --gold-light:  #f5d060;
   --gold-dark:   #c9a84c;
 
-  --success:     #3fb950;
-  --error:       #f85149;
-  --warning:     #e3b341;
-  --info:        #388bfd;
+  /* Status */
+  --success:     #52b788;
+  --error:       #f07070;   /* softer red — less harsh */
+  --warning:     #f0b429;
+  --info:        #60a5fa;
 
-  --shadow-xs:   0 1px 2px rgba(0,0,0,.3);
-  --shadow-sm:   0 1px 4px rgba(0,0,0,.4);
-  --shadow-md:   0 4px 16px rgba(0,0,0,.5);
-  --shadow-lg:   0 10px 32px rgba(0,0,0,.6);
-  --shadow-xl:   0 20px 60px rgba(0,0,0,.7);
+  /* Shadows — darker alpha for depth on dark surfaces */
+  --shadow-xs:   0 1px 3px  rgba(0,0,0,.35);
+  --shadow-sm:   0 2px 6px  rgba(0,0,0,.40);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.45);
+  --shadow-lg:   0 8px 28px rgba(0,0,0,.50);
+  --shadow-xl:   0 16px 48px rgba(0,0,0,.55);
 }
 
 /* Smooth theme transitions */

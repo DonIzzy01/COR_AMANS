@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="">
 <head>
-  <!-- Instant theme apply — before paint to prevent flash -->
+  <!-- Instant theme apply — before paint to prevent flash.
+       Anonymous visitors: always light.
+       Logged-in users: follow their saved preference (default: system). -->
   <script>
     (function(){
-      var t = localStorage.getItem('ca-theme') || 'system';
+      {% if current_user.is_authenticated %}
+        var pref = {{ current_user.get_preferences().get('theme', 'system') | tojson }};
+        var t = localStorage.getItem('ca-theme') || pref;
+      {% else %}
+        var t = 'light';
+      {% endif %}
       var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     })();
