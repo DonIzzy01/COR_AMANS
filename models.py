@@ -1,14 +1,14 @@
 from extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 import secrets
 import string
 import json
 
 
 def _generate_registration_number():
-    year = datetime.utcnow().strftime('%Y')
+    year = datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y')
     suffix = ''.join(secrets.choice(string.digits) for _ in range(4))
     return f"COR-{year}-{suffix}"
 
@@ -159,7 +159,7 @@ class User(db.Model, UserMixin):
         groom = self.groom_first_name or ''
         if bride and groom:
             return f"{bride} & {groom}"
-        return bride or groom or self.email
+        return bride or groom or self.email or ''
 
     def get_full_bride_name(self):
         return f"{self.bride_first_name or ''} {self.bride_last_name or ''}".strip()
@@ -177,7 +177,7 @@ class User(db.Model, UserMixin):
         return self.registration_number
 
     def is_locked(self):
-        if self.locked_until and datetime.utcnow() < self.locked_until:
+        if self.locked_until and datetime.now(timezone.utc).replace(tzinfo=None) < self.locked_until:
             return True
         return False
 
@@ -336,13 +336,13 @@ class LiveSession(db.Model):
     def is_joinable(self):
         """True if session is within 15 min of start or currently live."""
         from datetime import timedelta
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         window_start = self.scheduled_at - timedelta(minutes=15)
         window_end = self.scheduled_at + timedelta(minutes=self.duration_minutes or 60)
         return window_start <= now <= window_end and self.status in ('upcoming', 'live')
 
     def status_label(self):
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         if self.status == 'cancelled':
             return 'Cancelled'
         if self.status == 'completed':
