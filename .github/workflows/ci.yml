@@ -1,17 +1,31 @@
 name: CI / CD
 
-# Note: Node.js 20 deprecation warnings from actions/checkout@v4 and
-# actions/setup-python@v5 are GitHub's runner upgrade, not our issue.
-# No action needed — these still work correctly on Node.js 24.
-
+# Triggers: all pushes to main/staging/develop + PRs targeting those branches
 on:
   push:
     branches: [main, staging, develop]
   pull_request:
     branches: [main, staging, develop]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# ─────────────────────────────────────────────────────────────────
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#
+#   SLACK_WEBHOOK_URL   — Slack Incoming Webhook URL (optional)
+#   DEPLOY_HOST         — SSH server IP or hostname
+#   DEPLOY_USER         — SSH username (e.g. ubuntu)
+#   DEPLOY_KEY          — SSH private key (PEM format)
+#   DEPLOY_PATH         — App directory on server (e.g. /opt/cor_amans)
+#
+# GITHUB_TOKEN is automatic — no setup needed.
+# ─────────────────────────────────────────────────────────────────
+
 jobs:
-  # ── 1. Lint & syntax check ──────────────────────────────
+
+  # ── 1. Lint & syntax check ────────────────────────────────────
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -22,7 +36,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: "pip"               # Cache pip between runs
+          cache: "pip"
 
       - name: Install deps
         run: pip install -r requirements.txt flake8
@@ -57,26 +71,92 @@ jobs:
           print('All templates OK')
           EOF
 
-  # ── 2. Docker build with layer cache ───────────────────
+  # ── 2. Automated tests ───────────────────────────────────────
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: "sqlite:///ci_test.db"
+      SECRET_KEY: "ci-test-secret-key-not-real-xxxxxxxx"
+      FLASK_ENV: "testing"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install deps + test tools
+        run: pip install -r requirements.txt pytest pytest-flask
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: .pytest_cache/
+          retention-days: 7
+
+  # ── 3. Docker build + publish to GHCR ────────────────────────
   build:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: lint
-    timeout-minutes: 25             # Hard cap — was hanging for 6h without this
+    needs: test
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write       # Required to push to GHCR
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Caches pip-install layer between runs (~18s on cache hit vs 10+ min cold)
-      - name: Build image (with GHA layer cache)
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Generates clean tags:
+      #   sha-<7chars>   — every build
+      #   <branch-name>  — every push
+      #   latest         — main branch only
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      # Build with GHA layer cache (avoids 6h timeout from cold pip installs).
+      # The Dockerfile uses --mount=type=cache for pip so even requirement
+      # changes only re-install, not re-download.
+      # load=true   → image available locally for smoke test
+      # push=true   → only on push events (not PRs)
+      - name: Build and push image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false
+          push: ${{ github.event_name == 'push' }}
           load: true
-          tags: cor_amans-web:${{ github.sha }}
+          tags: |
+            cor-amans-web:ci
+            ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -86,10 +166,19 @@ jobs:
             -e DATABASE_URL=sqlite:///test.db \
             -e SECRET_KEY=ci-test-key-not-real \
             -e FLASK_ENV=testing \
-            cor_amans-web:${{ github.sha }} \
+            cor-amans-web:ci \
             python -c "from app import app; print('Import OK')"
 
-  # ── 3. Deploy to staging (staging branch only) ─────────
+      - name: Print published image tags
+        if: github.event_name == 'push'
+        run: |
+          echo "### Docker image published to GHCR" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # ── 4. Deploy to staging ──────────────────────────────────────
   deploy-staging:
     name: Deploy → Staging
     runs-on: ubuntu-latest
@@ -98,14 +187,23 @@ jobs:
     environment: staging
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+            echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker compose pull web worker beat
+            docker compose up -d --no-deps web worker beat
+            docker image prune -f
+            echo "Staging deploy complete: $(date)"
 
-      - name: Deploy
-        # SSH into staging server and pull the new image:
-        # ssh user@staging "cd /opt/cor_amans && docker compose pull && docker compose up -d"
-        run: echo "Configure SSH deploy in GitHub → Settings → Environments → staging"
-
-  # ── 4. Deploy to production (main branch only) ─────────
+  # ── 5. Deploy to production ───────────────────────────────────
   deploy-production:
     name: Deploy → Production
     runs-on: ubuntu-latest
@@ -114,7 +212,83 @@ jobs:
     environment: production
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+            echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker compose pull web worker beat
+            docker compose up -d --no-deps web worker beat
+            docker image prune -f
+            echo "Production deploy complete: $(date)"
 
-      - name: Deploy
-        run: echo "Configure SSH deploy in GitHub → Settings → Environments → production"
+  # ── 6. Notify on failure ──────────────────────────────────────
+  notify:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [lint, test, build, deploy-staging, deploy-production]
+    if: always() && contains(needs.*.result, 'failure')
+    steps:
+      - name: Slack alert
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+
+          if [ -z "$SLACK_WEBHOOK" ]; then
+            echo "SLACK_WEBHOOK_URL not configured."
+            echo "Add it in: GitHub → Settings → Secrets → Actions → SLACK_WEBHOOK_URL"
+            exit 0
+          fi
+
+          curl -s -o /dev/null -w "%{http_code}" -X POST "$SLACK_WEBHOOK" \
+            -H 'Content-type: application/json' \
+            -d "{
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": { \"type\": \"plain_text\", \"text\": \"❌ COR AMANS CI/CD Failed\" }
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    { \"type\": \"mrkdwn\", \"text\": \"*Branch:*\n\`${{ github.ref_name }}\`\" },
+                    { \"type\": \"mrkdwn\", \"text\": \"*Commit:*\n\`${SHORT_SHA}\`\" },
+                    { \"type\": \"mrkdwn\", \"text\": \"*Triggered by:*\n${{ github.actor }}\" },
+                    { \"type\": \"mrkdwn\", \"text\": \"*Results:*\nlint=${{ needs.lint.result }} test=${{ needs.test.result }} build=${{ needs.build.result }}\" }
+                  ]
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [{
+                    \"type\": \"button\",
+                    \"text\": { \"type\": \"plain_text\", \"text\": \"View Failed Run\" },
+                    \"url\": \"${RUN_URL}\",
+                    \"style\": \"danger\"
+                  }]
+                }
+              ]
+            }"
+
+      - name: GitHub step summary
+        if: always()
+        run: |
+          echo "## ❌ CI/CD Failed — ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint   | ${{ needs.lint.result }}            |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests  | ${{ needs.test.result }}            |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build  | ${{ needs.build.result }}           |" >> $GITHUB_STEP_SUMMARY
+          echo "| Staging deploy   | ${{ needs.deploy-staging.result }}    |" >> $GITHUB_STEP_SUMMARY
+          echo "| Production deploy | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Commit \`${{ github.sha }}\` by @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
