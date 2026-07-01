@@ -146,6 +146,8 @@ jobs:
       # changes only re-install, not re-download.
       # load=true   → image available locally for smoke test
       # push=true   → only on push events (not PRs)
+      # IMPORTANT: all tags must have a registry prefix (ghcr.io/...) so
+      # buildx does not try to push to Docker Hub and get a 401.
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6
@@ -153,20 +155,21 @@ jobs:
           context: .
           push: ${{ github.event_name == 'push' }}
           load: true
-          tags: |
-            cor-amans-web:ci
-            ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Smoke test — app imports clean
         run: |
+          # Use the SHA tag which is always first in metadata-action output
+          # and is available locally via load:true above
+          IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
           docker run --rm \
             -e DATABASE_URL=sqlite:///test.db \
             -e SECRET_KEY=ci-test-key-not-real \
             -e FLASK_ENV=testing \
-            cor-amans-web:ci \
+            "$IMAGE" \
             python -c "from app import app; print('Import OK')"
 
       - name: Print published image tags
