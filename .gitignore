@@ -46,8 +46,7 @@ fix_all_columns.py
 fix_*.py
 seed_*.py
 
-# Test / scratch files
-test_*.py
+# Scratch / one-off scripts (NOT pytest test files in tests/)
 scratch_*.py
 
 # Coverage / pytest
