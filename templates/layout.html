@@ -1,6 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="">
 <head>
+  <!-- Instant theme apply — before paint to prevent flash -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('ca-theme') || 'system';
+      var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -70,6 +78,11 @@
           {% endif %}
           <a href="{{ url_for('dashboard') }}" class="nav-link" role="menuitem">Dashboard</a>
           <a href="{{ url_for('profile') }}"   class="nav-link" role="menuitem">Profile</a>
+          <a href="{{ url_for('search') }}"   class="nav-link" role="menuitem" title="Search"><i class="fas fa-magnifying-glass"></i></a>
+          <a href="{{ url_for('settings') }}" class="nav-link" role="menuitem" title="Settings"><i class="fas fa-gear"></i></a>
+          <button id="theme-toggle" class="btn btn-ghost btn-sm" aria-label="Toggle dark mode" title="Toggle dark mode" style="padding:6px 10px;">
+            <i class="fas fa-moon" id="theme-icon"></i>
+          </button>
           <form method="POST" action="{{ url_for('user_logout') }}" class="inline-block">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-ghost btn-sm">
@@ -193,6 +206,44 @@
           btn.setAttribute('aria-expanded','false');
           btn.innerHTML = '<i class="fas fa-bars text-lg"></i>';
         }
+      });
+    })();
+  </script>
+
+  <script>
+    // ── Dark mode toggle ─────────────────────────────────
+    (function(){
+      var btn  = document.getElementById('theme-toggle');
+      var icon = document.getElementById('theme-icon');
+      if (!btn) return;
+
+      function applyTheme(t) {
+        var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        if (icon) {
+          icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+      }
+
+      var current = localStorage.getItem('ca-theme') || 'system';
+      applyTheme(current);
+
+      btn.addEventListener('click', function(){
+        var t = localStorage.getItem('ca-theme') || 'system';
+        var next = (t === 'dark') ? 'light' : 'dark';
+        localStorage.setItem('ca-theme', next);
+        applyTheme(next);
+        // Persist to server (fire-and-forget)
+        fetch('/settings/theme', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content},
+          body: JSON.stringify({theme: next})
+        });
+      });
+
+      // Sync with OS preference changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+        if ((localStorage.getItem('ca-theme') || 'system') === 'system') applyTheme('system');
       });
     })();
   </script>

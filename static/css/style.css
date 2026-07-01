@@ -67,6 +67,49 @@
   --duration:    250ms;
 }
 
+/* ── Dark Mode Token Overrides ── */
+[data-theme="dark"] {
+  --forest:      #3fb950;
+  --forest-mid:  #56d364;
+  --sage:        #3fb950;
+  --meadow:      #2ea043;
+  --mint:        #388bfd;
+  --mist:        #21262d;
+  --foam:        #161b22;
+  --frost:       #0d1117;
+
+  --white:       #21262d;
+  --ivory:       #0d1117;
+  --charcoal:    #e6edf3;
+  --slate:       #b1bac4;
+  --muted:       #8b949e;
+  --border:      #30363d;
+  --border-green:#238636;
+  --surface:     #161b22;
+
+  --gold:        #e3b341;
+  --gold-light:  #f0c040;
+  --gold-dark:   #c9a84c;
+
+  --success:     #3fb950;
+  --error:       #f85149;
+  --warning:     #e3b341;
+  --info:        #388bfd;
+
+  --shadow-xs:   0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm:   0 1px 4px rgba(0,0,0,.4);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.5);
+  --shadow-lg:   0 10px 32px rgba(0,0,0,.6);
+  --shadow-xl:   0 20px 60px rgba(0,0,0,.7);
+}
+
+/* Smooth theme transitions */
+html { transition: background-color .2s, color .2s; }
+body, .navbar, .footer, .card, .admin-card,
+input, textarea, select, .form-input, .btn {
+  transition: background-color .2s, border-color .2s, color .2s;
+}
+
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+{% block title %}Settings — COR AMANS{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:720px;padding:2.5rem 1rem;">
+
+  <div style="margin-bottom:2rem;">
+    <h1 style="font-size:1.6rem;margin-bottom:0.25rem;">Settings</h1>
+    <p style="color:var(--muted);font-size:0.9rem;">Manage your account preferences and application settings.</p>
+  </div>
+
+  <!-- ── Appearance ────────────────────────────────────── -->
+  <div class="settings-card" id="appearance">
+    <div class="settings-card__header">
+      <i class="fas fa-palette" style="color:var(--sage);"></i>
+      <div>
+        <div class="settings-card__title">Appearance</div>
+        <div class="settings-card__desc">Choose how COR AMANS looks for you.</div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row__label">
+        <span>Theme</span>
+        <span class="settings-row__hint">Controls light or dark mode.</span>
+      </div>
+      <div class="theme-options" id="theme-picker">
+        {% for val, label, icon in [('light','Light','fa-sun'),('dark','Dark','fa-moon'),('system','System','fa-circle-half-stroke')] %}
+        <button class="theme-opt {{ 'active' if prefs.theme == val }}" data-theme="{{ val }}">
+          <i class="fas {{ icon }}"></i>
+          <span>{{ label }}</span>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row__label">
+        <span>Compact mode</span>
+        <span class="settings-row__hint">Reduces spacing in the dashboard for denser information display.</span>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="compact-mode" {{ 'checked' if prefs.compact_mode }}>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Notifications ─────────────────────────────────── -->
+  <div class="settings-card" id="notifications">
+    <div class="settings-card__header">
+      <i class="fas fa-bell" style="color:var(--sage);"></i>
+      <div>
+        <div class="settings-card__title">Notifications</div>
+        <div class="settings-card__desc">Control what emails COR AMANS sends you.</div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row__label">
+        <span>Email notifications</span>
+        <span class="settings-row__hint">Session reminders, resource announcements, and course updates.</span>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="email-notifications" {{ 'checked' if prefs.email_notifications }}>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Account ───────────────────────────────────────── -->
+  <div class="settings-card" id="account">
+    <div class="settings-card__header">
+      <i class="fas fa-user-gear" style="color:var(--sage);"></i>
+      <div>
+        <div class="settings-card__title">Account</div>
+        <div class="settings-card__desc">Your registration and security details.</div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row__label">
+        <span>Registration number</span>
+        <span class="settings-row__hint">Your unique couple identifier.</span>
+      </div>
+      <code style="font-size:0.875rem;color:var(--forest);background:var(--foam);padding:4px 10px;border-radius:var(--r-sm);">
+        {{ current_user.registration_number or '—' }}
+      </code>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row__label">
+        <span>Email address</span>
+        <span class="settings-row__hint">Used for login and notifications.</span>
+      </div>
+      <span style="font-size:0.875rem;color:var(--muted);">{{ current_user.email }}</span>
+    </div>
+
+    <div class="settings-row" style="border-bottom:none;">
+      <div class="settings-row__label">
+        <span>Password</span>
+        <span class="settings-row__hint">Update your login password.</span>
+      </div>
+      <a href="{{ url_for('change_password') }}" class="btn btn-ghost btn-sm">
+        <i class="fas fa-key"></i> Change password
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Navigation ────────────────────────────────────── -->
+  <div style="display:flex;gap:0.75rem;margin-top:0.5rem;flex-wrap:wrap;">
+    <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Profile
+    </a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-sm">
+      <i class="fas fa-house"></i> Dashboard
+    </a>
+  </div>
+
+</div>
+
+<style>
+.settings-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+.settings-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1.125rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.settings-card__header i { font-size: 1.1rem; margin-top: 2px; }
+.settings-card__title { font-weight: 700; font-size: 0.95rem; color: var(--charcoal); margin-bottom: 2px; }
+.settings-card__desc  { font-size: 0.8rem; color: var(--muted); }
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.settings-row__label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.settings-row__label span:first-child { font-size: 0.9rem; font-weight: 500; color: var(--charcoal); }
+.settings-row__hint  { font-size: 0.78rem; color: var(--muted); }
+
+/* Theme picker */
+.theme-options { display: flex; gap: 0.5rem; }
+.theme-opt {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 6px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.theme-opt:hover { border-color: var(--sage); color: var(--forest); }
+.theme-opt.active {
+  border-color: var(--forest);
+  background: var(--foam);
+  color: var(--forest);
+}
+
+/* Toggle switch */
+.toggle-switch { position: relative; display: inline-block; width: 42px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-track::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; bottom: 3px;
+  background: var(--white);
+  border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: var(--shadow-xs);
+}
+.toggle-switch input:checked + .toggle-track { background: var(--forest); }
+.toggle-switch input:checked + .toggle-track::before { transform: translateX(18px); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  // Theme picker
+  document.querySelectorAll('.theme-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var t = btn.dataset.theme;
+      document.querySelectorAll('.theme-opt').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      localStorage.setItem('ca-theme', t);
+      var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      savePref('theme', t);
+    });
+  });
+
+  // Toggle switches
+  ['compact-mode','email-notifications'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', function(){
+      var key = id === 'compact-mode' ? 'compact_mode' : 'email_notifications';
+      savePref(key, el.checked);
+      if (id === 'compact-mode') {
+        document.body.classList.toggle('compact', el.checked);
+      }
+    });
+  });
+
+  function savePref(key, value) {
+    fetch('/settings/pref', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({key: key, value: value})
+    });
+  }
+})();
+</script>
+{% endblock %}

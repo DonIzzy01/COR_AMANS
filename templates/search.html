@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block title %}Search — COR AMANS{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:800px;padding:2.5rem 1rem;">
+
+  <h1 style="font-size:1.5rem;margin-bottom:1.5rem;">Search</h1>
+
+  <form method="GET" action="{{ url_for('search') }}" role="search"
+        style="display:flex;gap:0.75rem;margin-bottom:2rem;flex-wrap:wrap;">
+    <input type="search" name="q" value="{{ q | e }}"
+           placeholder="Search resources, sessions…"
+           style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);
+                  border-radius:var(--r-md);font-family:inherit;font-size:0.95rem;
+                  background:var(--white);color:var(--charcoal);outline:none;"
+           autofocus>
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-magnifying-glass"></i> Search
+    </button>
+  </form>
+
+  {% if q %}
+
+    {% set total = results.resources|length + results.sessions|length %}
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">
+      {{ total }} result{{ 's' if total != 1 }} for "<strong>{{ q | e }}</strong>"
+    </p>
+
+    {% if results.resources %}
+    <div style="margin-bottom:2rem;">
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                  letter-spacing:.08em;color:var(--muted);margin-bottom:0.75rem;">
+        Resources ({{ results.resources|length }})
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.625rem;">
+        {% for r in results.resources %}
+        <a href="{{ url_for('resource_detail', resource_id=r.id) }}"
+           style="display:flex;align-items:center;gap:0.875rem;padding:0.875rem 1rem;
+                  background:var(--white);border:1px solid var(--border);
+                  border-radius:var(--r-md);text-decoration:none;
+                  transition:border-color .15s,box-shadow .15s;">
+          <div style="width:36px;height:36px;border-radius:var(--r-sm);
+                      background:{{ 'var(--foam)' if r.resource_type=='video' else '#dcfce7' }};
+                      display:flex;align-items:center;justify-content:center;
+                      color:var(--forest);flex-shrink:0;">
+            <i class="fas {{ 'fa-play' if r.resource_type=='video' else 'fa-file-pdf' }}"></i>
+          </div>
+          <div style="min-width:0;">
+            <div style="font-weight:600;color:var(--charcoal);font-size:0.9rem;">{{ r.title }}</div>
+            {% if r.description %}
+            <div style="font-size:0.8rem;color:var(--muted);overflow:hidden;
+                        text-overflow:ellipsis;white-space:nowrap;">{{ r.description }}</div>
+            {% endif %}
+          </div>
+          <span class="badge badge-{{ 'info' if r.resource_type=='video' else 'success' }}"
+                style="margin-left:auto;flex-shrink:0;">{{ r.resource_type }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if results.sessions %}
+    <div style="margin-bottom:2rem;">
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                  letter-spacing:.08em;color:var(--muted);margin-bottom:0.75rem;">
+        Sessions ({{ results.sessions|length }})
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.625rem;">
+        {% for s in results.sessions %}
+        <a href="{{ url_for('session_detail', session_id=s.id) }}"
+           style="display:flex;align-items:center;gap:0.875rem;padding:0.875rem 1rem;
+                  background:var(--white);border:1px solid var(--border);
+                  border-radius:var(--r-md);text-decoration:none;">
+          <div style="width:36px;height:36px;border-radius:var(--r-sm);background:var(--foam);
+                      display:flex;align-items:center;justify-content:center;
+                      color:var(--forest);flex-shrink:0;">
+            <i class="fas fa-video"></i>
+          </div>
+          <div style="min-width:0;">
+            <div style="font-weight:600;color:var(--charcoal);font-size:0.9rem;">{{ s.title }}</div>
+            <div style="font-size:0.8rem;color:var(--muted);">
+              {{ s.scheduled_at.strftime('%d %b %Y · %H:%M') }} · {{ s.host_name }}
+            </div>
+          </div>
+          <span class="badge badge-{{ 'success' if s.status=='scheduled' else 'neutral' }}"
+                style="margin-left:auto;flex-shrink:0;">{{ s.status }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if total == 0 %}
+    <div style="text-align:center;padding:3rem;color:var(--muted);">
+      <i class="fas fa-magnifying-glass" style="font-size:2rem;opacity:.3;display:block;margin-bottom:0.75rem;"></i>
+      No results for "<strong>{{ q | e }}</strong>". Try a different term.
+    </div>
+    {% endif %}
+
+  {% endif %}
+</div>
+{% endblock %}

@@ -119,6 +119,9 @@ class User(db.Model, UserMixin):
     # ── Course progress (0–100 per module slug, stored as JSON) ─────────
     module_progress = db.Column(db.Text, nullable=True)  # JSON: {"slug": pct, ...}
 
+    # ── User preferences (theme, notifications, etc.) ───────────────────
+    preferences = db.Column(db.Text, nullable=True)  # JSON
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -126,6 +129,24 @@ class User(db.Model, UserMixin):
     resources_uploaded = db.relationship('Resource', foreign_keys='Resource.uploaded_by', backref='uploader', lazy='dynamic')
     sessions_created = db.relationship('LiveSession', foreign_keys='LiveSession.created_by', backref='creator', lazy='dynamic')
     audit_logs = db.relationship('AuditLog', foreign_keys='AuditLog.user_id', backref='actor', lazy='dynamic')
+
+    _PREF_DEFAULTS = {
+        'theme': 'system',          # light | dark | system
+        'email_notifications': True,
+        'compact_mode': False,
+    }
+
+    def get_preferences(self):
+        try:
+            stored = json.loads(self.preferences) if self.preferences else {}
+        except (ValueError, TypeError):
+            stored = {}
+        return {**self._PREF_DEFAULTS, **stored}
+
+    def set_preference(self, key, value):
+        prefs = self.get_preferences()
+        prefs[key] = value
+        self.preferences = json.dumps(prefs)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

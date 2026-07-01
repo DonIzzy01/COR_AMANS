@@ -2,6 +2,7 @@ import os
 import re
 import secrets
 import time
+import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
 from threading import Lock
@@ -15,24 +16,57 @@ from models import User, Course, Resource, LiveSession, AuditLog
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from functools import lru_cache, wraps
-from sqlalchemy import func
+from sqlalchemy import func, or_, text
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# ── Redis-backed rate limiter (falls back to in-memory if Redis is down) ──
+REDIS_URL = os.environ.get('REDIS_URL', '')
+_redis_client = None
+
+def _get_redis():
+    global _redis_client
+    if _redis_client is not None:
+        return _redis_client
+    if not REDIS_URL:
+        return None
+    try:
+        import redis as redis_lib
+        r = redis_lib.from_url(REDIS_URL, socket_connect_timeout=1, socket_timeout=1)
+        r.ping()
+        _redis_client = r
+        logger.info('Redis connected: %s', REDIS_URL)
+        return r
+    except Exception as exc:
+        logger.warning('Redis unavailable, using in-memory rate limiter: %s', exc)
+        return None
+
+# In-memory fallback (single-worker only)
 RATE_LIMIT_STORE = defaultdict(list)
 RATE_LIMIT_LOCK = Lock()
+
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 SESSION_IDLE_TIMEOUT = 20 * 60
+
+# ── Circuit breakers ──────────────────────────────────────────────────────
+from circuit_breaker import CircuitBreaker
+email_circuit = CircuitBreaker('email', failure_threshold=3, recovery_timeout=60)
+
+# ── Observability ─────────────────────────────────────────────────────────
+from observability import init_observability
 
 # Initialize extensions
 db.init_app(app)
 mail.init_app(app)
 login_manager.init_app(app)
+init_observability(app)
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -154,7 +188,25 @@ def rate_limit(limit, window_seconds, scope="global"):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             now = time.time()
-            key = f"{scope}:{request.endpoint}:{get_client_ip()}"
+            key = f"rl:{scope}:{request.endpoint}:{get_client_ip()}"
+            r = _get_redis()
+            if r:
+                # Redis sliding window — works across all workers
+                try:
+                    pipe = r.pipeline()
+                    pipe.zremrangebyscore(key, 0, now - window_seconds)
+                    pipe.zcard(key)
+                    pipe.zadd(key, {str(now): now})
+                    pipe.expire(key, window_seconds + 1)
+                    _, count, *_ = pipe.execute()
+                    if count >= limit:
+                        flash("Too many requests. Please wait a moment and try again.", "error")
+                        response = redirect(request.referrer or url_for("landing"))
+                        response.headers["Retry-After"] = str(window_seconds)
+                        return response
+                    return f(*args, **kwargs)
+                except Exception:
+                    pass  # Redis error → fall through to in-memory
             with RATE_LIMIT_LOCK:
                 recent_hits = [t for t in RATE_LIMIT_STORE[key] if t > now - window_seconds]
                 RATE_LIMIT_STORE[key] = recent_hits
@@ -681,7 +733,77 @@ def get_classroom_features():
 
 @app.route("/health")
 def health_check():
-    return jsonify({"status": "ok"}), 200
+    checks = {"status": "ok", "db": "ok", "redis": "ok"}
+    try:
+        db.session.execute(text("SELECT 1"))
+    except Exception:
+        checks["db"] = "error"
+        checks["status"] = "degraded"
+    r = _get_redis()
+    if r:
+        try:
+            r.ping()
+        except Exception:
+            checks["redis"] = "error"
+    else:
+        checks["redis"] = "unavailable"
+    status_code = 200 if checks["status"] == "ok" else 503
+    return jsonify(checks), status_code
+
+
+# ── Settings ──────────────────────────────────────────────────────────────
+
+@app.route("/settings")
+@login_required
+def settings():
+    return render_template("settings.html", prefs=current_user.get_preferences())
+
+
+@app.route("/settings/theme", methods=["POST"])
+@login_required
+def settings_theme():
+    data = request.get_json(silent=True) or {}
+    theme = data.get("theme", "system")
+    if theme not in ("light", "dark", "system"):
+        return jsonify({"error": "invalid"}), 400
+    current_user.set_preference("theme", theme)
+    db.session.commit()
+    return jsonify({"ok": True, "theme": theme})
+
+
+@app.route("/settings/pref", methods=["POST"])
+@login_required
+def settings_pref():
+    data = request.get_json(silent=True) or {}
+    key   = data.get("key")
+    value = data.get("value")
+    allowed = {"theme", "compact_mode", "email_notifications"}
+    if key not in allowed:
+        return jsonify({"error": "unknown key"}), 400
+    current_user.set_preference(key, value)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+# ── Search ────────────────────────────────────────────────────────────────
+
+@app.route("/search")
+@login_required
+def search():
+    q = request.args.get("q", "").strip()
+    results = {"resources": [], "sessions": []}
+    if len(q) >= 2:
+        like = f"%{q}%"
+        results["resources"] = Resource.query.filter(
+            Resource.is_published.is_(True),
+            or_(Resource.title.ilike(like), Resource.description.ilike(like),
+                Resource.tags.ilike(like))
+        ).order_by(Resource.sort_order).limit(20).all()
+        results["sessions"] = LiveSession.query.filter(
+            or_(LiveSession.title.ilike(like), LiveSession.description.ilike(like),
+                LiveSession.host_name.ilike(like))
+        ).order_by(LiveSession.scheduled_at.desc()).limit(10).all()
+    return render_template("search.html", q=q, results=results)
 
 
 @app.route("/")

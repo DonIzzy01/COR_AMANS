@@ -1,11 +1,12 @@
 services:
 
+  # ── PostgreSQL ───────────────────────────────────────────
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: cor_amans_db
-      POSTGRES_USER: postgres
+      POSTGRES_DB:       cor_amans_db
+      POSTGRES_USER:     postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -16,25 +17,95 @@ services:
       retries: 5
       start_period: 10s
 
+  # ── PgBouncer (connection pooler — production only) ─────
+  # Uncomment and configure for production to multiplex connections.
+  # Requires additional auth setup (userlist.txt with md5 hashes).
+  # See: https://www.pgbouncer.org/config.html
+  # pgbouncer:
+  #   image: edoburu/pgbouncer:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     DB_HOST:     db
+  #     DB_USER:     postgres
+  #     DB_PASSWORD: postgres
+  #     DB_NAME:     cor_amans_db
+  #     POOL_MODE:   transaction
+  #     AUTH_TYPE:   scram-sha-256
+  #     MAX_CLIENT_CONN: 500
+  #     DEFAULT_POOL_SIZE: 20
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+
+  # ── Redis (rate limiting, sessions, Celery broker) ──────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── Flask / Gunicorn (web workers) ──────────────────────
   web:
     build: .
     restart: unless-stopped
-    # Expose directly for local dev; in production nginx sits in front
-    ports:
-      - "5001:5000"
-    env_file:
-      - .env
+    env_file: .env
     environment:
+      # Route through PgBouncer instead of directly to Postgres
       DATABASE_URL: postgresql://postgres:postgres@db/cor_amans_db
+      REDIS_URL:    redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
     volumes:
       - uploads:/app/static/uploads
-    # Scale with: docker compose up --scale web=3
-    # (remove ports: above and use nginx instead when scaling)
+    # Dev: expose directly. Production: comment this out and use nginx below.
+    ports:
+      - "5001:5000"
+    # Scale: docker compose up --scale web=3
+    # (remove ports above first, then enable nginx)
 
-  # ── Optional: nginx load balancer (uncomment for multi-instance) ──
+  # ── Celery worker (background email / tasks) ─────────────
+  worker:
+    build: .
+    restart: unless-stopped
+    command: celery -A tasks worker --loglevel=info --concurrency=2
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db/cor_amans_db
+      REDIS_URL:    redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    volumes:
+      - uploads:/app/static/uploads
+
+  # ── Celery beat (scheduled tasks) ────────────────────────
+  beat:
+    build: .
+    restart: unless-stopped
+    command: celery -A tasks beat --loglevel=info --schedule=/tmp/celerybeat-schedule
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db/cor_amans_db
+      REDIS_URL:    redis://redis:6379/0
+    depends_on:
+      - redis
+      - worker
+
+  # ── Nginx (load balancer + static file server) ───────────
+  # Uncomment when running multiple web instances (scale web=N).
   # nginx:
   #   image: nginx:alpine
   #   restart: unless-stopped
@@ -48,4 +119,5 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   uploads:
