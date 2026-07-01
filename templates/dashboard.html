@@ -67,7 +67,30 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-layout">
+
+<!-- ── Skeleton screen (shown while slow connections load CSS/fonts) ── -->
+<div id="dash-skeleton" class="dash-skeleton" aria-hidden="true" style="display:none;">
+  <div class="dash-sk-stats">
+    {% for _ in range(4) %}
+    <div class="skeleton-stat">
+      <div class="skeleton sk-h2 sk-w-50" style="margin-bottom:.75rem;"></div>
+      <div class="skeleton sk-h4 sk-w-70"></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="dash-sk-grid">
+    {% for _ in range(3) %}
+    <div class="skeleton-card">
+      <div class="skeleton sk-img"></div>
+      <div class="skeleton sk-h3 sk-w-80"></div>
+      <div class="skeleton sk-p sk-w-90"></div>
+      <div class="skeleton sk-p sk-w-70"></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="dashboard-layout" id="dash-real">
 
   <!-- ── Sidebar ───────────────────────────────────────── -->
   <aside class="sidebar" id="dashboard-sidebar">
@@ -423,6 +446,27 @@
     function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
     btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
     over && over.addEventListener('click', close);
+  })();
+
+  // Skeleton: show only on slow connections (>1.5s before DOMContentLoaded)
+  (function(){
+    var showSkeletonAt = 1500;
+    var skTimer = setTimeout(function(){
+      var sk = document.getElementById('dash-skeleton');
+      var real = document.getElementById('dash-real');
+      if (sk && real) {
+        sk.style.display = 'block';
+        real.style.display = 'none';
+      }
+    }, showSkeletonAt);
+
+    document.addEventListener('DOMContentLoaded', function(){
+      clearTimeout(skTimer);
+      var sk = document.getElementById('dash-skeleton');
+      var real = document.getElementById('dash-real');
+      if (sk) sk.style.display = 'none';
+      if (real) real.style.display = '';
+    });
   })();
 </script>
 {% endblock %}

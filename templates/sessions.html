@@ -106,6 +106,25 @@
       </p>
     </div>
 
+    <!-- Skeleton (shown on slow connections while content loads) -->
+    <div id="sess-skeleton" style="display:none" aria-hidden="true">
+      <div class="section-head"><div class="skeleton sk-h3 sk-w-50"></div></div>
+      <div class="grid-2" style="margin-bottom:1.5rem;">
+        {% for _ in range(4) %}
+        <div class="skeleton-card sess-card">
+          <div class="skeleton-row">
+            <div class="skeleton sk-avatar"></div>
+            <div class="skeleton sk-h3 sk-w-50" style="height:1.2rem;"></div>
+          </div>
+          <div class="skeleton sk-h2 sk-w-80"></div>
+          <div class="skeleton sk-p sk-w-90"></div>
+          <div class="skeleton sk-p sk-w-60"></div>
+          <div class="skeleton sk-btn"></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
     <!-- Upcoming sessions -->
     <div class="section-head reveal">
       <div class="dot"></div> Upcoming &amp; Live
@@ -226,14 +245,26 @@
 {% block scripts %}
 <script>
   (function(){
+    // Sidebar toggle
     var btn  = document.querySelector('[data-sidebar-toggle]');
     var side = document.getElementById('dashboard-sidebar');
     var over = document.getElementById('sidebar-overlay');
-    if (!btn || !side) return;
-    function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
-    function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
-    btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
-    over && over.addEventListener('click', close);
+    if (btn && side) {
+      function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+      function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+      btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+      over && over.addEventListener('click', close);
+    }
+
+    // Skeleton: show after 1.5s if DOMContentLoaded hasn't fired yet
+    var sk = document.getElementById('sess-skeleton');
+    if (sk) {
+      var skTimer = setTimeout(function(){ sk.style.display = ''; }, 1500);
+      document.addEventListener('DOMContentLoaded', function(){
+        clearTimeout(skTimer);
+        sk.style.display = 'none';
+      });
+    }
   })();
 </script>
 {% endblock %}

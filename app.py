@@ -19,6 +19,8 @@ from functools import lru_cache, wraps
 from sqlalchemy import func, or_, text
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
+from circuit_breaker import CircuitBreaker
+from observability import init_observability
 
 load_dotenv()
 
@@ -30,6 +32,7 @@ app.config.from_object(Config)
 # ── Redis-backed rate limiter (falls back to in-memory if Redis is down) ──
 REDIS_URL = os.environ.get('REDIS_URL', '')
 _redis_client = None
+
 
 def _get_redis():
     global _redis_client
@@ -48,6 +51,7 @@ def _get_redis():
         logger.warning('Redis unavailable, using in-memory rate limiter: %s', exc)
         return None
 
+
 # In-memory fallback (single-worker only)
 RATE_LIMIT_STORE = defaultdict(list)
 RATE_LIMIT_LOCK = Lock()
@@ -55,12 +59,7 @@ RATE_LIMIT_LOCK = Lock()
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 SESSION_IDLE_TIMEOUT = 20 * 60
 
-# ── Circuit breakers ──────────────────────────────────────────────────────
-from circuit_breaker import CircuitBreaker
 email_circuit = CircuitBreaker('email', failure_threshold=3, recovery_timeout=60)
-
-# ── Observability ─────────────────────────────────────────────────────────
-from observability import init_observability
 
 # Initialize extensions
 db.init_app(app)
@@ -730,6 +729,11 @@ def get_classroom_features():
 # ──────────────────────────────────────────────────
 #  Public routes
 # ──────────────────────────────────────────────────
+
+@app.route("/offline")
+def offline_page():
+    return render_template("offline.html"), 200
+
 
 @app.route("/health")
 def health_check():

@@ -161,6 +161,18 @@
     </div>
     {% endif %}
 
+    <!-- Skeleton (shown on slow connections while content loads) -->
+    <div id="res-skeleton" class="res-grid" style="display:none" aria-hidden="true">
+      {% for _ in range(6) %}
+      <div class="skeleton-card">
+        <div class="skeleton sk-img"></div>
+        <div class="skeleton sk-h3 sk-w-70"></div>
+        <div class="skeleton sk-p sk-w-90"></div>
+        <div class="skeleton sk-p sk-w-50"></div>
+      </div>
+      {% endfor %}
+    </div>
+
     <!-- Resources grid -->
     {% if resources %}
     <div class="res-grid">
@@ -227,14 +239,26 @@
 {% block scripts %}
 <script>
   (function(){
+    // Sidebar toggle
     var btn  = document.querySelector('[data-sidebar-toggle]');
     var side = document.getElementById('dashboard-sidebar');
     var over = document.getElementById('sidebar-overlay');
-    if (!btn || !side) return;
-    function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
-    function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
-    btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
-    over && over.addEventListener('click', close);
+    if (btn && side) {
+      function open()  { side.classList.add('is-open');    over && over.classList.add('is-visible'); }
+      function close() { side.classList.remove('is-open'); over && over.classList.remove('is-visible'); }
+      btn.addEventListener('click', function(){ side.classList.contains('is-open') ? close() : open(); });
+      over && over.addEventListener('click', close);
+    }
+
+    // Skeleton: show after 1.5s if DOMContentLoaded hasn't fired yet
+    var sk = document.getElementById('res-skeleton');
+    if (sk) {
+      var skTimer = setTimeout(function(){ sk.style.display = ''; }, 1500);
+      document.addEventListener('DOMContentLoaded', function(){
+        clearTimeout(skTimer);
+        sk.style.display = 'none';
+      });
+    }
   })();
 </script>
 {% endblock %}

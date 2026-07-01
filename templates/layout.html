@@ -29,6 +29,7 @@
   <!-- COR AMANS Design System -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/resilience.css') }}">
 
   {% block head_extra %}{% endblock %}
 
@@ -80,6 +81,7 @@
           <a href="{{ url_for('profile') }}"   class="nav-link" role="menuitem">Profile</a>
           <a href="{{ url_for('search') }}"   class="nav-link" role="menuitem" title="Search"><i class="fas fa-magnifying-glass"></i></a>
           <a href="{{ url_for('settings') }}" class="nav-link" role="menuitem" title="Settings"><i class="fas fa-gear"></i></a>
+          <span id="net-quality" title="Connection quality"></span>
           <button id="theme-toggle" class="btn btn-ghost btn-sm" aria-label="Toggle dark mode" title="Toggle dark mode" style="padding:6px 10px;">
             <i class="fas fa-moon" id="theme-icon"></i>
           </button>
@@ -185,6 +187,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <!-- Main JS -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <!-- Resilience: offline, loading, skeletons, retry -->
+  <script src="{{ url_for('static', filename='js/resilience.js') }}"></script>
 
   {% block scripts %}{% endblock %}
 

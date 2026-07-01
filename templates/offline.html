@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block title %}No Connection — COR AMANS{% endblock %}
+{% block footer %}{% endblock %}
+{% block nav %}{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;
+            background:var(--ivory);padding:2rem;">
+  <div style="max-width:420px;width:100%;text-align:center;">
+
+    <!-- Animated signal bars -->
+    <div style="display:flex;justify-content:center;align-items:flex-end;gap:5px;
+                height:56px;margin-bottom:1.75rem;">
+      {% for h in [20,32,44,32,20] %}
+      <div style="width:8px;height:{{ h }}px;background:var(--border);border-radius:4px;
+                  animation:signalPulse 1.4s ease-in-out {{ loop.index0 * 0.12 }}s infinite;">
+      </div>
+      {% endfor %}
+    </div>
+
+    <h1 style="font-family:var(--font-serif);font-size:1.6rem;color:var(--forest);margin-bottom:.5rem;">
+      No connection
+    </h1>
+    <p style="color:var(--muted);font-size:.95rem;line-height:1.6;margin-bottom:2rem;">
+      COR AMANS needs an internet connection to load your formation content.
+      Check your Wi-Fi or mobile data and try again.
+    </p>
+
+    <button data-countdown="10" data-countdown-action="reload"
+            onclick="window.location.reload()"
+            class="btn btn-primary"
+            style="width:100%;margin-bottom:.875rem;justify-content:center;">
+      <i class="fas fa-rotate-right"></i>
+      Try again — auto-retrying in <span class="countdown-num">10</span>s
+    </button>
+
+    <div style="font-size:.8rem;color:var(--muted);margin-top:.5rem;">
+      <i class="fas fa-circle-info"></i>
+      This page will reload automatically when your connection returns.
+    </div>
+
+  </div>
+</div>
+
+<style>
+@keyframes signalPulse {
+  0%, 100% { background: var(--border); transform: scaleY(1); }
+  50%       { background: var(--sage);  transform: scaleY(.6); }
+}
+</style>
+{% endblock %}

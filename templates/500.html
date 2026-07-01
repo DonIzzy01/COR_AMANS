@@ -14,13 +14,20 @@
     <p class="error-page__desc">
       An unexpected error occurred on our end. Our team has been notified. Please try again in a moment.
     </p>
-    <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+    <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
       <a href="{{ url_for('landing') }}" class="btn btn-primary">
         <i class="fas fa-house"></i> Go Home
       </a>
-      <button onclick="window.location.reload()" class="btn btn-ghost">
-        <i class="fas fa-rotate-right"></i> Try Again
+      <button data-countdown="15" data-countdown-action="reload"
+              onclick="window.location.reload()"
+              class="btn btn-ghost" id="retry-btn">
+        <i class="fas fa-rotate-right"></i>
+        Retry in <span class="countdown-num" id="retry-num">15</span>s
       </button>
+    </div>
+    <div class="retry-countdown" style="justify-content:center;">
+      <i class="fas fa-clock"></i>
+      <span>Auto-reloading in <span class="countdown-num">15</span>s — the error has been logged.</span>
     </div>
   </div>
 </div>

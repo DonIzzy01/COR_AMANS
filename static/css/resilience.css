@@ -1,0 +1,309 @@
+/* ════════════════════════════════════════════════════════════════
+   COR AMANS — Resilience & Loading States
+   Covers: page loader, skeleton screens, offline/slow banners,
+           image placeholders, form loading, error states, retry UI
+════════════════════════════════════════════════════════════════ */
+
+/* ── 1. PAGE LOAD PROGRESS BAR (top of viewport) ───────────── */
+#page-loader {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--forest), var(--meadow), var(--gold));
+  z-index: 99999;
+  transition: width .3s ease, opacity .4s ease;
+  pointer-events: none;
+}
+#page-loader.indeterminate {
+  width: 70%;
+  animation: loader-pulse 1.8s ease-in-out infinite;
+}
+#page-loader.done {
+  width: 100%;
+  opacity: 0;
+}
+@keyframes loader-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .6; }
+}
+
+/* ── 2. SKELETON SHIMMER ────────────────────────────────────── */
+@keyframes ca-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border) 0%,
+    var(--surface) 40%,
+    var(--border) 80%
+  );
+  background-size: 800px 100%;
+  animation: ca-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--r-sm);
+  color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+}
+.skeleton * { visibility: hidden !important; }
+
+/* Skeleton size helpers */
+.sk-h4  { height: 1rem;   }
+.sk-h3  { height: 1.25rem; }
+.sk-h2  { height: 1.5rem; }
+.sk-h1  { height: 2rem;   }
+.sk-p   { height: .85rem; margin-bottom: .4rem; }
+.sk-btn { height: 2.25rem; width: 100px; border-radius: var(--r-full); }
+.sk-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.sk-img { width: 100%; aspect-ratio: 16/9; border-radius: var(--r-md); }
+.sk-w-50 { width: 50%; }
+.sk-w-70 { width: 70%; }
+.sk-w-80 { width: 80%; }
+.sk-w-90 { width: 90%; }
+.sk-full { width: 100%; }
+
+/* Skeleton card */
+.skeleton-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+.skeleton-stat {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1.25rem;
+}
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+/* ── 3. OFFLINE / SLOW CONNECTION BANNER ────────────────────── */
+#connection-banner {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 9998;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+}
+#connection-banner.visible {
+  transform: translateY(0);
+}
+.conn-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .875rem 1.25rem;
+  font-size: .875rem;
+  font-weight: 500;
+}
+.conn-banner-inner i { font-size: 1rem; flex-shrink: 0; }
+
+#connection-banner.offline .conn-banner-inner {
+  background: #1c1c1e;
+  color: #fff;
+}
+#connection-banner.slow .conn-banner-inner {
+  background: #92400e;
+  color: #fef3c7;
+}
+#connection-banner.back-online .conn-banner-inner {
+  background: #166534;
+  color: #dcfce7;
+}
+
+.conn-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: .7;
+  cursor: pointer;
+  font-size: .9rem;
+  flex-shrink: 0;
+  padding: 2px;
+}
+.conn-dismiss:hover { opacity: 1; }
+
+/* ── 4. SLOW-CONNECTION CONTENT HINT ───────────────────────── */
+.slow-warning {
+  display: none;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8rem;
+  color: var(--warning);
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: var(--r-md);
+  padding: .5rem .875rem;
+  margin-bottom: 1rem;
+}
+[data-slow-conn] .slow-warning { display: flex; }
+
+/* ── 5. FORM LOADING STATES ─────────────────────────────────── */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: .8;
+}
+.btn-loading .btn-text { opacity: 0; }
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 1rem; height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: btn-spin .7s linear infinite;
+}
+@keyframes btn-spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+/* Form overlay while submitting */
+.form-submitting {
+  pointer-events: none;
+  opacity: .7;
+}
+.form-submitting input,
+.form-submitting select,
+.form-submitting textarea { background: var(--surface) !important; }
+
+/* ── 6. IMAGE LAZY LOADING PLACEHOLDERS ─────────────────────── */
+img.lazy-img {
+  background: var(--border);
+  transition: opacity .4s ease;
+}
+img.lazy-img:not([src]),
+img.lazy-img[src=""] {
+  visibility: hidden;
+}
+img.lazy-img.loaded { opacity: 1; }
+img.lazy-img.error {
+  background: var(--surface);
+  /* show a broken-image icon via pseudo — works on <picture> wrappers */
+}
+
+.img-wrap {
+  position: relative;
+  overflow: hidden;
+  background: var(--border);
+}
+.img-wrap .img-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
+  color: var(--muted);
+  font-size: 1.5rem;
+  transition: opacity .4s;
+}
+.img-wrap.loaded .img-placeholder { opacity: 0; pointer-events: none; }
+
+/* ── 7. RETRY BUTTON / ERROR STATE ──────────────────────────── */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+.error-state__icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; color: var(--error);
+  margin-bottom: .25rem;
+}
+.error-state__title {
+  font-size: 1rem; font-weight: 600; color: var(--charcoal);
+}
+.error-state__desc {
+  font-size: .85rem; max-width: 340px;
+}
+
+/* Auto-retry countdown */
+.retry-countdown {
+  font-size: .8rem;
+  color: var(--muted);
+  display: flex; align-items: center; gap: .35rem;
+}
+.retry-countdown .countdown-num {
+  font-weight: 700; color: var(--forest);
+  min-width: 1.5ch; display: inline-block;
+}
+
+/* ── 8. CONTENT FADE-IN ON LOAD ─────────────────────────────── */
+.content-ready {
+  animation: contentFade .4s ease both;
+}
+@keyframes contentFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 9. DASHBOARD SKELETON LAYOUT ───────────────────────────── */
+.dash-skeleton {
+  padding: 1.5rem;
+}
+.dash-sk-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.dash-sk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* ── 10. NETWORK QUALITY INDICATOR (tiny dot) ───────────────── */
+#net-quality {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  transition: background .4s;
+  flex-shrink: 0;
+}
+#net-quality.poor   { background: var(--error); animation: net-pulse 1.2s infinite; }
+#net-quality.slow   { background: var(--warning); }
+#net-quality.offline { background: #6b7280; }
+
+@keyframes net-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.35); opacity: .6; }
+}
+
+/* ── 11. EMPTY STATE ────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: .625rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+.empty-state__icon {
+  font-size: 2.5rem; color: var(--mist);
+  margin-bottom: .25rem;
+}
+.empty-state__title {
+  font-size: 1rem; font-weight: 600; color: var(--charcoal);
+}
+.empty-state__desc { font-size: .85rem; color: var(--muted); max-width: 320px; }
