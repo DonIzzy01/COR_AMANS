@@ -1124,6 +1124,51 @@ h4, h5, h6 { font-family: var(--font-sans); font-weight: 600; line-height: 1.3; 
 .hero__img-badge-text strong { font-size: 0.9rem; color: var(--charcoal); font-weight: 700; display: block; }
 .hero__img-badge-text span  { font-size: 0.75rem; color: var(--muted); }
 
+/* Floating cross decoration on hero image */
+.hero__float-cross {
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--foam);
+  border: 2px solid var(--mist);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  box-shadow: var(--shadow-md);
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ── Hero dark-mode overrides ── */
+[data-theme="dark"] .hero {
+  background: linear-gradient(135deg, #0a1b12 0%, #111214 45%, #0d1f16 100%);
+}
+[data-theme="dark"] .hero__bg-pattern {
+  background-image:
+    radial-gradient(circle at 15% 50%, rgba(63,169,110,.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(63,169,110,.04) 0%, transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(201,165,61,.05) 0%, transparent 30%);
+}
+[data-theme="dark"] .hero__title {
+  color: var(--charcoal);
+}
+[data-theme="dark"] .hero__img-badge {
+  background: rgba(27, 30, 33, 0.92);
+  border: 1px solid var(--border);
+}
+[data-theme="dark"] .hero__img-badge-icon {
+  background: var(--mist);
+}
+[data-theme="dark"] .hero__float-cross {
+  background: var(--mist);
+  border-color: var(--border-green);
+}
+[data-theme="dark"] .hero__floral-bg {
+  color: var(--forest);
+  opacity: 0.08;
+}
+
 /* Section structure */
 .section {
   padding: 5rem 1.5rem;
