@@ -177,28 +177,59 @@
           <i class="fas fa-arrow-right"></i> Start Your Formation
         </a>
       </div>
-      <div class="reveal-right">
-        <div style="background:linear-gradient(135deg,var(--foam),var(--frost));border:1.5px solid var(--border-green);border-radius:var(--r-2xl);padding:2rem;box-shadow:var(--shadow-xl);">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--sage);margin-bottom:1.25rem;">Live Session Schedule</div>
-          {% set live_sessions_preview = [
-            {"title":"Live Doctrine Class","time":"Tuesday, 7:00 PM","icon":"fa-video","cls":"text-forest"},
-            {"title":"Couples Mentoring Circle","time":"Thursday, 6:30 PM","icon":"fa-people-group","cls":"text-gold"},
-            {"title":"Assessment Review Q&A","time":"Saturday, 10:00 AM","icon":"fa-clipboard-check","cls":"text-sage"},
+      <div class="reveal-right" style="position:relative;">
+
+        <!-- Live class thumbnail -->
+        <div style="border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--shadow-xl);position:relative;aspect-ratio:16/9;margin-bottom:1.25rem;">
+          <img src="{{ url_for('static', filename='images/couple_1.jpg') }}"
+               alt="Live formation class" loading="lazy"
+               style="width:100%;height:100%;object-fit:cover;display:block;">
+          <!-- gradient overlay -->
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.18) 55%,transparent 100%);pointer-events:none;"></div>
+          <!-- LIVE pill -->
+          <div style="position:absolute;top:1rem;left:1rem;display:inline-flex;align-items:center;gap:0.4rem;background:var(--error);color:#fff;padding:0.3rem 0.8rem;border-radius:var(--r-full);font-size:0.68rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+            <span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;animation:pulse 1.5s ease-in-out infinite;"></span>
+            Live
+          </div>
+          <!-- viewer count pill -->
+          <div style="position:absolute;top:1rem;right:1rem;display:inline-flex;align-items:center;gap:0.4rem;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);color:rgba(255,255,255,0.9);padding:0.3rem 0.75rem;border-radius:var(--r-full);font-size:0.72rem;font-weight:600;border:1px solid rgba(255,255,255,0.15);">
+            <i class="fas fa-eye" style="font-size:0.65rem;"></i> 24 couples enrolled
+          </div>
+          <!-- caption at bottom of image -->
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem 1.5rem;">
+            <div style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:0.25rem;">Formation Live Class</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.72);display:flex;align-items:center;gap:0.5rem;">
+              <i class="fas fa-clock" style="font-size:0.7rem;"></i> Tuesdays at 7:00 PM
+            </div>
+          </div>
+        </div>
+
+        <!-- Session schedule card -->
+        <div style="background:var(--white);border:1.5px solid var(--border-green);border-radius:var(--r-xl);padding:1.25rem;box-shadow:var(--shadow-md);">
+          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:var(--sage);margin-bottom:1rem;">Upcoming sessions</div>
+          {% for s in [
+            {"title":"Live Doctrine Class","time":"Tuesday · 7:00 PM","icon":"fa-video","color":"var(--forest)"},
+            {"title":"Couples Mentoring Circle","time":"Thursday · 6:30 PM","icon":"fa-people-group","color":"var(--gold)"},
+            {"title":"Assessment Review Q&A","time":"Saturday · 10:00 AM","icon":"fa-clipboard-check","color":"var(--sage)"},
           ] %}
-          {% for s in live_sessions_preview %}
-          <div style="display:flex;align-items:center;gap:1rem;padding:0.875rem;background:white;border-radius:var(--r-lg);margin-bottom:0.75rem;border:1px solid var(--border-green);box-shadow:var(--shadow-xs);">
-            <div style="width:40px;height:40px;border-radius:var(--r-md);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="{{ s.cls }}">
-              <i class="fas {{ s.icon }}"></i>
+          <div style="display:flex;align-items:center;gap:0.875rem;padding:0.75rem;background:var(--surface);border-radius:var(--r-lg);margin-bottom:0.625rem;border:1px solid var(--border);">
+            <div style="width:38px;height:38px;border-radius:var(--r-md);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:{{ s.color }};">
+              <i class="fas {{ s.icon }}" style="font-size:0.95rem;"></i>
             </div>
             <div>
-              <div style="font-size:0.875rem;font-weight:600;color:var(--charcoal);">{{ s.title }}</div>
-              <div style="font-size:0.775rem;color:var(--muted);">{{ s.time }}</div>
+              <div style="font-size:0.85rem;font-weight:600;color:var(--charcoal);">{{ s.title }}</div>
+              <div style="font-size:0.75rem;color:var(--muted);">{{ s.time }}</div>
             </div>
           </div>
           {% endfor %}
-          <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-top:0.5rem;font-family:var(--font-accent);font-style:italic;">
+          <div style="text-align:center;margin-top:0.625rem;font-size:0.78rem;color:var(--muted);font-family:var(--font-accent);font-style:italic;">
             All sessions unlock after payment
           </div>
+        </div>
+
+        <!-- Floating cert badge -->
+        <div style="position:absolute;top:-14px;right:1.5rem;display:inline-flex;align-items:center;gap:0.5rem;background:var(--gold);color:#fff;padding:0.4rem 1rem;border-radius:var(--r-full);font-size:0.72rem;font-weight:700;box-shadow:var(--shadow-gold);letter-spacing:0.04em;">
+          <i class="fas fa-certificate" style="font-size:0.8rem;"></i> Certificate Awarded
         </div>
       </div>
     </div>
