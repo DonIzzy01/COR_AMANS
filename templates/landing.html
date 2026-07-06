@@ -3,78 +3,6 @@
 
 {% block content %}
 
-<!-- ── Hero ──────────────────────────────────────────────── -->
-<section class="hero">
-  <div class="hero__bg-pattern" aria-hidden="true"></div>
-
-  <!-- Watermark floral (right side) -->
-  <svg class="hero__floral-bg" aria-hidden="true" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
-       style="position:absolute;right:0;top:0;height:100%;width:50%;opacity:0.05;pointer-events:none;">
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(0 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(45 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(90 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(135 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(180 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(225 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(270 200 200)"/>
-    <ellipse cx="200" cy="60" rx="35" ry="70" fill="currentColor" transform="rotate(315 200 200)"/>
-    <circle cx="200" cy="200" r="30" fill="#C9A84C"/>
-  </svg>
-
-  <div class="hero__content container" style="max-width:1280px;margin:0 auto;">
-    <div>
-      <div class="hero__badge hero-animate-1">
-        <i class="fas fa-cross"></i> Catholic Marriage Formation
-      </div>
-      <h1 class="hero__title hero-animate-2">
-        Prepare for a<br>
-        <em>Holy Marriage</em>
-      </h1>
-      <p class="hero__subtitle hero-animate-3">
-        COR AMANS — Latin for <em>"Loving Heart"</em> — guides engaged Catholic couples through
-        doctrine, prayer, mentorship, and structured formation rooted in the Sacrament of Matrimony.
-      </p>
-      <div class="hero__cta hero-animate-4">
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
-          <i class="fas fa-ring"></i> Register as a Couple
-        </a>
-        <a href="{{ url_for('courses') }}" class="btn btn-secondary btn-lg">
-          <i class="fas fa-book-open"></i> View Courses
-        </a>
-      </div>
-      <div class="hero__stats hero-animate-4">
-        <div>
-          <div class="hero__stat-value" data-count-to="6" data-suffix="">6</div>
-          <div class="hero__stat-label">Formation Modules</div>
-        </div>
-        <div>
-          <div class="hero__stat-value">Live</div>
-          <div class="hero__stat-label">Weekly Sessions</div>
-        </div>
-        <div>
-          <div class="hero__stat-value">100%</div>
-          <div class="hero__stat-label">Catholic Doctrine</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Visual -->
-    <div class="hero__visual float-1">
-      <div class="hero__img-wrapper">
-        <img src="{{ url_for('static', filename='images/couple_1.jpg') }}"
-             alt="Catholic couple in preparation" loading="eager">
-      </div>
-      <div class="hero__img-badge">
-        <div class="hero__img-badge-icon"><i class="fas fa-certificate"></i></div>
-        <div class="hero__img-badge-text">
-          <strong>Certificate Pathway</strong>
-          <span>On completion of all modules</span>
-        </div>
-      </div>
-      <div class="hero__float-cross" aria-hidden="true">✝</div>
-    </div>
-  </div>
-</section>
 
 <!-- ── How It Works ──────────────────────────────────────── -->
 <section style="background:var(--white);padding:5rem 0;">
@@ -177,78 +105,29 @@
           <i class="fas fa-arrow-right"></i> Start Your Formation
         </a>
       </div>
-      <!-- Right panel — formation progress visual -->
-      <div class="reveal-right" style="position:relative;">
-
-        <!-- Main card — same proportions + corner styling as hero image -->
-        <div style="border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--shadow-xl);aspect-ratio:4/3;position:relative;">
-
-          <!-- Deep green gradient background -->
-          <div style="position:absolute;inset:0;background:linear-gradient(145deg,var(--forest) 0%,var(--forest-mid) 55%,var(--meadow) 100%);"></div>
-
-          <!-- Floral watermark (top-right) -->
-          <svg aria-hidden="true" style="position:absolute;right:-30px;top:-30px;width:240px;height:240px;opacity:0.09;pointer-events:none;" viewBox="0 0 220 220">
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(0 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(45 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(90 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(135 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(180 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(225 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(270 110 110)"/>
-            <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" transform="rotate(315 110 110)"/>
-            <circle cx="110" cy="110" r="16" fill="rgba(201,168,76,0.5)"/>
-          </svg>
-
-          <!-- Content centred inside the panel -->
-          <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 2.5rem;gap:0;">
-
-            <!-- Cross emblem -->
-            <div style="width:60px;height:60px;background:rgba(255,255,255,0.13);border:1.5px solid rgba(255,255,255,0.22);border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;box-shadow:0 4px 20px rgba(0,0,0,0.25);">
-              <i class="fas fa-cross" style="font-size:1.6rem;color:rgba(255,255,255,0.92);"></i>
-            </div>
-
-            <div style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:rgba(255,255,255,0.95);margin-bottom:0.25rem;text-align:center;">Formation Progress</div>
-            <div style="font-size:0.72rem;color:rgba(255,255,255,0.55);margin-bottom:1.5rem;text-align:center;">6 modules · Sacramental pathway</div>
-
-            <!-- Module progress bars -->
-            <div style="width:100%;max-width:300px;">
-              {% for m in [
-                {"label":"Covenant & Sacrament",   "pct":100},
-                {"label":"Consent & Liturgy",       "pct":100},
-                {"label":"Unity & Fidelity",        "pct":72},
-                {"label":"Family & Mission",        "pct":38},
-                {"label":"Prayer & Domestic Life",  "pct":0},
-                {"label":"Stewardship & Witness",   "pct":0},
-              ] %}
-              <div style="margin-bottom:0.7rem;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
-                  <span style="font-size:0.75rem;color:rgba(255,255,255,0.82);font-weight:500;">{{ m.label }}</span>
-                  <span style="font-size:0.68rem;color:{% if m.pct==100 %}var(--gold-light){% elif m.pct>0 %}rgba(255,255,255,0.65){% else %}rgba(255,255,255,0.28){% endif %};font-weight:600;">
-                    {% if m.pct == 100 %}<i class="fas fa-check-circle"></i>{% elif m.pct > 0 %}{{ m.pct }}%{% else %}—{% endif %}
-                  </span>
-                </div>
-                <div style="height:4px;background:rgba(255,255,255,0.12);border-radius:var(--r-full);">
-                  <div style="height:100%;width:{{ m.pct }}%;background:{% if m.pct==100 %}var(--gold-light){% else %}rgba(255,255,255,0.55){% endif %};border-radius:var(--r-full);"></div>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-
-          <!-- Certificate badge overlay — mirrors hero img-badge -->
-          <div style="position:absolute;bottom:1.5rem;left:1.5rem;background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);border-radius:var(--r-lg);padding:0.875rem 1.25rem;display:flex;align-items:center;gap:0.75rem;box-shadow:var(--shadow-md);">
-            <div style="width:38px;height:38px;background:var(--gold);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-certificate" style="color:#fff;font-size:1rem;"></i>
+      <div class="reveal-right">
+        <div style="background:linear-gradient(135deg,var(--foam),var(--frost));border:1.5px solid var(--border-green);border-radius:var(--r-2xl);padding:2rem;box-shadow:var(--shadow-xl);">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--sage);margin-bottom:1.25rem;">Live Session Schedule</div>
+          {% set live_sessions_preview = [
+            {"title":"Live Doctrine Class","time":"Tuesday, 7:00 PM","icon":"fa-video","cls":"text-forest"},
+            {"title":"Couples Mentoring Circle","time":"Thursday, 6:30 PM","icon":"fa-people-group","cls":"text-gold"},
+            {"title":"Assessment Review Q&A","time":"Saturday, 10:00 AM","icon":"fa-clipboard-check","cls":"text-sage"},
+          ] %}
+          {% for s in live_sessions_preview %}
+          <div style="display:flex;align-items:center;gap:1rem;padding:0.875rem;background:white;border-radius:var(--r-lg);margin-bottom:0.75rem;border:1px solid var(--border-green);box-shadow:var(--shadow-xs);">
+            <div style="width:40px;height:40px;border-radius:var(--r-md);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="{{ s.cls }}">
+              <i class="fas {{ s.icon }}"></i>
             </div>
             <div>
-              <strong style="font-size:0.875rem;color:#fff;display:block;font-weight:700;">Certificate Pathway</strong>
-              <span style="font-size:0.72rem;color:rgba(255,255,255,0.68);">On completion of all modules</span>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--charcoal);">{{ s.title }}</div>
+              <div style="font-size:0.775rem;color:var(--muted);">{{ s.time }}</div>
             </div>
           </div>
+          {% endfor %}
+          <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-top:0.5rem;font-family:var(--font-accent);font-style:italic;">
+            All sessions unlock after payment
+          </div>
         </div>
-
-        <!-- Floating cross decoration — mirrors hero -->
-        <div class="hero__float-cross" aria-hidden="true">✝</div>
       </div>
     </div>
   </div>
