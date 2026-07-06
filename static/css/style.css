@@ -68,51 +68,120 @@
 }
 
 /* ── Dark Mode Token Overrides ── */
-/* Warm neutral darks — not cold blue-black. Greens shift to lighter,
-   natural tones so they remain readable without being neon. */
 [data-theme="dark"] {
-  /* Brand greens — lighter, softer on dark backgrounds */
-  --forest:      #52b788;   /* light theme's meadow — natural, not neon */
-  --forest-mid:  #74c69d;   /* light theme's mint */
-  --sage:        #95d5b2;   /* gentle sage highlight */
-  --meadow:      #3d9d6e;   /* mid-range green */
-  --mint:        #b7e4c7;   /* very light mint for small accents */
-  --mist:        #1e2d24;   /* dark green-tinted fill */
-  --foam:        #1a2820;   /* darker green-tinted surface */
-  --frost:       #1e2022;   /* banner / sidebar bg */
+  /* Brand greens — rich, natural; readable on deep backgrounds */
+  --forest:      #3fa96e;
+  --forest-mid:  #55c088;
+  --sage:        #74cfa6;
+  --meadow:      #2d8059;
+  --mint:        #a4d9c0;
+  --mist:        #0d2218;
+  --foam:        #0a1b12;
+  --frost:       #0d1f16;
 
-  /* Backgrounds — 3 warm steps, no blue tint */
-  --ivory:       #1c1e20;   /* page background */
-  --white:       #262829;   /* card surface */
-  --surface:     #303234;   /* elevated: inputs, dropdowns, hovers */
+  /* Page backgrounds — 3 warm-neutral steps, zero blue tint */
+  --ivory:       #111214;
+  --white:       #1b1e21;
+  --surface:     #242729;
 
-  /* Text — warm off-white, not stark #fff */
-  --charcoal:    #e0e0e0;   /* primary text */
-  --slate:       #ababab;   /* secondary text */
-  --muted:       #767b82;   /* muted / placeholder */
+  /* Text — warm cream hierarchy */
+  --charcoal:    #edeae5;
+  --slate:       #9ea3a9;
+  --muted:       #606469;
 
   /* Borders */
-  --border:      #3a3c3e;   /* subtle divider */
-  --border-green:#2a4438;   /* green-tinted border */
+  --border:      #2d3035;
+  --border-green:#1c3228;
 
-  /* Gold — slightly brighter so it pops on dark bg */
-  --gold:        #f0c040;
-  --gold-light:  #f5d060;
-  --gold-dark:   #c9a84c;
+  /* Gold — warm honey, slightly lifted for dark */
+  --gold:        #c9a53d;
+  --gold-light:  #ddb850;
+  --gold-dark:   #a07e28;
+  --shadow-gold: 0 4px 20px rgba(201,165,61,.18);
 
   /* Status */
-  --success:     #52b788;
-  --error:       #f07070;   /* softer red — less harsh */
-  --warning:     #f0b429;
-  --info:        #60a5fa;
+  --success:     #4dba7a;
+  --error:       #e06060;
+  --warning:     #d49230;
+  --info:        #5499e8;
 
-  /* Shadows — darker alpha for depth on dark surfaces */
-  --shadow-xs:   0 1px 3px  rgba(0,0,0,.35);
-  --shadow-sm:   0 2px 6px  rgba(0,0,0,.40);
-  --shadow-md:   0 4px 16px rgba(0,0,0,.45);
-  --shadow-lg:   0 8px 28px rgba(0,0,0,.50);
-  --shadow-xl:   0 16px 48px rgba(0,0,0,.55);
+  /* Shadows — deeper on dark */
+  --shadow-xs:   0 1px 3px  rgba(0,0,0,.48);
+  --shadow-sm:   0 2px 8px  rgba(0,0,0,.52);
+  --shadow-md:   0 4px 20px rgba(0,0,0,.56);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,.62);
+  --shadow-xl:   0 16px 52px rgba(0,0,0,.68);
 }
+
+/* ── Dark Mode Component Overrides ── */
+/* These elements use hardcoded rgba(255,255,255,…) that tokens can't reach */
+[data-theme="dark"] .navbar {
+  background: rgba(17, 18, 20, 0.88);
+  border-bottom-color: var(--border);
+}
+[data-theme="dark"] .navbar--scrolled {
+  background: rgba(17, 18, 20, 0.97);
+}
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3 {
+  color: var(--charcoal);
+}
+[data-theme="dark"] .card,
+[data-theme="dark"] .admin-card {
+  background: var(--white);
+  border-color: var(--border);
+}
+[data-theme="dark"] .form-input,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--charcoal);
+}
+[data-theme="dark"] .form-input::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--muted);
+}
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(63,169,110,.18);
+}
+[data-theme="dark"] .btn-secondary {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--charcoal);
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--border);
+  border-color: var(--slate);
+}
+[data-theme="dark"] .btn-ghost {
+  color: var(--slate);
+}
+[data-theme="dark"] .btn-ghost:hover {
+  background: var(--surface);
+  color: var(--charcoal);
+}
+[data-theme="dark"] .mobile-menu {
+  background: var(--white);
+  border-color: var(--border);
+}
+[data-theme="dark"] .mobile-menu a:hover {
+  background: var(--surface);
+}
+[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--ivory); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--border); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: var(--slate); }
 
 /* Smooth theme transitions */
 html { transition: background-color .2s, color .2s; }
