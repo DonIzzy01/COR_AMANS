@@ -73,7 +73,11 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except Exception:
+        db.session.rollback()
+        return None
 
 
 @app.context_processor
@@ -741,6 +745,7 @@ def health_check():
     try:
         db.session.execute(text("SELECT 1"))
     except Exception:
+        db.session.rollback()
         checks["db"] = "error"
         checks["status"] = "degraded"
     r = _get_redis()
