@@ -51,7 +51,7 @@ jobs:
     timeout-minutes: 10
     steps:
       # Node 24 note: actions/checkout@v4, actions/setup-python@v5 and
-      # actions/upload-artifact@v4 ship node24-compatible releases via their
+      # actions/upload-artifact@v7 ship node24-compatible releases via their
       # floating major-version tags. Dependabot (.github/dependabot.yml)
       # keeps these pinned to the latest patch automatically.
       - uses: actions/checkout@v4
@@ -120,7 +120,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pytest-results
           path: .pytest_cache/
