@@ -9,9 +9,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_minimal.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
   {% block head_extra %}{% endblock %}
 </head>
 <body>
@@ -34,10 +35,10 @@
     <aside class="a-side" id="a-side">
 
       <div class="a-logo">
-        <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="" width="30" height="30">
+        <img src="{{ url_for('static', filename='images/brand-mark.png') }}" alt="COR AMANS" width="36" height="36">
         <div>
           <div class="a-logo-name">COR AMANS</div>
-          <div class="a-logo-sub">Admin</div>
+          <div class="a-logo-sub">Command Center</div>
         </div>
       </div>
 
@@ -50,9 +51,15 @@
         <div class="a-nav-label">Management</div>
         <a href="{{ url_for('admin_users') }}" class="a-link {{ 'active' if active_page == 'users' }}">
           <i class="fas fa-heart"></i><span>Couples</span>
+          {% if pending_count is defined and pending_count %}
+          <span class="a-badge">{{ pending_count }}</span>
+          {% endif %}
         </a>
         <a href="{{ url_for('admin_payments') }}" class="a-link {{ 'active' if active_page == 'payments' }}">
           <i class="fas fa-naira-sign"></i><span>Payments</span>
+          {% if unpaid_count is defined and unpaid_count %}
+          <span class="a-badge">{{ unpaid_count }}</span>
+          {% endif %}
         </a>
         <a href="{{ url_for('admin_sessions') }}" class="a-link {{ 'active' if active_page == 'sessions' }}">
           <i class="fas fa-video"></i><span>Sessions</span>
@@ -74,12 +81,14 @@
         <a href="{{ url_for('admin_audit') }}" class="a-link {{ 'active' if active_page == 'audit' }}">
           <i class="fas fa-clipboard-list"></i><span>Audit Log</span>
         </a>
-        <a href="{{ url_for('landing') }}" class="a-link" target="_blank">
+        <a href="{{ url_for('landing') }}" class="a-link view-site" target="_blank" rel="noopener">
           <i class="fas fa-globe"></i><span>View Site</span>
+          <i class="fas fa-arrow-up-right-from-square" style="font-size:9px;margin-left:auto;"></i>
         </a>
       </nav>
 
       <div class="a-side-foot">
+        <div class="a-admin-label">Signed in as</div>
         <div class="a-email">{{ current_user.email }}</div>
         <form method="POST" action="{{ url_for('user_logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -98,6 +107,13 @@
           <i class="fas fa-bars"></i>
         </button>
         <h1 class="a-page-title">{{ self.page_title() }}</h1>
+
+        <!-- View Site button in topbar -->
+        <a href="{{ url_for('landing') }}" target="_blank" rel="noopener" class="a-topbar-viewsite">
+          <i class="fas fa-globe"></i>
+          <span>View Site</span>
+          <i class="fas fa-arrow-up-right-from-square"></i>
+        </a>
       </div>
 
       <div class="a-content">

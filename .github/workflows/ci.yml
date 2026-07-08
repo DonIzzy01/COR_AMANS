@@ -1,6 +1,24 @@
 name: CI / CD
 
-# Triggers: all pushes to main/staging/develop + PRs targeting those branches
+# ─────────────────────────────────────────────────────────────────
+# Branch strategy (one workflow, three environments):
+#
+#   develop  → CI only: lint → test → docker build + smoke test
+#              No deployment. Safe sandbox for feature work.
+#
+#   staging  → CI + deploy to staging server.
+#              Pre-production gate — test with real infra before
+#              users ever see the change.
+#
+#   main     → CI + deploy to production.
+#              Only reached after staging sign-off.
+#
+# PRs targeting any of these three branches → CI only (no deploy).
+#
+# So "remaining jobs skip after smoke test" on develop is CORRECT —
+# there is no develop server. Staging/production deploys only fire
+# on their respective branches.
+# ─────────────────────────────────────────────────────────────────
 on:
   push:
     branches: [main, staging, develop]
@@ -8,13 +26,14 @@ on:
     branches: [main, staging, develop]
 
 env:
-  REGISTRY: ghcr.io
+  REGISTRY:   ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 # ─────────────────────────────────────────────────────────────────
 # Required GitHub Secrets (Settings → Secrets → Actions):
 #
-#   SLACK_WEBHOOK_URL   — Slack Incoming Webhook URL (optional)
+#   SLACK_WEBHOOK_URL   — Slack Incoming Webhook URL (optional;
+#                         if absent the notify job exits 0 cleanly)
 #   DEPLOY_HOST         — SSH server IP or hostname
 #   DEPLOY_USER         — SSH username (e.g. ubuntu)
 #   DEPLOY_KEY          — SSH private key (PEM format)
@@ -31,6 +50,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # Node 24 note: actions/checkout@v4, actions/setup-python@v5 and
+      # actions/upload-artifact@v4 ship node24-compatible releases via their
+      # floating major-version tags. Dependabot (.github/dependabot.yml)
+      # keeps these pinned to the latest patch automatically.
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
@@ -127,9 +150,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Generates clean tags:
-      #   sha-<7chars>   — every build
-      #   <branch-name>  — every push
+      # Tags produced:
+      #   sha-<7chars>   — every build (used by smoke test below)
+      #   <branch-name>  — every push (e.g. "develop", "staging")
       #   latest         — main branch only
       - name: Extract Docker metadata
         id: meta
@@ -141,13 +164,6 @@ jobs:
             type=ref,event=branch
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      # Build with GHA layer cache (avoids 6h timeout from cold pip installs).
-      # The Dockerfile uses --mount=type=cache for pip so even requirement
-      # changes only re-install, not re-download.
-      # load=true   → image available locally for smoke test
-      # push=true   → only on push events (not PRs)
-      # IMPORTANT: all tags must have a registry prefix (ghcr.io/...) so
-      # buildx does not try to push to Docker Hub and get a 401.
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6
@@ -162,8 +178,6 @@ jobs:
 
       - name: Smoke test — app imports clean
         run: |
-          # Use the SHA tag which is always first in metadata-action output
-          # and is available locally via load:true above
           IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
           docker run --rm \
             -e DATABASE_URL=sqlite:///test.db \
@@ -182,6 +196,8 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
   # ── 4. Deploy to staging ──────────────────────────────────────
+  # Runs ONLY on pushes to the staging branch — skipped everywhere else.
+  # That is the expected behaviour. develop has no server to deploy to.
   deploy-staging:
     name: Deploy → Staging
     runs-on: ubuntu-latest
@@ -193,9 +209,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
+          host:     ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
+          key:      ${{ secrets.DEPLOY_KEY }}
           script: |
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
@@ -207,6 +223,7 @@ jobs:
             echo "Staging deploy complete: $(date)"
 
   # ── 5. Deploy to production ───────────────────────────────────
+  # Runs ONLY on pushes to main — skipped everywhere else.
   deploy-production:
     name: Deploy → Production
     runs-on: ubuntu-latest
@@ -218,9 +235,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
+          host:     ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
+          key:      ${{ secrets.DEPLOY_KEY }}
           script: |
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
@@ -232,6 +249,20 @@ jobs:
             echo "Production deploy complete: $(date)"
 
   # ── 6. Notify on failure ──────────────────────────────────────
+  # PURPOSE: Alert the team the moment anything breaks — lint, tests,
+  # docker build, or a deployment. Fires even if earlier jobs failed
+  # (if: always()) but only when there is an actual failure
+  # (contains(needs.*.result, 'failure')).
+  #
+  # Skipped deploy jobs count as "skipped", not "failure", so a
+  # successful develop push (where deploys are intentionally skipped)
+  # does NOT trigger this job.
+  #
+  # Output:
+  #   • Slack message (if SLACK_WEBHOOK_URL secret is set) with branch,
+  #     commit SHA, actor, job results, and a direct link to the run.
+  #   • GitHub Actions step summary table — always written, visible in
+  #     the Actions tab even without Slack.
   notify:
     name: Notify on Failure
     runs-on: ubuntu-latest
@@ -241,18 +272,18 @@ jobs:
       - name: Slack alert
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          COMMIT_SHA: ${{ github.sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA:    ${{ github.sha }}
+          RUN_URL:       ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           SHORT_SHA="${COMMIT_SHA:0:7}"
 
           if [ -z "$SLACK_WEBHOOK" ]; then
-            echo "SLACK_WEBHOOK_URL not configured."
-            echo "Add it in: GitHub → Settings → Secrets → Actions → SLACK_WEBHOOK_URL"
+            echo "SLACK_WEBHOOK_URL not configured — skipping Slack notification."
+            echo "To enable: GitHub → Settings → Secrets → Actions → SLACK_WEBHOOK_URL"
             exit 0
           fi
 
-          curl -s -o /dev/null -w "%{http_code}" -X POST "$SLACK_WEBHOOK" \
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$SLACK_WEBHOOK" \
             -H 'Content-type: application/json' \
             -d "{
               \"blocks\": [
@@ -279,7 +310,9 @@ jobs:
                   }]
                 }
               ]
-            }"
+            }")
+          echo "Slack response: $HTTP"
+          [ "$HTTP" = "200" ] || echo "Warning: unexpected Slack response $HTTP"
 
       - name: GitHub step summary
         if: always()
@@ -288,10 +321,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint   | ${{ needs.lint.result }}            |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests  | ${{ needs.test.result }}            |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build  | ${{ needs.build.result }}           |" >> $GITHUB_STEP_SUMMARY
-          echo "| Staging deploy   | ${{ needs.deploy-staging.result }}    |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint              | ${{ needs.lint.result }}              |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests             | ${{ needs.test.result }}              |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build             | ${{ needs.build.result }}             |" >> $GITHUB_STEP_SUMMARY
+          echo "| Staging deploy    | ${{ needs.deploy-staging.result }}    |" >> $GITHUB_STEP_SUMMARY
           echo "| Production deploy | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Commit \`${{ github.sha }}\` by @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY

@@ -1100,3 +1100,176 @@ select:focus {
 /* ── Utility ── */
 .s-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
 .pt-navbar   { padding-top: 78px; }
+
+/* ────────────────────────────────────────────────────────────
+   REGISTRATION PAGE — Sacred overrides
+   ──────────────────────────────────────────────────────────── */
+
+/* Page shell → dark canvas */
+.reg-page  { background: #0E241A !important; }
+.reg-main  { background: #0E241A !important; }
+
+/* Left panel — deepen to Sacred forest gradient */
+.reg-panel {
+  background: linear-gradient(175deg, #091810 0%, #12301F 60%, #1B4332 100%) !important;
+}
+.reg-panel__logo { border-color: rgba(201,168,76,.3) !important; object-fit: contain !important; }
+.reg-panel__title { color: #F3F7F4 !important; }
+.reg-panel__tagline { color: rgba(243,247,244,.62) !important; }
+.reg-panel__divider { background: rgba(255,255,255,.07) !important; }
+.reg-panel__feat  { color: rgba(243,247,244,.75) !important; }
+.reg-panel__feat i { color: #F0D080 !important; }
+.reg-panel__verse { color: rgba(243,247,244,.58) !important; border-left-color: rgba(201,168,76,.3) !important; }
+.reg-panel__verse cite { color: #C9A84C !important; }
+
+/* Sticky topbar → dark */
+.reg-topbar {
+  background: rgba(9,24,16,.95) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255,255,255,.07) !important;
+}
+.reg-topbar__signin { color: rgba(243,247,244,.45) !important; }
+.reg-topbar__signin a { color: #95D5B2 !important; }
+
+/* Stepper */
+.s-dot {
+  border-color: rgba(255,255,255,.15) !important;
+  background: rgba(255,255,255,.04) !important;
+  color: rgba(243,247,244,.4) !important;
+}
+.s-dot.s-active {
+  border-color: #C9A84C !important;
+  background: #C9A84C !important;
+  color: #2a2005 !important;
+  box-shadow: 0 0 0 4px rgba(201,168,76,.2) !important;
+}
+.s-dot.s-done {
+  border-color: #95D5B2 !important;
+  background: #95D5B2 !important;
+  color: #091810 !important;
+}
+.s-line, .s-phase-gap { background: rgba(255,255,255,.1) !important; }
+.s-line.s-done, .s-phase-gap.s-done { background: #95D5B2 !important; }
+.reg-stepper__plabel { color: rgba(243,247,244,.35) !important; }
+.reg-stepper__phase.s-active .reg-stepper__plabel { color: #F0D080 !important; }
+.reg-stepper__phase.s-done   .reg-stepper__plabel { color: #95D5B2 !important; }
+
+/* Form card */
+.reg-card {
+  background: #12301F !important;
+  border: 1px solid rgba(201,168,76,.18) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,.55) !important;
+}
+
+/* Step header stripe */
+.reg-step-hd {
+  border-bottom: 1px solid rgba(255,255,255,.06) !important;
+  background: rgba(18,48,31,.5) !important;
+}
+.reg-step-name { color: #F0D080 !important; }
+.reg-step-desc { color: rgba(243,247,244,.5) !important; }
+
+/* Step icons — keep colour family, lift saturation */
+.rs-bride   .reg-step-ico { background: #1B4332 !important; }
+.rs-groom   .reg-step-ico { background: #12305A !important; }
+.rs-reli    .reg-step-ico { background: #0E241A; border: 1px solid rgba(201,168,76,.3) !important; color: #C9A84C !important; }
+.rs-medical .reg-step-ico { background: #0F2D4A !important; }
+.rs-account .reg-step-ico { background: #C9A84C !important; color: #2a2005 !important; }
+
+/* Sub-groups */
+.reg-grp {
+  background: rgba(9,24,16,.45) !important;
+  border-color: rgba(201,168,76,.15) !important;
+}
+.reg-grp__hd { color: #95D5B2 !important; }
+
+/* Form labels and hints */
+.form-label   { color: rgba(243,247,244,.85) !important; }
+.form-hint    { color: rgba(243,247,244,.38) !important; }
+.required     { color: #C9A84C !important; }
+
+/* Inputs (reinforce — same as global but for specificity) */
+.reg-card .form-input {
+  background: rgba(255,255,255,.04) !important;
+  border-color: rgba(201,168,76,.25) !important;
+  color: #F3F7F4 !important;
+}
+.reg-card .form-input::placeholder { color: rgba(243,247,244,.3) !important; }
+.reg-card .form-input:focus {
+  border-color: #C9A84C !important;
+  box-shadow: 0 0 0 3px rgba(201,168,76,.14) !important;
+}
+.reg-card select.form-input option { background: #12301F; color: #F3F7F4; }
+
+/* Radio pills */
+.radio-pill label {
+  background: rgba(255,255,255,.04) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  color: rgba(243,247,244,.55) !important;
+}
+.radio-pill label:hover {
+  border-color: rgba(201,168,76,.4) !important;
+  color: #F0D080 !important;
+  background: rgba(201,168,76,.08) !important;
+}
+.radio-pill input:checked + label {
+  border-color: #C9A84C !important;
+  background: rgba(201,168,76,.12) !important;
+  color: #F0D080 !important;
+  box-shadow: 0 0 0 3px rgba(201,168,76,.12) !important;
+}
+
+/* Nav row */
+.reg-nav { border-top-color: rgba(255,255,255,.07) !important; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* Next / Continue button */
+.reg-nav .btn-primary {
+  background: var(--grad-gold) !important;
+  color: #2a2005 !important;
+  border: none !important;
+}
+.reg-nav .btn-ghost {
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  color: rgba(243,247,244,.6) !important;
+}
+
+/* Submit button (step 7 override) */
+#submit-btn {
+  background: var(--grad-gold) !important;
+  box-shadow: 0 4px 20px rgba(201,168,76,.3) !important;
+  color: #2a2005 !important;
+  border: none !important;
+}
+
+/* Verse blocks */
+.reg-verse {
+  background: rgba(201,168,76,.06) !important;
+  border-color: rgba(201,168,76,.2) !important;
+  color: rgba(243,247,244,.62) !important;
+}
+.reg-verse cite { color: #C9A84C !important; }
+
+/* Footer */
+.reg-foot {
+  border-top-color: rgba(255,255,255,.07) !important;
+  color: rgba(243,247,244,.4) !important;
+}
+.reg-foot a { color: #95D5B2 !important; }
+.reg-foot a.muted-lnk { color: rgba(243,247,244,.35) !important; }
+.reg-foot a.muted-lnk:hover { color: #95D5B2 !important; }
+
+/* Terms checkbox */
+.form-check__label { color: rgba(243,247,244,.72) !important; }
+.form-check__label a { color: #95D5B2 !important; }
+
+/* Password strength bar track */
+.pwd-bg { background: rgba(255,255,255,.08) !important; }
+
+/* Overlay */
+.reg-overlay { background: rgba(9,24,16,.95) !important; }
+
+/* Icon prefix color */
+.iw .ii { color: rgba(243,247,244,.3) !important; }

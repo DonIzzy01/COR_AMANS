@@ -121,11 +121,36 @@ No new client state beyond what exists. This is server-rendered — data comes f
 ## Files (design references in this bundle)
 - `Landing Redesign (1a).html` — the chosen landing direction (also contains 1b for comparison; build **1a**).
 - `Pages Redesign (1a).html` — Dashboard (2a), Sign In (2b), Sessions (2c), Resources (2d) in the Sacred theme.
-- Open these in a browser to see the exact intended result. In-project source: `COR AMANS Landing Redesign.dc.html` and `COR AMANS Pages Redesign (1a).dc.html`.
+- `Admin Redesign.html` — the admin **Dashboard** "Formation Command Center."
+- `Admin Pages (Couples, Payments, Sessions, Resources).html` — the four admin sub-pages (3a–3d) in the same command-center style, each with a **"View Site"** link back to the public site.
+- `Registration & Admin Login (1a).html` — the 7-step registration wizard (4a, with a vertical stepper) and the admin sign-in (4b, Command Center branding) in the Sacred theme.
+- `assets/brand-mark.png` — the combined logo (Sacred Heart in a gold-ringed disc at the flower's center).
+- Open these in a browser to see the exact intended result.
+
+### Registration wizard (`register.html`) & Admin login (`admin/admin_login.html`)
+- **Register (4a):** dark forest left rail with the brand mark, "Begin Your Sacred Journey" heading, a **vertical 7-step stepper** (active step = gold-gradient circle; pending = sage outline), and a 1 Corinthians 13 verse footer. Right side (`#0E241A`): step header with gold heart tile, grouped fields (Identity / Contact) with `#F0D080` labels and `rgba(255,255,255,.04)` inputs, and a gold-gradient "Continue" pill. Keep all 7 real steps, every field name, validation, and the existing wizard navigation.
+- **Admin login (4b):** split panel — left forest-gradient brand side ("Formation Command Center", "Restricted Access" pill, "access is logged" note); right `#0E241A` form with a shield tile, error flash (attempts remaining), email + password fields (gold labels, icon-prefixed), and a gold-gradient "Sign in to Console" button. Preserve the existing admin auth form, field names, CSRF, and lockout logic.
+
+## Admin console (Command Center) — design spec
+The admin area gets its own bespoke look, distinct from the couple app but sharing the Sacred palette + logo. **Do redesign the admin templates** (this supersedes the earlier "keep admin as-is" note).
+
+- **Shell:** fixed 252px **deep-forest sidebar** (`#0C2016`) with a gold hairline right edge; brand-mark + "COR AMANS / Admin Console" header; nav grouped **Overview / Management / System**; active item = gold-tinted pill (`linear-gradient(90deg,rgba(201,168,76,.18),rgba(201,168,76,.02))`, text `#F0D080`) with a 3px gold left bar; count badges on Couples (148) and Payments (36); an admin-profile footer (gold-gradient avatar, name, role, sign-out).
+- **Canvas:** warm **parchment** (`#F4F1E8`), NOT gray. Sticky 72px top bar (translucent parchment) with a Playfair page title + context subline on the left, and on the right: search field, **"View Site"** button (outlined gold, `#FBF6E9` bg), and a primary green action button.
+- **Cards:** white, `1px solid #EBE5D5`, radius 18–20px, soft shadow `0 1px 3px rgba(27,67,50,.05)`. KPI cards carry a 3px gradient top-accent hairline; the marquee metric (Revenue) is a **forest-gradient card** with a gold watermark icon.
+- **Tables:** header row `#FAF8F1`, uppercase 11px muted labels; rows separated by `#F4F0E6`; avatar-initial chips; status pills — green `#E3F5E9/#2F855A` (Enrolled/Paid/Published), gold `#FBF0DA/#B8871F` (Awaiting/Pending/Hidden), stone `#EDE7D8/#1B4332` (Completed), red `#fde8e8/#b91c1c` (Live). Row actions are muted FA icons (view/edit/more). Include a footer pager.
+- **Charts:** built with divs/SVG in brand colors — grouped bars (forest `#1B4332` + gold `#C9A84C`, current period highlighted) and a gold **completion gauge** ring.
+- **Dashboard (Command Center) layout:** KPI bento row → charts row (Enrollment&Revenue bars + Formation-Health gauge) → bottom row (Recent Registrations table + right rail: live-session monitor card, quick-actions grid, activity feed).
+- **Sub-pages:** **Couples** (filter tabs, searchable table with progress bars + status + pager), **Payments** (3 summary cards incl. forest revenue card + transactions table), **Live Sessions** (4 stat tiles + sessions table with Live/Upcoming/Completed + recording status), **Resources** (4 stat tiles + resources table with type/category/status + publish-toggle/edit/delete actions).
+
+## "View Site" / access the public website
+Admins must be able to jump to the live public site from the console:
+- Put a **"View Site"** entry at the bottom of the sidebar nav (dashed outline, sage text, external-link icon) **and** a "View Site" button in the top bar.
+- Both link to the public landing route (Flask `url_for('landing')` / `/`), opening in a **new tab** (`target="_blank" rel="noopener"`). This is navigation only — no new backend.
 
 ## Implementation notes for Claude Code
-1. Add the Sacred tokens as CSS variables in `static/css/style.css` (or a new `sacred.css` included via `layout.html`), then restyle `landing.html`, `login.html`, `dashboard.html`, `sessions.html`, `resources.html`.
-2. Keep `admin/*` on its current dark GitHub-style theme unless asked — this redesign is couple-facing.
-3. Replace raster logo with the inline SVG emblem partial (make a Jinja include, e.g. `partials/_emblem.html`).
-4. Verify every Jinja variable/loop in the current templates is preserved in the new markup before deleting the old markup.
-5. Test the full flow: register → login → dashboard → join session → browse resources.
+1. Add the Sacred tokens as CSS variables in `static/css/style.css` (or a new `sacred.css` included via `layout.html`), then restyle `landing.html`, `login.html`, `register.html` (7-step wizard, see 4a), `dashboard.html`, `sessions.html`, `resources.html`.
+2. **Admin:** restyle `admin/admin_login.html` (Sacred split-panel, see 4b); create/replace an `admin/admin_layout.html` implementing the Command Center shell (sidebar + parchment canvas + top bar with View Site), then restyle `admin_dashboard.html`, `admin_couples.html` (or equivalent), `admin_payments.html`, `admin_sessions.html`, `admin_resources.html` to match 3a–3d. A dedicated `admin.css` is fine; keep it separate from the couple styles.
+3. Replace the raster logo with the `brand-mark.png` asset (or an SVG rebuild) everywhere the mark appears.
+4. Wire **View Site** links to `url_for('landing')` with `target="_blank"`.
+5. Verify every Jinja variable/loop in the current templates is preserved in the new markup before deleting the old markup — the sample data shown (couples, ₦ amounts, sessions, resources) maps to existing route context.
+6. Test the full flow: register → login → couple dashboard → join session → resources; and admin login → dashboard → couples → payments → sessions → resources → View Site.

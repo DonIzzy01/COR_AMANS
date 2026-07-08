@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # Keep GitHub Actions up to date so action Node.js runtime warnings
+  # (e.g. "targets Node.js 20 but forced to run on Node.js 24") are
+  # resolved automatically as maintainers release node24-compatible versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  # Also keep Python packages up to date
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+    # Only open PRs for direct dependencies (ignore transitive)
+    allow:
+      - dependency-type: "direct"
+    # Ignore patch updates for stable packages to reduce noise
+    ignore:
+      - dependency-name: "flask"
+        update-types: ["version-update:semver-patch"]
