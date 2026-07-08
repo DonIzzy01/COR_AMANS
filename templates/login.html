@@ -6,71 +6,52 @@
 {% block main_class %}{% endblock %}
 
 {% block content %}
-<div class="auth-page">
+<div class="s-auth">
 
-  <!-- ── Left: Brand panel ───────────────────────────────── -->
-  <aside class="auth-panel" aria-hidden="true">
-    <!-- Decorative floral SVG -->
-    <svg class="auth-floral auth-floral--tl" width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.12" transform="rotate(0 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.12" transform="rotate(45 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.12" transform="rotate(90 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.12" transform="rotate(135 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.08" transform="rotate(180 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.08" transform="rotate(225 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.08" transform="rotate(270 110 110)"/>
-      <ellipse cx="110" cy="30" rx="22" ry="44" fill="white" opacity="0.08" transform="rotate(315 110 110)"/>
-      <circle cx="110" cy="110" r="18" fill="rgba(201,168,76,0.25)"/>
-    </svg>
-    <svg class="auth-floral auth-floral--br" width="180" height="180" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="110" cy="30" rx="18" ry="36" fill="white" opacity="0.08" transform="rotate(0 110 110)"/>
-      <ellipse cx="110" cy="30" rx="18" ry="36" fill="white" opacity="0.08" transform="rotate(60 110 110)"/>
-      <ellipse cx="110" cy="30" rx="18" ry="36" fill="white" opacity="0.08" transform="rotate(120 110 110)"/>
-      <ellipse cx="110" cy="30" rx="18" ry="36" fill="white" opacity="0.08" transform="rotate(180 110 110)"/>
-      <ellipse cx="110" cy="30" rx="18" ry="36" fill="white" opacity="0.08" transform="rotate(240 110 110)"/>
-      <ellipse cx="110" cy="30" rx="18" ry="36" fill="white" opacity="0.08" transform="rotate(300 110 110)"/>
-      <circle cx="110" cy="110" r="14" fill="rgba(201,168,76,0.2)"/>
-    </svg>
+  <!-- ── Left: couple photo + verse ────────────────────────── -->
+  <aside class="s-auth__left" aria-hidden="true">
+    <img src="{{ url_for('static', filename='images/couple_1.jpg') }}" alt="">
+    <div class="s-auth__left-scrim"></div>
 
-    <div class="auth-panel__content">
-      <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS" class="auth-panel__logo">
-      <h1 class="auth-panel__title">Cor Amans</h1>
-      <p class="auth-panel__tagline">"Loving Heart" — forming couples<br>for the Sacrament of Holy Matrimony</p>
-      <div class="auth-panel__features">
-        <div class="auth-panel__feature"><i class="fas fa-church"></i><span>Rooted in Catholic doctrine and the CCC</span></div>
-        <div class="auth-panel__feature"><i class="fas fa-video"></i><span>Live weekly formation classes</span></div>
-        <div class="auth-panel__feature"><i class="fas fa-people-group"></i><span>Mentor support and pastoral guidance</span></div>
-        <div class="auth-panel__feature"><i class="fas fa-certificate"></i><span>Certificate of completion pathway</span></div>
+    <!-- Logo top-left -->
+    <a href="{{ url_for('landing') }}" class="s-auth__left-top">
+      <img src="{{ url_for('static', filename='images/brand-mark.png') }}" alt="COR AMANS" class="s-auth__left-logo">
+      <div>
+        <div class="s-auth__left-wname">COR AMANS</div>
+        <div class="s-auth__left-wsub">LOVING HEART</div>
       </div>
+    </a>
+
+    <!-- Verse bottom -->
+    <div class="s-auth__left-verse">
+      <blockquote>"What God has joined together,<br>let no one separate."</blockquote>
+      <cite>Matthew 19:6</cite>
     </div>
   </aside>
 
-  <!-- ── Right: Login form ───────────────────────────────── -->
-  <section class="auth-form-side">
-    <div class="auth-card page-enter">
+  <!-- ── Right: form ───────────────────────────────────────── -->
+  <section class="s-auth__right">
+    <div class="s-auth__form-wrap">
 
-      <!-- Logo visible on mobile only -->
-      <a href="{{ url_for('landing') }}">
-        <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS" class="auth-logo-sm">
+      <a href="{{ url_for('landing') }}" class="s-auth__back">
+        <i class="fas fa-arrow-left"></i> Back to home
       </a>
 
-      <div class="auth-header">
-        <h1 class="auth-title">Welcome back</h1>
-        <p class="auth-subtitle">Sign in to continue your marriage formation journey</p>
-      </div>
+      <h1 class="s-auth__title">Welcome back</h1>
+      <p class="s-auth__sub">Sign in to continue your marriage formation journey.</p>
 
       <form action="{{ url_for('login') }}" method="POST" autocomplete="on" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <div style="display:flex;flex-direction:column;gap:1.125rem;">
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
           <div class="form-group">
             <label class="form-label" for="registration_number">Registration Number <span class="required">*</span></label>
             <input class="form-input" type="text" id="registration_number" name="registration_number"
               placeholder="e.g. CA-2026-0001" autocomplete="username"
-              style="text-transform:uppercase;letter-spacing:0.04em;"
+              style="text-transform:uppercase;letter-spacing:.04em;"
               required autofocus>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">
-              Issued to you after registration. Check your confirmation email.
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem;">
+              Issued after registration. Check your confirmation email.
             </div>
           </div>
 
@@ -85,26 +66,17 @@
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.25rem;">
+          <button type="submit" class="btn btn-primary btn-full" style="margin-top:.25rem;">
             <i class="fas fa-right-to-bracket"></i> Sign In
           </button>
         </div>
       </form>
 
-      <div class="auth-footer">
-        Don't have an account?
-        <a href="{{ url_for('register') }}">Register as a couple</a>
-      </div>
-
-      <!-- Back to home -->
-      <div style="text-align:center;margin-top:1rem;">
-        <a href="{{ url_for('landing') }}" style="font-size:0.8rem;color:var(--muted);transition:color 0.2s;">
-          <i class="fas fa-arrow-left" style="margin-right:4px;"></i> Back to home
-        </a>
+      <div class="s-auth__footer">
+        Don't have an account? <a href="{{ url_for('register') }}">Register as a couple</a>
       </div>
 
     </div>
   </section>
 </div>
 {% endblock %}
-

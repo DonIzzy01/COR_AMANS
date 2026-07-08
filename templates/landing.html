@@ -3,172 +3,158 @@
 
 {% block content %}
 
-
-<!-- ── How It Works ──────────────────────────────────────── -->
-<section style="background:var(--white);padding:5rem 0;">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;" class="reveal">
-      <div class="section-label">The Journey</div>
-      <h2 class="section-title">Four steps to sacramental readiness</h2>
-      <p class="section-subtitle" style="margin:0 auto;">From registration to certificate — every step is guided, supported, and rooted in the Church.</p>
-    </div>
-    <div class="grid-4">
-      {% for step in [
-        {"n":"01","icon":"fa-user-plus","title":"Register Together","desc":"Create your couple account with both bride and groom details and receive your unique registration number."},
-        {"n":"02","icon":"fa-credit-card","title":"Complete Payment","desc":"Unlock your full dashboard, live classes, mentor support, and formation materials with a one-time fee."},
-        {"n":"03","icon":"fa-video","title":"Attend Live Classes","desc":"Join weekly live formation sessions, mentoring circles, and pastoral guidance meetings as a couple."},
-        {"n":"04","icon":"fa-certificate","title":"Receive Certificate","desc":"Complete all modules, assessments, and meetings to receive your marriage preparation certificate."},
-      ] %}
-      <div class="reveal delay-{{ loop.index }}" style="text-align:center;padding:2rem 1.5rem;background:var(--frost);border-radius:var(--r-xl);border:1.5px solid var(--border-green);transition:all 0.25s ease;">
-        <div style="width:64px;height:64px;background:var(--forest);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;box-shadow:var(--shadow-md);">
-          <i class="fas {{ step.icon }}" style="color:white;font-size:1.4rem;"></i>
-        </div>
-        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--sage);margin-bottom:0.5rem;">Step {{ step.n }}</div>
-        <h3 style="font-family:var(--font-serif);font-size:1.1rem;color:var(--forest);margin-bottom:0.625rem;">{{ step.title }}</h3>
-        <p style="font-size:0.875rem;color:var(--muted);line-height:1.6;">{{ step.desc }}</p>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- ── Doctrine Principles ───────────────────────────────── -->
-<section style="background:linear-gradient(135deg,var(--forest) 0%,var(--forest-mid) 60%,var(--sage) 100%);padding:5rem 0;position:relative;overflow:hidden;">
-  <!-- Decorative flowers -->
-  <svg aria-hidden="true" style="position:absolute;top:0;left:0;opacity:0.07;pointer-events:none;" width="300" height="300" viewBox="0 0 220 220">
-    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(0 110 110)"/>
-    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(60 110 110)"/>
-    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(120 110 110)"/>
-    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(180 110 110)"/>
-    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(240 110 110)"/>
-    <ellipse cx="110" cy="30" rx="20" ry="40" fill="white" transform="rotate(300 110 110)"/>
-    <circle cx="110" cy="110" r="16" fill="rgba(201,168,76,0.4)"/>
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section class="s-hero">
+  <!-- Faint floral watermark -->
+  <svg class="s-hero__wm" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false">
+    <g fill="#F3F7F4">
+      <ellipse cx="0" cy="-38" rx="13" ry="30"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(45)"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(90)"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(135)"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(180)"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(225)"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(270)"/>
+      <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(315)"/>
+    </g>
+    <circle r="14" fill="#C9A84C"/>
   </svg>
 
-  <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;" class="reveal">
-      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--mint);margin-bottom:0.75rem;">The Teaching</div>
-      <h2 style="font-family:var(--font-serif);font-size:clamp(1.75rem,3.5vw,2.75rem);color:white;margin-bottom:1rem;">Rooted in Catholic doctrine</h2>
-      <p style="font-family:var(--font-accent);font-size:1.05rem;color:rgba(255,255,255,0.7);max-width:600px;margin:0 auto;line-height:1.7;">
-        Every module is anchored in the Catechism of the Catholic Church and the living tradition of the Church.
-      </p>
+  <!-- Left: copy -->
+  <div class="reveal-left">
+    <div class="s-hero__eyebrow">✝ Sacrament of Matrimony</div>
+    <h1 class="s-hero__title">
+      Prepare for<br>
+      <em>holy marriage</em><br>
+      together
+    </h1>
+    <p class="s-hero__sub">
+      COR AMANS guides engaged Catholic couples through doctrine, prayer, mentorship, and sacramental formation — rooted in the life of the Church.
+    </p>
+    <div class="s-hero__ctas">
+      <a href="{{ url_for('register') }}" class="s-hero__cta-primary">
+        <i class="fas fa-ring"></i> Begin Your Journey
+      </a>
+      <a href="{{ url_for('login') }}" class="s-hero__cta-ghost">
+        Sign In <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
-    <div class="grid-4">
-      {% for principle in [
-        {"title":"Marriage as Covenant","desc":"Catholic marriage is a covenant for the good of the spouses and the gift of family life.","ref":"CCC 1601","icon":"fa-handshake"},
-        {"title":"Grace of the Sacrament","desc":"Christ strengthens baptized spouses with sacramental grace for daily married life.","ref":"CCC 1638–1642","icon":"fa-dove"},
-        {"title":"Fidelity & Indissolubility","desc":"Christian marriage is faithful, exclusive, and lifelong in imitation of Christ's love.","ref":"CCC 1643–1651","icon":"fa-ring"},
-        {"title":"Domestic Church","desc":"The home becomes a place of prayer, virtue, hospitality, and witness.","ref":"CCC 1655–1666","icon":"fa-house-chimney"},
+  </div>
+
+  <!-- Right: couple photo -->
+  <div class="reveal-right">
+    <div class="s-hero__img-wrap">
+      <img src="{{ url_for('static', filename='images/couple_1.jpg') }}" alt="Engaged couple in prayer">
+      <div class="s-hero__img-scrim"></div>
+      <div class="s-hero__img-verse">
+        "What God has joined together, let no one separate."
+        <cite>Matthew 19:6</cite>
+      </div>
+      <!-- Logo watermark overlay -->
+      <img
+        src="{{ url_for('static', filename='images/brand-mark.png') }}"
+        alt=""
+        aria-hidden="true"
+        style="position:absolute;top:1.25rem;left:1.25rem;width:52px;height:52px;opacity:.35;pointer-events:none;object-fit:contain;">
+    </div>
+  </div>
+</section>
+
+<!-- ── Stat strip ─────────────────────────────────────────── -->
+<section class="s-stats reveal">
+  <div class="s-stats__grid">
+    <div>
+      <div class="s-stats__num">6+</div>
+      <div class="s-stats__label">Formation Modules</div>
+    </div>
+    <div>
+      <div class="s-stats__num">Live</div>
+      <div class="s-stats__label">Weekly Sessions</div>
+    </div>
+    <div>
+      <div class="s-stats__num">100%</div>
+      <div class="s-stats__label">Church-Approved</div>
+    </div>
+    <div>
+      <div class="s-stats__num">148+</div>
+      <div class="s-stats__label">Couples Formed</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Journey (cream) ───────────────────────────────────── -->
+<section class="s-journey">
+  <div class="s-container">
+    <h2 class="s-journey__heading reveal">Four steps to <em>sacramental readiness</em></h2>
+    <p class="s-journey__sub reveal">From registration to certificate — every step is guided, supported, and rooted in the Church.</p>
+
+    <div class="s-journey__steps">
+      {% for step in [
+        {"n":"01","icon":"fa-user-plus","title":"Register","desc":"Create your couple account and receive your unique registration number.","gold":false},
+        {"n":"02","icon":"fa-credit-card","title":"Enroll","desc":"Unlock your full dashboard, live classes, and formation materials.","gold":false},
+        {"n":"03","icon":"fa-video","title":"Form","desc":"Attend live doctrine classes, mentoring circles, and couple sessions.","gold":false},
+        {"n":"04","icon":"fa-certificate","title":"Receive","desc":"Complete all modules and receive your marriage preparation certificate.","gold":true},
       ] %}
-      <div class="reveal delay-{{ loop.index }}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r-xl);padding:2rem;backdrop-filter:blur(8px);">
-        <div style="width:48px;height:48px;background:rgba(255,255,255,0.12);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;">
-          <i class="fas {{ principle.icon }}" style="color:var(--gold-light);font-size:1.2rem;"></i>
+      <div class="s-journey__step reveal delay-{{ loop.index }}">
+        <div class="s-journey__icon {% if step.gold %}s-journey__icon--gold{% endif %}">
+          <i class="fas {{ step.icon }}"></i>
         </div>
-        <h3 style="font-family:var(--font-serif);font-size:1rem;color:white;margin-bottom:0.5rem;">{{ principle.title }}</h3>
-        <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:0.875rem;">{{ principle.desc }}</p>
-        <span style="font-size:0.75rem;color:var(--gold-light);font-style:italic;font-family:var(--font-accent);">{{ principle.ref }}</span>
+        <div class="s-journey__step-title">{{ step.title }}</div>
+        <div class="s-journey__step-desc">{{ step.desc }}</div>
       </div>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- ── Classroom Features ────────────────────────────────── -->
-<section style="background:var(--ivory);padding:5rem 0;">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr;gap:3rem;align-items:center;" class="lg:grid-cols-2">
-      <div class="reveal-left">
-        <div class="section-label">The Classroom</div>
-        <h2 class="section-title">Your formation experience</h2>
-        <p class="section-subtitle" style="margin-bottom:2rem;">
-          More than reading — your dashboard includes live video classes, shared assignments, mentor check-ins, and downloadable formation packs.
-        </p>
-        <div style="display:flex;flex-direction:column;gap:1rem;">
-          {% for feature in [
-            {"icon":"fa-video","title":"Live formation classes","desc":"Weekly doctrine teaching and pastoral guidance with live Q&A."},
-            {"icon":"fa-book-open-reader","title":"Couple assignments","desc":"Shared reflections and practical exercises completed together."},
-            {"icon":"fa-people-group","title":"Mentor support","desc":"Structured check-ins with parish mentors and pastoral follow-up."},
-            {"icon":"fa-church","title":"Sacramental pathway","desc":"Every step prepares couples for the liturgy and Christian family life."},
-          ] %}
-          <div style="display:flex;align-items:flex-start;gap:1rem;">
-            <div style="width:44px;height:44px;background:var(--foam);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--forest);">
-              <i class="fas {{ feature.icon }}"></i>
-            </div>
-            <div>
-              <div style="font-size:0.925rem;font-weight:700;color:var(--charcoal);margin-bottom:0.25rem;">{{ feature.title }}</div>
-              <div style="font-size:0.85rem;color:var(--muted);line-height:1.5;">{{ feature.desc }}</div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        <a href="{{ url_for('register') }}" class="btn btn-primary" style="margin-top:2rem;">
-          <i class="fas fa-arrow-right"></i> Start Your Formation
-        </a>
+<!-- ── Doctrine (dark) ───────────────────────────────────── -->
+<section class="s-doctrine">
+  <div class="s-container">
+    <h2 class="s-doctrine__heading reveal">Rooted in <em>Catholic doctrine</em></h2>
+    <p class="s-doctrine__sub reveal">Every module is anchored in the Catechism of the Catholic Church and the living tradition of the Church.</p>
+
+    <div class="s-doctrine__grid">
+      {% for p in [
+        {"icon":"fa-handshake","title":"Marriage as Covenant","body":"Catholic marriage is a covenant for the good of the spouses and the gift of family life.","ref":"CCC 1601"},
+        {"icon":"fa-dove","title":"Grace of the Sacrament","body":"Christ strengthens baptized spouses with sacramental grace for daily married life.","ref":"CCC 1638–1642"},
+        {"icon":"fa-ring","title":"Fidelity &amp; Indissolubility","body":"Christian marriage is faithful, exclusive, and lifelong in imitation of Christ's love.","ref":"CCC 1643–1651"},
+        {"icon":"fa-house-chimney","title":"Domestic Church","body":"The home becomes a place of prayer, virtue, hospitality, and witness.","ref":"CCC 1655–1666"},
+      ] %}
+      <div class="s-doctrine__card reveal delay-{{ loop.index }}">
+        <span class="s-doctrine__icon"><i class="fas {{ p.icon }}"></i></span>
+        <div class="s-doctrine__title">{{ p.title | safe }}</div>
+        <p class="s-doctrine__body">{{ p.body }}</p>
+        <span class="s-doctrine__cite">{{ p.ref }}</span>
       </div>
-      <div class="reveal-right">
-        <div style="background:linear-gradient(135deg,var(--foam),var(--frost));border:1.5px solid var(--border-green);border-radius:var(--r-2xl);padding:2rem;box-shadow:var(--shadow-xl);">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--sage);margin-bottom:1.25rem;">Live Session Schedule</div>
-          {% set live_sessions_preview = [
-            {"title":"Live Doctrine Class","time":"Tuesday, 7:00 PM","icon":"fa-video","cls":"text-forest"},
-            {"title":"Couples Mentoring Circle","time":"Thursday, 6:30 PM","icon":"fa-people-group","cls":"text-gold"},
-            {"title":"Assessment Review Q&A","time":"Saturday, 10:00 AM","icon":"fa-clipboard-check","cls":"text-sage"},
-          ] %}
-          {% for s in live_sessions_preview %}
-          <div style="display:flex;align-items:center;gap:1rem;padding:0.875rem;background:white;border-radius:var(--r-lg);margin-bottom:0.75rem;border:1px solid var(--border-green);box-shadow:var(--shadow-xs);">
-            <div style="width:40px;height:40px;border-radius:var(--r-md);background:var(--foam);display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="{{ s.cls }}">
-              <i class="fas {{ s.icon }}"></i>
-            </div>
-            <div>
-              <div style="font-size:0.875rem;font-weight:600;color:var(--charcoal);">{{ s.title }}</div>
-              <div style="font-size:0.775rem;color:var(--muted);">{{ s.time }}</div>
-            </div>
-          </div>
-          {% endfor %}
-          <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-top:0.5rem;font-family:var(--font-accent);font-style:italic;">
-            All sessions unlock after payment
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- ── CTA Banner ────────────────────────────────────────── -->
-<section style="padding:5rem 0;background:var(--frost);">
-  <div class="container" style="text-align:center;">
-    <div class="reveal" style="max-width:640px;margin:0 auto;">
-      <!-- Flower decoration -->
-      <svg aria-hidden="true" style="width:60px;height:60px;margin:0 auto 1.5rem;display:block;" viewBox="0 0 60 60">
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#1B4332" opacity="0.7" transform="rotate(0 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#2D6A4F" opacity="0.7" transform="rotate(45 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#40916C" opacity="0.7" transform="rotate(90 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#52B788" opacity="0.7" transform="rotate(135 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#1B4332" opacity="0.7" transform="rotate(180 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#2D6A4F" opacity="0.7" transform="rotate(225 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#40916C" opacity="0.7" transform="rotate(270 30 30)"/>
-        <ellipse cx="30" cy="8" rx="7" ry="14" fill="#52B788" opacity="0.7" transform="rotate(315 30 30)"/>
-        <circle cx="30" cy="30" r="8" fill="#C9A84C"/>
-      </svg>
-      <h2 class="section-title" style="margin-bottom:1rem;">
-        Begin your preparation today
-      </h2>
-      <p style="font-family:var(--font-accent);font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:2rem;">
-        "Let marriage be held in honor among all." — Hebrews 13:4
-      </p>
-      <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('dashboard') if current_user.is_paid else url_for('payment') }}" class="btn btn-primary btn-lg">
-          <i class="fas fa-arrow-right"></i>
-          {{ 'Go to Dashboard' if current_user.is_paid else 'Complete Payment' }}
-        </a>
-        {% else %}
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
-          <i class="fas fa-ring"></i> Register as a Couple
-        </a>
-        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Sign In</a>
-        {% endif %}
-      </div>
-    </div>
+<!-- ── CTA ───────────────────────────────────────────────── -->
+<section class="s-cta">
+  <div class="s-cta__content reveal">
+    <!-- Emblem watermark -->
+    <img
+      src="{{ url_for('static', filename='images/brand-mark.png') }}"
+      alt=""
+      aria-hidden="true"
+      class="s-cta__emblem"
+      style="width:80px;height:80px;opacity:.55;object-fit:contain;">
+
+    <h2 class="s-cta__heading">Begin your preparation today</h2>
+    <p class="s-cta__verse">"Let marriage be held in honor among all."<br>— Hebrews 13:4</p>
+
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') if current_user.is_paid else url_for('payment') }}" class="s-cta__btn">
+        <i class="fas fa-arrow-right"></i>
+        {{ 'Go to Dashboard' if current_user.is_paid else 'Complete Payment' }}
+      </a>
+    {% else %}
+      <a href="{{ url_for('register') }}" class="s-cta__btn">
+        <i class="fas fa-ring"></i> Register as a Couple
+      </a>
+    {% endif %}
   </div>
 </section>
 

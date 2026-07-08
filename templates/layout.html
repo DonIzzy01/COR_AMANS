@@ -37,6 +37,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/resilience.css') }}">
+  <!-- Sacred theme override (must be last) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sacred.css') }}">
 
   {% block head_extra %}{% endblock %}
 
@@ -67,10 +69,10 @@
 
       <!-- Logo -->
       <a href="{{ url_for('landing') }}" class="navbar__logo logo-heartbeat" aria-label="COR AMANS home">
-        <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" alt="COR AMANS Logo">
+        <img src="{{ url_for('static', filename='images/brand-mark.png') }}" alt="COR AMANS Logo">
         <div>
           <div class="navbar__brand-name">COR AMANS</div>
-          <div class="navbar__brand-sub">Catholic Marriage Formation</div>
+          <div class="navbar__brand-sub">LOVING HEART</div>
         </div>
       </a>
 

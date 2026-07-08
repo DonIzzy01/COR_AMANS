@@ -1,0 +1,15 @@
+{% macro emblem(size=40, petal="#95D5B2", center="#C9A84C") %}
+<svg viewBox="-60 -60 120 120" width="{{ size }}" height="{{ size }}" aria-hidden="true" focusable="false">
+  <g fill="{{ petal }}">
+    <ellipse cx="0" cy="-38" rx="13" ry="30"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(45)"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(90)"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(135)"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(180)"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(225)"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(270)"/>
+    <ellipse cx="0" cy="-38" rx="13" ry="30" transform="rotate(315)"/>
+  </g>
+  <circle r="14" fill="{{ center }}"/>
+</svg>
+{% endmacro %}

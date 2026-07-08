@@ -47,6 +47,15 @@
 
   <!-- Sidebar -->
   <aside class="sidebar" id="dashboard-sidebar">
+    <!-- Sacred logo strip -->
+    <a href="{{ url_for('landing') }}" class="sidebar__logo">
+      <img src="{{ url_for('static', filename='images/brand-mark.png') }}" class="sidebar__logo-mark" alt="COR AMANS">
+      <div>
+        <div class="sidebar__logo-name">COR AMANS</div>
+        <div class="sidebar__logo-sub">LOVING HEART</div>
+      </div>
+    </a>
+
     <div class="sidebar__header">
       <div class="couple-avatar">
         {% if current_user.profile_photo_url %}

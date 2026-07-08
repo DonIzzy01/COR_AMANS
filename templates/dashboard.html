@@ -94,6 +94,15 @@
 
   <!-- ── Sidebar ───────────────────────────────────────── -->
   <aside class="sidebar" id="dashboard-sidebar">
+    <!-- Sacred logo strip -->
+    <a href="{{ url_for('landing') }}" class="sidebar__logo">
+      <img src="{{ url_for('static', filename='images/brand-mark.png') }}" class="sidebar__logo-mark" alt="COR AMANS">
+      <div>
+        <div class="sidebar__logo-name">COR AMANS</div>
+        <div class="sidebar__logo-sub">LOVING HEART</div>
+      </div>
+    </a>
+
     <div class="sidebar__header">
       <div class="couple-avatar">
         {% if current_user.profile_photo_url %}
@@ -166,7 +175,7 @@
           <i class="fas fa-bars"></i>
         </button>
         <a href="{{ url_for('landing') }}" style="display:flex;align-items:center;gap:0.5rem;">
-          <img src="{{ url_for('static', filename='images/COR AMANS.jpg') }}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" alt="">
+          <img src="{{ url_for('static', filename='images/brand-mark.png') }}" style="width:32px;height:32px;border-radius:8px;object-fit:contain;" alt="">
           <span style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:var(--forest);">COR AMANS</span>
         </a>
       </div>
